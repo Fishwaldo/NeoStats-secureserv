@@ -325,7 +325,7 @@ int ScanFizzer(Client *u)
 		if (node) {
 			do {
 				viridetails = lnode_get(node);
-				if (!strcasecmp(viridetails->name, "FizzerBot")) {
+				if (!ircstrcasecmp(viridetails->name, "FizzerBot")) {
 					gotpositive(u, viridetails, DET_BUILTIN);
 					return 1;
 				}

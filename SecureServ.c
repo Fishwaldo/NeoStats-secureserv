@@ -106,7 +106,7 @@ static bot_setting ss_settings[]=
 	{"CHECKFIZZER",	&SecureServ.dofizzer,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"FizzerCheck",	NULL,	ts_help_set_checkfizzer, NULL, (void *)1 },
 	{"MULTICHECK",	&SecureServ.breakorcont,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"MultiCheck",	NULL,	ts_help_set_multicheck, NULL, (void *)1 },
 	{"AKILL",		&SecureServ.doakill,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAkill",		NULL,	ts_help_set_akill, NULL, (void *)1 },
-	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"AkillTime",	NULL,	ts_help_set_akilltime, NULL, (void *)3600 },
+	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	20736000,	NS_ULEVEL_ADMIN,"AkillTime",	NULL,	ts_help_set_akilltime, NULL, (void *)3600 },
 	{"SVSJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoSvsJoin",	NULL,	ts_help_set_dojoin, NULL, (void *)1 },
 	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_CUSTOM,0,0,		NS_ULEVEL_ADMIN,"ChanMsgAsPM",	NULL,	ts_help_set_treatchanmsgaspm, ss_cmd_set_treatchanmsgaspm, (void *)0 },
 	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoOnJoin",		NULL,	ts_help_set_doonjoin, NULL, (void *)1 },
@@ -147,20 +147,20 @@ static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 	if (cmdparams->ac < 2) {
 		return NS_ERR_NEED_MORE_PARAMS;
 	}			
-	if ((!strcasecmp(cmdparams->av[1], "ON"))) {
+	if ((!ircstrcasecmp(cmdparams->av[1], "ON"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "\2Warning:\2");
 		irc_prefmsg (ss_bot, cmdparams->source, "This option can consume a \2LOT\2 of CPU");
 		irc_prefmsg (ss_bot, cmdparams->source, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
 		irc_prefmsg (ss_bot, cmdparams->source, "Its not a recomended configuration.");
 		irc_prefmsg (ss_bot, cmdparams->source, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", ss_bot->name);
 		return NS_SUCCESS;
-	} else if (!strcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
+	} else if (!ircstrcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
 		command_report(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 1;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
-	} else if ((!strcasecmp(cmdparams->av[1], "OFF"))) {
+	} else if ((!ircstrcasecmp(cmdparams->av[1], "OFF"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
 		command_report(ss_bot, "%s has disabled channel message checking", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 0;

@@ -83,7 +83,6 @@ void FiniHelpers(void)
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	
 	if (helperhash) {
 		hash_scan_begin(&hlps, helperhash);
 		while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -151,7 +150,7 @@ int ss_cmd_login(CmdParams *cmdparams)
 	}
 	helper = (Helper *)hnode_find (helperhash, cmdparams->av[0]);
 	if (helper) {
-		if (!strcasecmp(helper->pass, cmdparams->av[1])) {
+		if (!ircstrcasecmp(helper->pass, cmdparams->av[1])) {
 			Channel* c;
 
 			c = find_channel(SecureServ.HelpChan);
@@ -202,7 +201,6 @@ int ss_cmd_assist(CmdParams *cmdparams)
 	virientry *ve;
 
 	SET_SEGV_LOCATION();
-
 	ud = (UserDetail *)GetUserModValue (cmdparams->source);
 	if (!ud || ud->type != USER_HELPER) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Access Denied");
@@ -220,14 +218,14 @@ int ss_cmd_assist(CmdParams *cmdparams)
 		return NS_SUCCESS;
 	}
 	/* ok, so far so good, lets see what the helper wants to do with the target user */
-	if (!strcasecmp(cmdparams->av[0], "RELEASE")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "RELEASE")) {
 		ClearUserModValue (tu);
 		td->data = NULL;
 		ns_free (td);
 		irc_prefmsg (ss_bot, cmdparams->source,  "Hold on %s is released", tu->name);
 		irc_chanalert (ss_bot, "%s released %s", cmdparams->source, tu->name);
 		return NS_SUCCESS;
-	} else if (!strcasecmp(cmdparams->av[0], "KILL")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "KILL")) {
 		ve = (virientry *)td->data;
 		irc_prefmsg (ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name);	
 		irc_chanalert (ss_bot, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source, tu->name, tu->user->username, tu->user->hostname, ve->name);
@@ -271,7 +269,7 @@ static int ss_cmd_helpers_add(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static int ss_cmd_helpers_del(CmdParams *cmdparams, char *nick) 
+static int ss_cmd_helpers_del(CmdParams *cmdparams) 
 {
 	hnode_t *node;
 
@@ -279,15 +277,15 @@ static int ss_cmd_helpers_del(CmdParams *cmdparams, char *nick)
 	if (cmdparams->ac < 2) {
 		return NS_ERR_NEED_MORE_PARAMS;
 	}
-	node = hash_lookup(helperhash, nick);
+	node = hash_lookup(helperhash, cmdparams->av[1]);
 	if (node) {
 		hash_delete(helperhash, node);
 		ns_free (hnode_get(node));
 		hnode_destroy(node);
-		DBADelete ("helpers", nick);
-		irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s from Helpers List", nick);
+		DBADelete ("helpers", cmdparams->av[1]);
+		irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s from Helpers List", cmdparams->av[1]);
 	} else {
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, Could not find %s in helpers list. /msg %s helpers list", nick, ss_bot->name);
+		irc_prefmsg (ss_bot, cmdparams->source, "Error, Could not find %s in helpers list. /msg %s helpers list", cmdparams->av[1], ss_bot->name);
 	}
 	return NS_SUCCESS;
 }
@@ -299,7 +297,6 @@ static int ss_cmd_helpers_list(CmdParams *cmdparams)
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	
 	irc_prefmsg (ss_bot, cmdparams->source, "Helpers List (%d):", (int)hash_count(helperhash));
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -316,11 +313,11 @@ int ss_cmd_helpers(CmdParams *cmdparams)
 	if (UserLevel(cmdparams->source) < NS_ULEVEL_ADMIN) {
 		return NS_ERR_NO_PERMISSION;
 	}			
-	if (!strcasecmp(cmdparams->av[0], "add")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
 		return ss_cmd_helpers_add(cmdparams);
-	} else if (!strcasecmp(cmdparams->av[0], "del")) {
-		return ss_cmd_helpers_del(cmdparams, cmdparams->av[1]);
-	} else if (!strcasecmp(cmdparams->av[0], "list")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
+		return ss_cmd_helpers_del(cmdparams);
+	} else if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
 		return ss_cmd_helpers_list(cmdparams);
 	}
 	return NS_ERR_SYNTAX_ERROR;

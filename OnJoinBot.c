@@ -142,7 +142,7 @@ static int chkmonchan (const void *key1, const void *key2)
 {
 	char *chan = (char *)key1;
 	char *chk = (char *)key2;
-	return (strcasecmp(chan, chk));
+	return (ircstrcasecmp(chan, chk));
 }
 
 static Channel *GetNewChan () 
@@ -162,7 +162,7 @@ static Channel *GetNewChan ()
 			dlog (DEBUG1, "Not Scanning %s, as its a private channel", c->name);
 			continue;
 		}
-		if (!strcasecmp(lastchan, c->name)) {
+		if (!ircstrcasecmp(lastchan, c->name)) {
 			/* this was the last channel we joined, don't join it again */
 			dlog (DEBUG1, "Not Scanning %s, as we just did it", c->name);
 			continue;
@@ -221,7 +221,7 @@ static BotInfo *GetNewBot(int resetflag)
 		while (rnn != NULL) {
 			if (curno == randno) {
 				nickname = lnode_get(rnn);
-				if (!strcasecmp(nickname->nick, lastnick)) {
+				if (!ircstrcasecmp(nickname->nick, lastnick)) {
 					/* its the same as last time, nope */
 					dlog (DEBUG1, "%s was used last time. Retring", nickname->nick);
 					break;
@@ -413,7 +413,7 @@ int ss_event_kickbot(CmdParams *cmdparams)
 	
 	SET_SEGV_LOCATION();
 	/* check its one of our nicks */
-	if (!strcasecmp(lastnick, cmdparams->target->name) && (!strcasecmp(lastchan, cmdparams->channel->name))) {
+	if (!ircstrcasecmp(lastnick, cmdparams->target->name) && (!ircstrcasecmp(lastchan, cmdparams->channel->name))) {
 		nlog (LOG_NOTICE, "Our Bot %s was kicked from %s", cmdparams->target->name, cmdparams->channel->name);
 		lastchan[0] = 0;
 		return NS_SUCCESS;
@@ -425,7 +425,7 @@ int ss_event_kickbot(CmdParams *cmdparams)
 	if (cmdparams->bot == monbotptr) {
 		mn = list_first(monchans);
 		while (mn != NULL) {
-			if (!strcasecmp(cmdparams->channel->name, lnode_get(mn))) {
+			if (!ircstrcasecmp(cmdparams->channel->name, lnode_get(mn))) {
 				/* rejoin the monitor bot to the channel */
 				irc_join (monbotptr, cmdparams->channel->name, 0);
 				if (SecureServ.verbose) {
@@ -449,7 +449,7 @@ int InitMonBot()
 	rnn = list_first(nicks);
 	while (rnn != NULL) {
 		nickname = lnode_get(rnn);
-		if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+		if (!ircstrcasecmp(nickname->nick, SecureServ.monbot)) {
 			/* its our bot */
 			break;
 		}
@@ -459,7 +459,6 @@ int InitMonBot()
 		nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
 		return NS_FALSE;
 	}
-
 	monbotptr = AddBot(nickname);
 	if (!monbotptr) {
 		return NS_FALSE;
@@ -477,7 +476,7 @@ int MonJoin(Channel *c)
 	}
 	mn = list_first(monchans);
 	while (mn != NULL) {
-		if (!strcasecmp(c->name, lnode_get(mn))) {
+		if (!ircstrcasecmp(c->name, lnode_get(mn))) {
 			if (monbotptr == NULL) {
 				/* the monbot isn't online. Initilze it */
 				if( InitMonBot() != NS_TRUE) {
@@ -512,7 +511,7 @@ static int MonChan(Client *u, char *requestchan)
 
 	mn = list_first(monchans);
 	while (mn != NULL) {
-		if (!strcasecmp(requestchan, lnode_get(mn))) {
+		if (!ircstrcasecmp(requestchan, lnode_get(mn))) {
 			if (u) irc_prefmsg (ss_bot, u, "Already Monitoring Channel %s", requestchan);
 			return 1;
 		}
@@ -672,7 +671,7 @@ int InitOnJoinBots(void)
 		node = list_first(nicks);
 		while (node != NULL) {
 			rnicks = lnode_get(node);
-			if (!strcasecmp(rnicks->nick, SecureServ.monbot)) {
+			if (!ircstrcasecmp(rnicks->nick, SecureServ.monbot)) {
 				/* ok, got the bot ! */
 				break;
 			}
@@ -756,7 +755,7 @@ int ss_cmd_bots_del(CmdParams *cmdparams)
 		return NS_ERR_NEED_MORE_PARAMS;
 	}
 	/* dont delete the bot if its setup as the monbot */
-	if (!strcasecmp(cmdparams->av[1], SecureServ.monbot)) {
+	if (!ircstrcasecmp(cmdparams->av[1], SecureServ.monbot)) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Cant delete %s from botlist as its set as the monitor Bot", cmdparams->av[1]);
 		return NS_FAILURE;
 	}
@@ -768,7 +767,7 @@ int ss_cmd_bots_del(CmdParams *cmdparams)
 	node = list_first(nicks);
 	while (node != NULL) {
 		bots = lnode_get(node);
-		if (!strcasecmp(bots->nick, cmdparams->av[1])) {
+		if (!ircstrcasecmp(bots->nick, cmdparams->av[1])) {
 			/* ok, got the bot ! */
 			break;
 		}
@@ -793,11 +792,11 @@ int ss_cmd_bots_del(CmdParams *cmdparams)
 int ss_cmd_bots(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	if (!strcasecmp(cmdparams->av[0], "LIST")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
 		return ss_cmd_bots_list(cmdparams);
-	} else if (!strcasecmp(cmdparams->av[0], "ADD")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
 		return ss_cmd_bots_add(cmdparams);
-	} else if (!strcasecmp(cmdparams->av[0], "DEL")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
 		return ss_cmd_bots_del(cmdparams);
 	}
 	return NS_ERR_SYNTAX_ERROR;
@@ -813,11 +812,11 @@ int ss_cmd_checkchan(CmdParams *cmdparams)
 int ss_cmd_monchan(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	if (!strcasecmp(cmdparams->av[0], "ADD")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
 		return ss_cmd_monchan_add( cmdparams );
-	} else if (!strcasecmp(cmdparams->av[0], "DEL")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
 		return ss_cmd_monchan_del( cmdparams );
-	} else if (!strcasecmp(cmdparams->av[0], "LIST")) {
+	} else if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
 		return ss_cmd_monchan_list( cmdparams );
 	}
 	return NS_ERR_SYNTAX_ERROR;
@@ -837,7 +836,7 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	lnode_t *rnn;
 
 	SET_SEGV_LOCATION();
-	if (!strcasecmp(cmdparams->av[0], "LIST")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
 		return NS_SUCCESS;
 	}
@@ -859,7 +858,7 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	rnn = list_first(nicks);
 	while (rnn != NULL) {
 		nickname = lnode_get(rnn);
-		if (!strcasecmp(nickname->nick, cmdparams->av[1])) {
+		if (!ircstrcasecmp(nickname->nick, cmdparams->av[1])) {
 			/* ok, got the bot ! */
 			break;
 		}

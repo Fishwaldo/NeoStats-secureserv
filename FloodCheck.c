@@ -64,9 +64,6 @@ int ss_join_chan(char **av, int ac)
 	Chans *c;
 	ChanInfo *ci;
 	hnode_t *cn;
-    lnode_t *node;
-    virientry *viridetails;
-    int rc;
 	
 	/* if we not even inited, exit this */
 	if (!SecureServ.inited) {
@@ -95,28 +92,8 @@ int ss_join_chan(char **av, int ac)
 	}
 	
 	/* first, check if this is a *bad* channel */
-	node = list_first(viri);
-	if (node) {
-		do {
-			viridetails = lnode_get(node);
-			if (viridetails->dettype == DET_CHAN) {
-				SecureServ.trigcounts[DET_CHAN]++;
-				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
-					continue;
-				}
-				if (rc > -1) {
-					gotpositive(finduser(av[1]), viridetails, DET_CHAN);
-					if (SecureServ.breakorcont == 0)
-						continue;
-					else
-						return 1;
-				}
-			}
-		} while ((node = list_next(viri, node)) != NULL);
-	}
+	if(ScanChan(u, c))
+		return 1;
 	
 	/* check for netjoins!!!*/
 	/* XXX this isn't really the best, as a lot of 

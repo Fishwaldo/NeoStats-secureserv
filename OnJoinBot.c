@@ -1,4 +1,4 @@
-/* NeoStats - IRC Statistical Services 
+	/* NeoStats - IRC Statistical Services 
 ** Copyright (c) 1999-2003 Justin Hammond
 ** http://www.neostats.net/
 **
@@ -21,7 +21,6 @@
 ** $Id$
 */
 
-
 #include <stdio.h>
 #include "dl.h"
 #include "log.h"
@@ -29,28 +28,37 @@
 #include "conf.h"
 #include "SecureServ.h"
 
-list_t *monchans;
-int SaveMonChans();
+static char confbuf[CONFBUFSIZE];
+static list_t *monchans;
+static int SaveMonChans();
 
-#ifdef UMODE_HIDE
-static char onjoinbot_modes[]="+x";
-#else
-static char onjoinbot_modes[]="+";
-#endif
+static char onjoinbot_modes[] = "+";
 
-unsigned hrand(unsigned upperbound, unsigned lowerbound) {
-	if ((upperbound < 1)) return -1;
+unsigned hrand(unsigned upperbound, unsigned lowerbound) 
+{
+	if ((upperbound < 1)) {
+		return -1;
+	}
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
 }
   
-int chkmonchan (const void *key1, const void *key2) {
+int chkmonchan (const void *key1, const void *key2) 
+{
 	char *chan = (char *)key1;
 	char *chk = (char *)key2;
 	return (strcasecmp(chan, chk));
 }
 
+int is_monchan(char* chan)
+{
+	if (list_find(monchans, chan, chkmonchan)) {
+		return(1);
+	}
+	return(0);
+}
 
-Chans *GetRandomChan() {
+Chans *GetRandomChan() 
+{
 	hscan_t cs;
 	hnode_t *cn;
 	int randno, curno;
@@ -71,12 +79,94 @@ Chans *GetRandomChan() {
 	return NULL;
 }
 
-void JoinNewChan() {
+Chans * GetNewChan () 
+{
 	Chans *c;
+	int i;
+
+	for(i = 0; i < 5; i++) {
+		c = GetRandomChan();
+		if (c != NULL) {
+			nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
+
+			/* if channel is private and setting is enabled, don't join */
+			if ((SecureServ.doprivchan == 0) && (is_pub_chan(c))) {
+				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as its a private channel", c->name);
+				continue;
+			}
+
+			if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
+				/* this was the last channel we joined, don't join it again */
+				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as we just did it", c->name);
+				continue;
+			}
+			/* if the channel is exempt, restart */
+			if (Chan_Exempt(c) > 0) {
+				continue;
+			}
+			/* if we are already monitoring with a monbot, don't join */
+			if (is_monchan(c->name)) {
+				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot",c->name);
+				continue;
+			}
+		} else {
+			/* hu? */
+			nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");
+			SecureServ.lastchan[0] = 0;
+			SecureServ.lastnick[0] = 0;
+			return NULL;
+		}
+	}
+	/* give up after 5 attempts */
+	nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a fresh Channel, Giving up");
+	SecureServ.lastchan[0] = 0;
+	SecureServ.lastnick[0] = 0;
+	return NULL;
+}
+
+randomnicks * GetNewBot(int resetflag)
+{
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
-	int i, j, trynick, trychan;
-	User *u;
+	int randno, curno, i;
+
+	for(i = 0; i < 5; i++) {
+		curno = 1;
+		randno = hrand(list_count(nicks)-1, 0 );
+		rnn = list_first(nicks);
+		while (rnn != NULL) {
+			if (curno == randno) {
+				nickname = lnode_get(rnn);
+				if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
+					/* its the same as last time, nope */
+					nlog(LOG_DEBUG1, LOG_MOD, "%s was used last time. Retring", nickname->nick);
+					break;
+				}
+				/* make sure no one is online with this nickname */
+				if (finduser(nickname->nick) != NULL) {
+					nlog(LOG_DEBUG1, LOG_MOD, "%s is online, can't use that nick, retring", nickname->nick);
+					break;
+				}
+				nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
+				return nickname;
+			}
+			curno++;
+			rnn = list_next(nicks, rnn);
+		}
+	}
+	/* give up if we try five times */
+	nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
+	if(resetflag) {
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
+	}
+	return NULL;
+}
+
+void JoinNewChan() 
+{
+	Chans *c;
+	randomnicks *nickname = NULL;
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (finduser(SecureServ.lastnick)) {
@@ -100,85 +190,17 @@ void JoinNewChan() {
 		return;
 	}
 
-
-	trychan = 0;
-restartchans:
-	trychan++;
-	if (trychan > 5) {
-		/* give up after 5 attempts */
-		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a fresh Channel, Giving up");
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+	c = GetNewChan ();
+	if (c == NULL) {
 		return;
 	}
-
-	c = GetRandomChan();
-	if (c != NULL) {
-		nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
-
-		/* if channel is private and setting is enabled, don't join */
-		if ((SecureServ.doprivchan == 0) && (is_pub_chan(c))) {
-			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as its a private channel", c->name);
-			goto restartchans;
-		}
-
-
-		if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
-			/* this was the last channel we joined, don't join it again */
-			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as we just did it", c->name);
-			goto restartchans;
-		}
-		/* if the channel is exempt, restart */
-		if (Chan_Exempt(c) > 0) {
-			goto restartchans;
-		}
-		/* if we are already monitoring with a monbot, don't join */
-		if (list_find(monchans, c->name, chkmonchan)) {
-			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot",c->name);
-			goto restartchans;
-		}
 		strlcpy(SecureServ.lastchan, c->name, CHANLEN);
-	} else {
-		/* hu? */
-		nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+
+	nickname = GetNewBot(1);
+	if(nickname == NULL) {
 		return;
-	}
-	trynick = 0;
-restartnicks:
-	trynick++;
-	if (trynick > 5) {
-		/* give up if we try five times */
-		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
-		return;
-	}
-	j = 1;
-	i = hrand(list_count(nicks)-1, 0 );
-	rnn = list_first(nicks);
-	while (rnn != NULL) {
-		if (j == i) {
-			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
-				/* its the same as last time, nope */
-				nlog(LOG_DEBUG1, LOG_MOD, "%s was used last time. Retring", nickname->nick);
-				goto restartnicks;
-			}
-			/* make sure no one is online with this nickname */
-			u = finduser(nickname->nick);
-			if (u != NULL) {
-				nlog(LOG_DEBUG1, LOG_MOD, "%s is online, can't use that nick, retring", nickname->nick);
-				goto restartnicks;
-			}
-			break;
-		}
-		j++;
-		rnn = list_next(nicks, rnn);
 	}
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
-	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
 	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ") == -1) {
@@ -188,61 +210,30 @@ restartnicks:
 		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
 		return;
 	}
+	CloakHost(findbot(nickname->nick));
 	join_bot_to_chan (nickname->nick, c->name, 0);
 
-	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
-	
-	
-	
+	if (SecureServ.verbose) {
+		chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
+	}
 }
 
-int CheckChan(User *u, char *requestchan) {
+int CheckChan(User *u, char *requestchan) 
+{
 	Chans *c;
 	randomnicks *nickname = NULL;
-	lnode_t *rnn;
-	int i, j, trynick, trychan;
 	
 	c = findchan(requestchan);
-
 	if (!c) {
 		prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
 		return -1;
 	}			
-	trynick = 0;
 
-restartnicksondemand:
-	trynick++;
-	if (trynick > 5) {
-		/* give up if we try five times */
-		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
+	nickname = GetNewBot(0);
+	if(nickname ==NULL) {
 		prefmsg(u->nick, s_SecureServ, "Couldnt Find a free Nickname to check %s with. Giving up (Try again later)", requestchan);
-#if 0
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
-#endif
 		return -1;
 	}
-	j = 1;
-	i = hrand(list_count(nicks)-1, 0 );
-	rnn = list_first(nicks);
-	while (rnn != NULL) {
-		if (j == i) {
-			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
-				/* its the same as last time, nope */
-				goto restartnicksondemand;
-			}
-			/* make sure no one is online with this nickname */
-			if (finduser(nickname->nick) != NULL) {
-				goto restartnicksondemand;
-			}
-			break;
-		}
-		j++;
-		rnn = list_next(nicks, rnn);
-	}
-	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
-
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (SecureServ.lastchan[0] != 0) {
 		spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
@@ -250,25 +241,23 @@ restartnicksondemand:
 	}
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
-	trychan = 0;
 
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 	strlcpy(SecureServ.lastchan, c->name, CHANLEN);
 
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+	CloakHost(findbot(nickname->nick));
 	join_bot_to_chan (nickname->nick, c->name, 0);
+
 	chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->nick);
 	prefmsg(u->nick, s_SecureServ, "Scanning %s with %s", c->name, nickname->nick);
 	return 1;
 }
 
-
-void OnJoinBotMsg(User *u, char **argv, int ac) {
+void OnJoinBotMsg(User *u, char **argv, int ac) 
+{
 	char *buf;
-	lnode_t *node;
-	virientry *viridetails;
-	int rc;
 
 	if (!u) {
 		return;
@@ -276,6 +265,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	
 	if (!strcasecmp(argv[1], "\1version\1")) {
 		/* its a version request */
+		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot", u->nick);
 		notice(u->nick, s_SecureServ, "\1VERSION %s\1", SecureServ.sampleversion);
 		return;
 	}	
@@ -286,31 +276,14 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 		return;
 	}
 
-
 	buf = joinbuf(argv, ac, 1);
-	node = list_first(viri);
+
 	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot: %s", u->nick, buf);
-	if (SecureServ.verbose||SecureServ.BotEcho) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
-	do {
-		viridetails = lnode_get(node);
-		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20)) {
-			SecureServ.trigcounts[DET_MSG]++;
-			nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
-			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
-			if (rc < -1) {
-				nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
-				continue;
-			}
-			if (rc > -1) {					
-				gotpositive(u, viridetails, DET_MSG);
-				if (SecureServ.breakorcont == 0)
-					continue;
-				else 
-					break;
-			}
-	
-		}
-	} while ((node = list_next(viri, node)) != NULL);
+	if (SecureServ.verbose||SecureServ.BotEcho) {
+		chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
+	}
+
+	ScanMsg(u, buf);
 	free(buf);
 }				
 
@@ -389,8 +362,10 @@ int MonChan(User *u, char *requestchan) {
 		}
 		if (rnn != NULL) {
 			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+			CloakHost(findbot(nickname->nick));
 		} else {
-			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			return -1;
+			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
+			return -1;
 		}
 	}
 	/* restore segvinmodules */
@@ -478,4 +453,78 @@ int SaveMonChans() {
 int MonChanCount(void)
 {
 	return (list_count(monchans));
+}
+
+int OnJoinBotConf(void)
+{
+	randomnicks *rnicks;
+	lnode_t *node;
+	int i;
+	char **data;
+	char *tmp;
+
+	/* get Random Nicknames */
+	if (GetDir("RandomNicks", &data) > 0) {
+		/* try */
+		for (i = 0; data[i] != NULL; i++) {
+			rnicks = malloc(sizeof(randomnicks));
+			strlcpy(rnicks->nick, data[i], MAXNICK);
+	
+			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/User", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
+				free(rnicks);
+				continue;
+			} else {
+				strlcpy(rnicks->user, tmp, MAXUSER);
+				free(tmp);
+			}
+			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/Host", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
+				free(rnicks);
+				continue;
+			} else {
+				strlcpy(rnicks->host, tmp, MAXHOST);
+				free(tmp);
+			}
+			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/RealName", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
+				free(rnicks);
+				continue;
+			} else {
+				strlcpy(rnicks->rname, tmp, MAXREALNAME);
+				free(tmp);
+			}			
+			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
+			node = lnode_create(rnicks);
+			list_prepend(nicks, node);			
+		}
+	}
+	if (GetConf((void *)&tmp, CFGSTR, "MonBot") <= 0) {
+		SecureServ.monbot[0] = '\0';
+	} else {
+		node = list_first(nicks);
+		while (node != NULL) {
+			rnicks = lnode_get(node);
+			if (!strcasecmp(rnicks->nick, tmp)) {
+				/* ok, got the bot ! */
+				break;
+			}
+			node = list_next(nicks, node);
+		}
+		if (node != NULL) {
+			strlcpy(SecureServ.monbot, tmp, MAXNICK);
+		} else {
+			SecureServ.monbot[0] = '\0';
+			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in randmon bot list for monbot", tmp);
+		}
+		free(tmp);
+	}
+	return 1;
+}
+
+int InitOnJoinBots(void)
+{
+	/* init the random nicks list */
+	nicks = list_create(MAX_NICKS);
+	return 1;
 }

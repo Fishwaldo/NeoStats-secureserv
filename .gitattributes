@@ -20,4 +20,5 @@
 /http.h eol=lf
 /install-sh -text
 /modconfig.h.in -text
+/scan.c -text
 /viri.dat -text

@@ -12,6 +12,15 @@ SecureServ Module for NeoStats Changelog.
  - Updated conf buffers to use CONFBUFSIZE (M)
  - Fix free() position in Helpers_init (M)
  - Nick flood code tidied up and moved to floodcheck.c (M)
+ - Create #define DEFAULT_VERSION_RESPONSE so users can more easily change default version 
+   response of onjoin bots - should this be a config option? (M)
+ - Add hidden host support but ircd support required in core (M)
+ - Updated code to use new 2.5.11 ircd updates - SecureServ is now ircd independent (M)
+ - Generic scaning functions created for use by SecureServ to avoid repeating code (M)
+ - Scanning and related code move to scan.c (M)
+ - Generic get bot and get channel functions created for onjoin bot use (M)
+ - Tidy up of some code to remove gotos and reduce repeated code (M)
+ - Tidy up config code and fix bug with onjoin bot initialisation freeing invalid pointer (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

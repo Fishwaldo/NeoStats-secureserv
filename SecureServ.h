@@ -21,9 +21,8 @@
 ** $Id$
 */
 
-
-#ifndef TS_H
-#define TS_H
+#ifndef SECURESERV_H
+#define SECURESERV_H
 
 #include "modconfig.h"
 
@@ -69,6 +68,11 @@ typedef struct virientry {
 #define ACT_AKILL 1
 #define ACT_WARN 2
 #define ACT_NOTHING 3
+
+/* Scanner flags for User scanning */
+#define SCAN_NICK		0x00000001
+#define SCAN_IDENT		0x00000002
+#define SCAN_REALNAME	0x00000004
 
 extern char s_SecureServ[MAXNICK];
 
@@ -142,26 +146,18 @@ struct exempts {
 
 typedef struct exempts exemptinfo;
 
-struct rn {
+typedef struct randomnicks {
 	char nick[MAXNICK];
 	char user[MAXUSER];
 	char host[MAXHOST];
 	char rname[MAXREALNAME];
-};
-
-typedef struct rn randomnicks;
-
-/* this is the list of viri */
-
-list_t *viri;
-
-/* this is the list of exempted hosts/servers */
-list_t *exempt;
-
+}randomnicks;
 
 /* this is the list of random nicknames */
 list_t *nicks;
 
+/* this is the list of exempted hosts/servers */
+list_t *exempt;
 
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
@@ -169,7 +165,6 @@ list_t *nicks;
 #define MAX_NICKS	100
 
 /* SecureServ.c */
-void gotpositive(User *u, virientry *ve, int type);
 int Chan_Exempt(Chans *c);
 int is_exempt(User *u);
 
@@ -183,6 +178,19 @@ int ListMonChan(User *u);
 int StopMon(User *u, char *chan);
 int LoadMonChans();
 int MonChanCount(void);
+int OnJoinBotConf(void);
+int ViriCount(void);
+int InitOnJoinBots(void);
+
+/* scan.c */
+int ScanFizzer(User *u);
+int ScanChan(User* u, Chans *c);
+int ScanUser(User *u, unsigned flags);
+int ScanMsg(User *u, char* buf);
+int ScanCTCP(User *u, char* buf);
+void do_list(User *u);
+void InitScanner(void);
+void load_dat();
 
 /* FloodCheck.c */
 void InitJoinFloodHash(void);
@@ -225,4 +233,5 @@ extern const char *ts_help_assist[];
 extern const char *ts_help_helper[];
 extern const char *ts_help_helpers[];
 extern const char *ts_help_reload[];
-#endif /* TS_H */
+
+#endif /* SECURESERV_H */

@@ -182,26 +182,23 @@ int do_exempt(User* u, char **argv, int argc);
 int InitExempts(void);
 
 /* FloodCheck.c */
-void InitJoinFloodHash(void);
-int ss_join_chan(char **av, int ac);
-int ss_del_chan(char **av, int ac);
+int InitJoinFlood(void);
+int JoinFloodJoinChan(User *u, Chans *c);
+int JoinFloodDelChan(Chans *c);
 int CheckLockChan(void);
-int InitNickFloodHash(void);
+int InitNickFlood(void);
 int CleanNickFlood(void);
-int NickFloodSignoff(char * n);
+int NickFloodSignOff(char * n);
 int CheckNickFlood(User* u);
+ 
 
 /* Helpers.c */
-void Helpers_init(void);
-int Helpers_add(User *u, char **av, int ac);
-int Helpers_del(User *u, char *nick);
-int Helpers_list(User *u);
-int Helpers_chpass(User *u, char **av, int ac);
-int Helpers_Login(User *u, char **av, int ac);
-int Helpers_Logout(User *u, char **av, int ac);
-int Helpers_signoff(User *u);
-int Helpers_away(char **av, int ac);
-int Helpers_Assist(User *u, char **av, int ac);
+int HelpersInit(void);
+int HelpersLogin(User *u, char **av, int ac);
+int HelpersLogout(User *u, char **av, int ac);
+int HelpersSignoff(User *u);
+int HelpersAway(char **av, int ac);
+int HelpersAssist(User *u, char **av, int ac);
 int do_helpers(User *u, char **av, int ac);
 
 /* SecureServ_help.c */

@@ -39,10 +39,11 @@
 
 static int ScanNick(char **av, int ac);
 void LoadConfig(void);
-int check_version_reply(char *origin, char **av, int ac);
+int check_version_reply(User* u, char **av, int ac);
+int ss_notice(char *origin, char **av, int ac);
 int do_set(User *u, char **av, int ac);
 int do_status(User *u, char **av, int ac);
-static int CheckNick(char **av, int ac);
+static int NickChange(char **av, int ac);
 static int DelNick(char **av, int ac);
 static int ss_kick_chan(char **argv, int ac);
 
@@ -56,8 +57,8 @@ ModuleInfo __module_info = {
 	__TIME__
 };
 
-
-int new_m_version(char *origin, char **av, int ac) {
+int new_m_version(char *origin, char **av, int ac) 
+{
 	snumeric_cmd(RPL_VERSION,origin, "Module SecureServ Loaded, Version: %s %s %s",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time);
 	return 0;
 }
@@ -67,9 +68,9 @@ Functions __module_functions[] = {
 #ifdef HAVE_TOKEN_SUP
 	{ TOK_VERSION,	new_m_version,	1 },
 #endif
-	{ MSG_NOTICE,   check_version_reply, 1},
+	{ MSG_NOTICE,   ss_notice, 1},
 #ifdef HAVE_TOKEN_SUP
-	{ TOK_NOTICE,   check_version_reply, 1},
+	{ TOK_NOTICE,   ss_notice, 1},
 #endif
 	{ NULL,		NULL,		0 }
 };
@@ -152,10 +153,10 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		}
 		return 1;
 	} else if (!strcasecmp(argv[1], "login")) {
-		Helpers_Login(u, argv, argc);
+		HelpersLogin(u, argv, argc);
 		return 1;		
  	} else if (!strcasecmp(argv[1], "logout")) {
-		Helpers_Logout(u, argv, argc);
+		HelpersLogout(u, argv, argc);
  		return 1;
 	} else if (!strcasecmp(argv[1], "helpers")) {
 		do_helpers(u, argv, argc);
@@ -164,7 +165,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		do_list(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[1], "ASSIST")) {
-		Helpers_Assist(u, argv, argc);
+		HelpersAssist(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
 		do_exempt(u, argv, argc);
@@ -199,12 +200,12 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	return 1;
 }
 
-
-
-int do_set(User *u, char **av, int ac) {
+int do_set(User *u, char **av, int ac) 
+{
 	int i, j;
 	char *buf;
 	
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 		prefmsg(u->nick, s_SecureServ, "Permission is denied");
 		chanalert(s_SecureServ, "%s tried to use SET, but Permission was denied", u->nick);
@@ -730,6 +731,7 @@ int do_set(User *u, char **av, int ac) {
 
 int do_status(User *u, char **av, int ac)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to list status, but Permission was denied", u->nick);
@@ -776,7 +778,7 @@ static int Online(char **av, int ac)
 		strlcat(s_SecureServ, "_", MAXNICK);
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
 	}
-	Helpers_init();
+	HelpersInit();
 	if (SecureServ.verbose) {
 		chanalert(s_SecureServ, "%d Trojans Patterns loaded", ViriCount());
 	}
@@ -932,6 +934,74 @@ void LoadConfig(void)
 	}
 }
 
+int ss_join_chan(char **av, int ac)
+{
+	Chans* c;
+	User* u;
+
+	SET_SEGV_LOCATION();
+	/* if we not even inited, exit this */
+	if (!SecureServ.inited) {
+		return -1;
+	}
+
+	/* find the chan in the Core */
+	c = findchan(av[0]);
+	if (!c) {
+		nlog(LOG_WARNING, LOG_MOD, "joinchan: Can't Find Channel %s", av[0]);
+		return -1;
+	}
+
+	/* is it exempt? */
+	if (IsChanExempt(c) > 0) {
+		return -1;
+	}
+
+	u = finduser(av[1]);
+	if (!u) {
+		nlog(LOG_WARNING, LOG_MOD, "Can't find nick %s", av[1]);
+		return -1;
+	}
+	
+	/* how about the user, is he exempt? */
+	if (IsUserExempt(u) > 0) {
+		return -1;
+	}
+	
+	/* first, check if this is a *bad* channel */
+	if(ScanChan(u, c))
+		return 1;
+
+	if(JoinFloodJoinChan(u, c))
+		return 1;
+
+	return 1;
+}
+
+int ss_del_chan(char **av, int ac) 
+{
+	Chans* c;
+
+	SET_SEGV_LOCATION();
+	c = findchan(av[0]);
+	if (!c) {
+		nlog(LOG_WARNING, LOG_MOD, "Can't find Channel %s", av[0]);
+		return -1;
+	}
+
+	JoinFloodDelChan(c);
+
+	return 1;
+}
+
+int ss_user_away(char **av, int ac)
+{
+	SET_SEGV_LOCATION();
+	HelpersAway(av, ac);
+	/* TODO: scan away messages for spam */
+	return 1;
+}
+
 EventFnList __module_events[] = {
 	{ EVENT_ONLINE, 	Online},
 	{ EVENT_SIGNON, 	ScanNick},
@@ -939,25 +1009,32 @@ EventFnList __module_events[] = {
 	{ EVENT_KILL, 		DelNick},
 	{ EVENT_JOINCHAN, 	ss_join_chan},
 	{ EVENT_DELCHAN,	ss_del_chan},
-	{ EVENT_NICKCHANGE, CheckNick},
+	{ EVENT_NICKCHANGE, NickChange},
 	{ EVENT_KICK,		ss_kick_chan},
-	{ EVENT_AWAY, 		Helpers_away},
+	{ EVENT_AWAY, 		ss_user_away},
 	{ NULL, 			NULL}
 };
 
 static int DelNick(char **av, int ac) 
 {
-	NickFloodSignoff(av[0]);
+	User *u;
+
+	SET_SEGV_LOCATION();
+	u = finduser(av[0]);
+	NickFloodSignOff(av[0]);
 	/* u->moddata is free'd in helpers_signoff */
-	Helpers_signoff(finduser(av[0]));
+	if(u) {
+		HelpersSignoff(u);
+	}
 	return 1;
 }
 
 /* scan nickname changes */
-static int CheckNick(char **av, int ac) 
+static int NickChange(char **av, int ac) 
 {
 	User *u;
 	
+	SET_SEGV_LOCATION();
 	if (!SecureServ.inited) {
 		return 1;
 	}
@@ -967,7 +1044,10 @@ static int CheckNick(char **av, int ac)
 		nlog(LOG_WARNING, LOG_MOD, "Cant Find user %s", av[1]);
 		return 1;
 	}
+	
+	/* Possible memory leak here if a helper changes nick? */
 	u->moddata[SecureServ.modnum] = NULL;
+	
 	if (IsUserExempt(u) > 0) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Bye, I'm Exempt %s", u->nick);
 		return -1;
@@ -976,7 +1056,11 @@ static int CheckNick(char **av, int ac)
 	CheckNickFlood(u);
 
 	/* check the nickname */
-	return (ScanUser(u, SCAN_NICK));
+	if(ScanUser(u, SCAN_NICK)) {
+		return 1;
+	}
+
+	return 1;
 }
 
 /* scan someone connecting */
@@ -1023,15 +1107,45 @@ static int ScanNick(char **av, int ac)
 	return 1;
 }
 
-int check_version_reply(char *origin, char **av, int ac) 
+int check_version_reply(User* u, char **av, int ac) 
 {
 	char *buf;
 	int positive = 0;
 	char **av1;
 	int ac1 = 0;
 	static int versioncount = 0;
+
+	SET_SEGV_LOCATION();
+	buf = joinbuf(av, ac, 2);
+	/* send a Module_Event, so StatServ can pick up the version info !!! */
+	/* nice little side effect isn't it? */
+
+	AddStringToList(&av1, u->nick, &ac1);
+	AddStringToList(&av1, buf, &ac1);	
+ 	Module_Event(EVENT_CLIENTVERSION, av1, ac1);
+ 	free(av1);
+ 	/* reset segvinmodule */
+	SET_SEGV_INMODULE("SecureServ");
+	
+	if (SecureServ.verbose) {
+		chanalert(s_SecureServ, "Got Version Reply from %s: %s", u->nick, buf);
+	}
+	positive = ScanCTCP(u, buf);
+	versioncount++;
+	/* why do we only change the version reply every 23 entries? Why not? */
+	if ((positive == 0) && (versioncount > 23)) {
+		strlcpy(SecureServ.sampleversion, buf, SS_BUF_SIZE);
+		versioncount = 0;
+	}
+	free(buf);
+	return 0;
+}
+
+int ss_notice(char *origin, char **av, int ac) 
+{
 	User* u;
 
+	SET_SEGV_LOCATION();
 	u = finduser(origin);
 	if(!u) {
 		return 0;
@@ -1042,37 +1156,18 @@ int check_version_reply(char *origin, char **av, int ac)
 		OnJoinBotMsg(u, av, ac);
 		return 0;
 	}
+
 	if (!strcasecmp(av[1], "\1version")) {
-		buf = joinbuf(av, ac, 2);
-		/* send a Module_Event, so StatServ can pick up the version info !!! */
-		/* nice little side effect isn't it? */
-	
-		AddStringToList(&av1, origin, &ac1);
-		AddStringToList(&av1, buf, &ac1);	
- 		Module_Event(EVENT_CLIENTVERSION, av1, ac1);
- 		free(av1);
- 		/* reset segvinmodule */
-		SET_SEGV_INMODULE("SecureServ");
-		
-		if (SecureServ.verbose) {
-			chanalert(s_SecureServ, "Got Version Reply from %s: %s", origin, buf);
-		}
-		positive = ScanCTCP(u, buf);
-		versioncount++;
-		/* why do we only change the version reply every 23 entries? Why not? */
-		if ((positive == 0) && (versioncount > 23)) {
-			strlcpy(SecureServ.sampleversion, buf, SS_BUF_SIZE);
-			versioncount = 0;
-		}
-		free(buf);
+		check_version_reply(u, av, ac);
 	}				
 	return 0;
 }
 
-
-int __ModInit(int modnum, int apiversion) {
+int __ModInit(int modnum, int apiversion) 
+{
 	int i;
 	
+	SET_SEGV_LOCATION();
 	if (apiversion < REQUIREDAPIVER) {
 		nlog(LOG_CRITICAL, LOG_MOD, "Can't Load SecureServ. API Version MisMatch");
 		return -1;
@@ -1096,18 +1191,21 @@ int __ModInit(int modnum, int apiversion) {
 	InitExempts();
 	InitScanner();
 	InitOnJoinBots();
-	InitJoinFloodHash();
-	InitNickFloodHash();
+	InitJoinFlood();
+	InitNickFlood();
 
 	return 1;
 }
 
-void __ModFini() {
+void __ModFini() 
+{
+	SET_SEGV_LOCATION();
 
 };
 
 int ss_kick_chan(char **argv, int ac) 
 {
+	SET_SEGV_LOCATION();
 	if(CheckOnjoinBotKick(argv, ac)) {
 		return 1;
 	}

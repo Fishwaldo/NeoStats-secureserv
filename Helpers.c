@@ -29,7 +29,10 @@
 #include "conf.h"
 #include "SecureServ.h"
 
-static hash_t *helperhash;
+static int HelpersAdd(User *u, char **av, int ac);
+static int HelpersDel(User *u, char *nick);
+static int HelpersList(User *u);
+static int HelpersChpass(User *u, char **av, int ac);
 
 typedef struct SSHelpers{
 	char nick[MAXNICK];
@@ -37,16 +40,18 @@ typedef struct SSHelpers{
 	User *u;
 }SSHelpers;
 
+static hash_t *helperhash;
 static int IsHelpersInit = 0;
 static char confpath[CONFBUFSIZE];
 
-void Helpers_init(void) 
+int HelpersInit(void) 
 {
 	char **data, *tmp;
 	SSHelpers *helper;
 	int i;
 	hnode_t *node;
 	
+	SET_SEGV_LOCATION();
 	helperhash = hash_create(-1, 0, 0);
 	if (GetDir("Helper", &data) > 0) {
 		for (i = 0; data[i] != NULL; i++) {	
@@ -66,13 +71,15 @@ void Helpers_init(void)
 		free(data);
 	}	
 	IsHelpersInit = 1;
+	return 1;
 }
 
-int Helpers_add(User *u, char **av, int ac) 
+static int HelpersAdd(User *u, char **av, int ac) 
 {
 	SSHelpers *helper;
 	hnode_t *node;
 	
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
 		return -1;
 	
@@ -100,10 +107,11 @@ int Helpers_add(User *u, char **av, int ac)
 	return 1;
 }
 
-int Helpers_del(User *u, char *nick) 
+static int HelpersDel(User *u, char *nick) 
 {
 	hnode_t *node;
 
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
 		return -1;
 	
@@ -121,12 +129,13 @@ int Helpers_del(User *u, char *nick)
 	return 1;
 }
 
-int Helpers_list(User *u) 
+static int HelpersList(User *u) 
 {
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
 		return -1;
 	
@@ -140,18 +149,20 @@ int Helpers_list(User *u)
 	return -1;
 }
 
-int Helpers_chpass(User *u, char **av, int ac) 
+static int HelpersChpass(User *u, char **av, int ac) 
 {
+	SET_SEGV_LOCATION();
 	return 1;
 }
 
-int Helpers_Login(User *u, char **av, int ac) 
+int HelpersLogin(User *u, char **av, int ac) 
 {
 	hnode_t *node;
 	SSHelpers *helper;
 	hscan_t hlps;
 	UserDetail *ud;
 
+	SET_SEGV_LOCATION();
 	if (ac < 4) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help login for more info", s_SecureServ);
 		return -1;
@@ -205,12 +216,13 @@ int Helpers_Login(User *u, char **av, int ac)
 	return -1;
 }
 
-int Helpers_Logout(User *u, char **av, int ac)
+int HelpersLogout(User *u, char **av, int ac)
 {
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
 		return -1;
 
@@ -238,15 +250,14 @@ int Helpers_Logout(User *u, char **av, int ac)
 	return -1;
 }
 
-int Helpers_signoff(User *u) 
+int HelpersSignoff(User *u) 
 {
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
-		return -1;
-	if (!u) /* User not found */
 		return -1;
 
 	hash_scan_begin(&hlps, helperhash);
@@ -271,13 +282,14 @@ int Helpers_signoff(User *u)
 	return -1;
 }
 
-int Helpers_away(char **av, int ac) 
+int HelpersAway(char **av, int ac) 
 {
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	User *u;
 
+	SET_SEGV_LOCATION();
 	if (IsHelpersInit == 0) 
 		return -1;
 
@@ -310,12 +322,13 @@ int Helpers_away(char **av, int ac)
 	return -1;
 }
 
-int Helpers_Assist(User *u, char **av, int ac) 
+int HelpersAssist(User *u, char **av, int ac) 
 {
 	UserDetail *ud, *td;
 	User *tu;
 	virientry *ve;
 
+	SET_SEGV_LOCATION();
 	if (ac < 4) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
 		return -1;
@@ -382,6 +395,7 @@ int Helpers_Assist(User *u, char **av, int ac)
 
 int do_helpers(User *u, char **av, int ac)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to use Helpers, but Permission was denied", u->nick);
@@ -392,18 +406,18 @@ int do_helpers(User *u, char **av, int ac)
 		return -1;
 	}
 	if (!strcasecmp(av[2], "add")) {
-		Helpers_add(u, av, ac);
+		HelpersAdd(u, av, ac);
 		return 1;
 	} else if (!strcasecmp(av[2], "del")) {
 		if (ac == 4) {
-			Helpers_del(u, av[3]);
+			HelpersDel(u, av[3]);
 			return 1;
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
 			return -1;
 		}
 	} else if (!strcasecmp(av[2], "list")) {
-		Helpers_list(u);
+		HelpersList(u);
 		return 1;
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);

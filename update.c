@@ -50,8 +50,11 @@ static char ss_buf[SS_BUF_SIZE];
 ** NOTE: we can't call http_request from this function as its NOT recursive 
 */
 
-void datver(HTTP_Response *response) {
+void datver(HTTP_Response *response) 
+{
 	int myversion;
+
+	SET_SEGV_LOCATION();
 	/* check there was no error */
 	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
 		myversion = atoi(response->pData);
@@ -75,6 +78,7 @@ void datver(HTTP_Response *response) {
 }
 void DownLoadDat() 
 {
+	SET_SEGV_LOCATION();
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
@@ -85,15 +89,15 @@ void DownLoadDat()
 	return;
 }
 
-
 /* @brief this downloads a dat file and loads the new version into memory if required 
 */
-
-void datdownload(HTTP_Response *response) {
+void datdownload(HTTP_Response *response) 
+{
 	char tmpname[32];
 	char *tmp, *tmp1;
 	int i;
 	
+	SET_SEGV_LOCATION();
 	/* if this is an automatic download, KILL the timer */
 	if (SecureServ.doUpdate == 2) {
 		/* clear this flag */
@@ -138,6 +142,7 @@ void GotHTTPAddress(char *data, adns_answer *a)
 	char *url;
 	int i, len, ri;
 
+	SET_SEGV_LOCATION();
 	adns_rr_info(a->type, 0, 0, &len, 0, 0);
 	for(i = 0; i < a->nrrs;  i++) {
 		ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &url);
@@ -171,6 +176,7 @@ void GotHTTPAddress(char *data, adns_answer *a)
 
 int AutoUpdate(void) 
 {
+	SET_SEGV_LOCATION();
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
 		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(ss_buf, 2, HFLAG_NONE, datver); 
@@ -180,6 +186,7 @@ int AutoUpdate(void)
 
 int do_update(User *u, char **av, int ac)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
@@ -191,4 +198,3 @@ int do_update(User *u, char **av, int ac)
 	chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	return 1;
 }
-

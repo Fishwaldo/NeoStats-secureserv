@@ -55,6 +55,7 @@ static list_t *exempt;
 
 int InitExempts(void)
 {
+	SET_SEGV_LOCATION();
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
 	load_exempts();
@@ -67,6 +68,7 @@ void save_exempts()
 	exemptinfo *exempts = NULL;
 	int i;
 
+	SET_SEGV_LOCATION();
 	node = list_first(exempt);
 	i = 1;
 	while (node) {
@@ -90,6 +92,7 @@ void load_exempts()
 	char *tmp;
 	char **data;
 
+	SET_SEGV_LOCATION();
 	if (GetDir("Exempt", &data) > 0) {
 		/* try */
 		for (i = 0; data[i] != NULL; i++) {
@@ -130,6 +133,7 @@ int IsUserExempt(User *u)
 	lnode_t *node;
 	exemptinfo *exempts;
 
+	SET_SEGV_LOCATION();
 	if (!strcasecmp(u->server->name, me.name)) {
 		nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: User %s Exempt. its Me!", u->nick);
 		return 1;
@@ -162,6 +166,7 @@ int IsChanExempt(Chans *c)
 	lnode_t *node;
 	exemptinfo *exempts;
 
+	SET_SEGV_LOCATION();
 	if (!strcasecmp(c->name, me.chan)) {
 		nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Channel %s Exempt. its Mine!", c->name);
 		return 1;
@@ -189,6 +194,7 @@ int do_exempt_list(User* u, char **argv, int argc)
 	exemptinfo *exempts = NULL;
 	int i;
 
+	SET_SEGV_LOCATION();
 	node = list_first(exempt);
 	i = 1;
 	prefmsg(u->nick, s_SecureServ, "Exception List:");
@@ -223,6 +229,7 @@ int do_exempt_add(User* u, char **argv, int argc)
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 
+	SET_SEGV_LOCATION();
 	if (argc < 6) {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
 		return 0;
@@ -278,6 +285,7 @@ int do_exempt_del(User* u, char **argv, int argc)
 	exemptinfo *exempts = NULL;
 	int i;
 
+	SET_SEGV_LOCATION();
 	if (argc < 4) {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
 		return 0;
@@ -328,6 +336,7 @@ int do_exempt_del(User* u, char **argv, int argc)
 
 int do_exempt(User* u, char **argv, int argc)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < 50) {
 		prefmsg(u->nick, s_SecureServ, "Access Denied");
 		chanalert(s_SecureServ, "%s tried to use exclude, but is not an operator", u->nick);

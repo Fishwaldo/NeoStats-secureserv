@@ -52,49 +52,20 @@ static hash_t *FC_Chans;
 static hash_t *nickflood;
 
 /* init the channel hash */	
-void InitJoinFloodHash() 
+int InitJoinFlood(void) 
 {
+	SET_SEGV_LOCATION();
 	FC_Chans = hash_create(-1, 0, 0);
+	return 1;
 }
 
 /* update ajpp for chan, if required */
-int ss_join_chan(char **av, int ac) 
+int JoinFloodJoinChan (User *u, Chans *c) 
 {
-	User *u;
-	Chans *c;
 	ChanInfo *ci;
 	hnode_t *cn;
 	
-	/* if we not even inited, exit this */
-	if (!SecureServ.inited) {
-		return -1;
-	}
-
-	/* find the chan in the Core */
-	c = findchan(av[0]);
-	if (!c) {
-		nlog(LOG_WARNING, LOG_MOD, "joinchan: Can't Find Channel %s", av[0]);
-		return -1;
-	}
-	u = finduser(av[1]);
-	if (!u) {
-		nlog(LOG_WARNING, LOG_MOD, "Can't find nick %s", av[1]);
-		return -1;
-	}
-
-	/* is it exempt? */
-	if (IsChanExempt(c) > 0) {
-		return -1;
-	}
-	/* how about the user, is he exempt? */
-	if (IsUserExempt(u) > 0) {
-		return -1;
-	}
-	
-	/* first, check if this is a *bad* channel */
-	if(ScanChan(u, c))
-		return 1;
-	
+	SET_SEGV_LOCATION();
 	/* check for netjoins!!!*/
 	/* XXX this isn't really the best, as a lot of 
 	* floodbots could connect to an IRC server, wait 
@@ -104,7 +75,7 @@ int ss_join_chan(char **av, int ac)
 	* that are ridding in on a netjoin. 
 	*/
 	if ((time(NULL) - u->TS) > SecureServ.timedif) {
-		nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", av[1]);
+		nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", u->nick);
 		/* forget the update */
 		return -1;
 	}
@@ -142,7 +113,7 @@ int ss_join_chan(char **av, int ac)
 	 * then reset the time, and set ajpp to 1
 	 */
 	if ((time(NULL) - ci->sampletime) > SecureServ.sampletime) {
-		nlog(LOG_DEBUG2, LOG_MOD, "ChanJoin: SampleTime Expired, Resetting %s", av[0]);
+		nlog(LOG_DEBUG2, LOG_MOD, "ChanJoin: SampleTime Expired, Resetting %s", c->name);
 		ci->sampletime = time(NULL);
 		ci->ajpp = 1;
 		return 1;
@@ -176,17 +147,12 @@ int ss_join_chan(char **av, int ac)
 }
 
 /* delete the channel from our hash */
-int ss_del_chan(char **av, int ac) 
+int JoinFloodDelChan(Chans *c) 
 {
-	Chans *c;
 	ChanInfo *ci;
 	hnode_t *cn;
 
-	c = findchan(av[0]);
-	if (!c) {
-		nlog(LOG_WARNING, LOG_MOD, "Can't find Channel %s", av[0]);
-		return -1;
-	}
+	SET_SEGV_LOCATION();
 	cn = hash_lookup(FC_Chans, c->name);
 	if (cn) {
 		ci = hnode_get(cn);
@@ -208,6 +174,7 @@ int CheckLockChan()
 	hnode_t *cn;
 	ChanInfo *ci;
 	
+	SET_SEGV_LOCATION();
 	/* scan through the channels */
 	hash_scan_begin(&cs, FC_Chans);
 	while ((cn = hash_scan_next (&cs)) != NULL) {
@@ -224,8 +191,9 @@ int CheckLockChan()
 	return 1;
 }
 
-int InitNickFloodHash(void)
+int InitNickFlood(void)
 {
+	SET_SEGV_LOCATION();
 	/* init the nickflood hash */
 	nickflood = hash_create(-1, 0, 0);
 	return 1;
@@ -238,6 +206,7 @@ int CleanNickFlood()
 	hnode_t *nfnode;
 	nicktrack *nick;
 
+	SET_SEGV_LOCATION();
     hash_scan_begin(&nfscan, nickflood);
     while ((nfnode = hash_scan_next(&nfscan)) != NULL) {
         nick = hnode_get(nfnode);
@@ -256,6 +225,7 @@ int CheckNickFlood(User* u)
 	hnode_t *nfnode;
 	nicktrack *nick;
 
+	SET_SEGV_LOCATION();
 	nfnode = hash_lookup(nickflood, u->nick);
 	if (nfnode) {
 		/* its already there */
@@ -302,11 +272,12 @@ int CheckNickFlood(User* u)
 	return 0;
 }
 
-int NickFloodSignoff(char * n)
+int NickFloodSignOff(char * n)
 {
 	hnode_t *nfnode;
 	nicktrack *nick;
 
+	SET_SEGV_LOCATION();
 	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s\n", n);
 	nfnode = hash_lookup(nickflood, n);
 	if (nfnode) {

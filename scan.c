@@ -43,6 +43,7 @@ static list_t *viri;
 
 void InitScanner(void)
 {
+	SET_SEGV_LOCATION();
 	/* init the virus lists */
 	viri = list_create(MAX_VIRI);
 	load_dat();
@@ -80,6 +81,8 @@ void load_dat() {
 	int rc;
 	int ovector[24];
 	const char **subs;
+
+	SET_SEGV_LOCATION();
 	/* if the list isn't empty, make it empty */
 	if (!list_isempty(viri)) {
 		node = list_first(viri);
@@ -197,6 +200,7 @@ void load_dat() {
 
 int do_reload(User *u, char **av, int ac)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to reload, but Permission was denied", u->nick);
@@ -216,6 +220,7 @@ int do_list(User *u, char **av, int ac)
 	char action[LOCALBUFSIZE];
 	int i;
 
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to list, but Permission was denied", u->nick);
@@ -478,6 +483,7 @@ void gotpositive(User *u, virientry *ve, int type)
 	UserDetail *ud;
 	int i;
 
+	SET_SEGV_LOCATION();
 	if (!u) /* User not found */
 		return;
 	/* Initial message is based on an assumption that the action determines the threat level */
@@ -509,11 +515,12 @@ void gotpositive(User *u, virientry *ve, int type)
 					ud->type = USER_INFECTED;
 					ud->data = (void *)ve;
 					u->moddata[SecureServ.modnum] = ud;					
-					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
-					if(ve->iscustom) 
+					chanalert(s_SecureServ, "SVSJoining %s to %s for Virus %s", u->nick, SecureServ.HelpChan, ve->name);
+					if(ve->iscustom) {
 						globops(s_SecureServ, "SVSJoining %s for Virus %s", u->nick, ve->name);
-					else
+					} else {
 						globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+					}
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
 #if defined(GOTSVSJOIN)
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
@@ -521,23 +528,26 @@ void gotpositive(User *u, virientry *ve, int type)
 						sinvite_cmd(s_SecureServ, u->nick, SecureServ.HelpChan);
 #endif
 					}
-					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
+					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s to %s for Virus %s", u->nick, SecureServ.HelpChan, ve->name);
 					ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
-					if(ve->iscustom) 
+					if(ve->iscustom) {
 						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
-					else
+					} else {
 						prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+					}
 #if !defined(GOTSVSJOIN)
-						prefmsg(chan, s_SecureServ, "%s was invited to the Channel", u->nick);
+					prefmsg(chan, s_SecureServ, "%s was invited to the Channel", u->nick);
 #endif
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
 					chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
-					if(ve->iscustom) 
+					if(ve->iscustom) {
 						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
-					else
+					}
+					else {
 						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+					}
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
 					nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
 					break;
@@ -547,25 +557,28 @@ void gotpositive(User *u, virientry *ve, int type)
 			if (SecureServ.doakill > 0) {
 				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
 				chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
-				if(ve->iscustom) 
+				if(ve->iscustom) {
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s ", ve->name);
-				else
+				} else {
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+				}
 				nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 				break;
 			}
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
-			if(ve->iscustom) 
+			if(ve->iscustom) {
 				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
-			else
+			} else {
 				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
+			}
 			if (SecureServ.helpcount > 0) {
 				ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
-				if(ve->iscustom) 
+				if(ve->iscustom) {
 					prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
-				else
+				} else {
 					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+				}
 			}
 			nlog(LOG_NOTICE, LOG_MOD, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
 			break;

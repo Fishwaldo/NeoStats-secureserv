@@ -1,4 +1,4 @@
-	/* NeoStats - IRC Statistical Services 
+/* NeoStats - IRC Statistical Services 
 ** Copyright (c) 1999-2003 Justin Hammond
 ** http://www.neostats.net/
 **
@@ -180,6 +180,7 @@ void JoinNewChan()
 	Chans *c;
 	randomnicks *nickname = NULL;
 
+	SET_SEGV_LOCATION();
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (finduser(SecureServ.lastnick)) {
 		if (SecureServ.lastchan[0] != 0) {
@@ -235,6 +236,7 @@ int CheckChan(User *u, char *requestchan)
 	Chans *c;
 	randomnicks *nickname = NULL;
 	
+	SET_SEGV_LOCATION();
 	c = findchan(requestchan);
 	if (!c) {
 		prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
@@ -271,13 +273,14 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 {
 	char *buf;
 
+	SET_SEGV_LOCATION();
 	if (!u) {
 		return;
 	}
 	
 	if (!strcasecmp(argv[1], "\1version\1")) {
 		/* its a version request */
-		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot", u->nick);
+		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot %s", u->nick, argv[0]);
 		notice(u->nick, argv[0], "\1VERSION %s\1", SecureServ.sampleversion);
 		return;
 	}	
@@ -290,7 +293,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 
 	buf = joinbuf(argv, ac, 1);
 
-	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot: %s", u->nick, buf);
+	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot %s: %s", u->nick, argv[0], buf);
 	if (SecureServ.verbose||SecureServ.BotEcho) {
 		chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
 	}
@@ -303,6 +306,7 @@ int CheckOnjoinBotKick(char **argv, int ac)
 {
 	lnode_t *mn;
 	
+	SET_SEGV_LOCATION();
 	/* check its one of our nicks */
 	if (!strcasecmp(SecureServ.lastnick, argv[1]) && (!strcasecmp(SecureServ.lastchan, argv[0]))) {
 		nlog(LOG_NOTICE, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
@@ -334,12 +338,14 @@ int CheckOnjoinBotKick(char **argv, int ac)
 	return 0;
 }		
 
-int MonChan(User *u, char *requestchan) {
+int MonChan(User *u, char *requestchan) 
+{
 	Chans *c;
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
 	char *buf;
 	
+	SET_SEGV_LOCATION();
 	c = findchan(requestchan);
 
 	if (!c) {
@@ -404,10 +410,12 @@ int MonChan(User *u, char *requestchan) {
 	return 1;
 }
 
-int StopMon(User *u, char *chan) {
+int StopMon(User *u, char *chan) 
+{
 	lnode_t *node, *node2;
 	int ok = 0; 
 
+	SET_SEGV_LOCATION();
 	node = list_first(monchans);
 	while (node != NULL) {
 		node2 = list_next(monchans, node);
@@ -429,8 +437,11 @@ int StopMon(User *u, char *chan) {
 	return 1;
 }		
 
-int ListMonChan(User *u) {
+int ListMonChan(User *u) 
+{
 	lnode_t *node;
+
+	SET_SEGV_LOCATION();
 	prefmsg(u->nick, s_SecureServ, "Monitored Channels List (%d):", (int)list_count(monchans)); node = list_first(monchans);
 	while (node != NULL) {
 		prefmsg(u->nick, s_SecureServ, "%s", (char*)lnode_get(node));
@@ -445,6 +456,8 @@ int LoadMonChans()
 {
 	int i;
 	char **chan;
+
+	SET_SEGV_LOCATION();
 	monchans = list_create(20);
 	if (GetDir("MonChans", &chan) > 0) {
 		for (i = 0; chan[i] != NULL; i++) {
@@ -459,6 +472,8 @@ int SaveMonChans()
 {
 	lnode_t *node;
 	char buf[CONFBUFSIZE];
+
+	SET_SEGV_LOCATION();
 	DelConf("MonChans");
 	node = list_first(monchans);
 	while (node != NULL) {
@@ -482,6 +497,7 @@ int OnJoinBotConf(void)
 	char **data;
 	char *tmp;
 
+	SET_SEGV_LOCATION();
 	/* get Random Nicknames */
 	if (GetDir("RandomNicks", &data) > 0) {
 		/* try */
@@ -543,6 +559,7 @@ int OnJoinBotConf(void)
 
 int InitOnJoinBots(void)
 {
+	SET_SEGV_LOCATION();
 	/* init the random nicks list */
 	nicks = list_create(MAX_NICKS);
 	/* init CTCP version response */
@@ -558,6 +575,7 @@ int do_bots(User* u, char **argv, int argc)
 	randomnicks *bots;
 	char *buf, *buf2;
 
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < 100) {
 		prefmsg(u->nick, s_SecureServ, "Access Denied");
 		chanalert(s_SecureServ, "%s tried to use BOTS, but is not an operator", u->nick);
@@ -660,6 +678,7 @@ int do_bots(User* u, char **argv, int argc)
 
 int do_checkchan(User* u, char **argv, int argc)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to checkchan, but Permission was denied", u->nick);
@@ -675,6 +694,7 @@ int do_checkchan(User* u, char **argv, int argc)
 
 int do_monchan(User* u, char **argv, int argc)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to monchan, but Permission was denied", u->nick);
@@ -706,6 +726,7 @@ int do_monchan(User* u, char **argv, int argc)
 
 int do_cycle(User* u, char **argv, int argc)
 {
+	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
 		prefmsg(u->nick, s_SecureServ, "Permission Denied");
 		chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
@@ -717,6 +738,7 @@ int do_cycle(User* u, char **argv, int argc)
 
 int do_set_monbot(User* u, char **av, int ac)
 {
+	SET_SEGV_LOCATION();
 	/* this is ok, its just to shut up fussy compilers */
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;

@@ -27,6 +27,8 @@ SecureServ Module for NeoStats Changelog.
  - Fix bot CTCP version replies; they should not come from SecureServ! (M)
  - Fix missing fizzer status in SET LIST (M)
  - Move update code into update.c; should help with porting to libcurl (M)
+ - Add system to report/log which onjoin bot received a given message (M)
+ - Added more SET_SEGV_LOCATION entries since we seem to have a lot of users without backtrace (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

@@ -560,6 +560,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>MONCHANCYCLETIME</para>
+      </listitem>
+
+      <listitem>
         <para>REPORT</para>
       </listitem>
 
@@ -609,6 +613,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <listitem>
         <para>BOTECHO</para>
+      </listitem>
+
+      <listitem>
+        <para>TREATCHANMSGASPM</para>
       </listitem>
     </itemizedlist>
 
@@ -789,14 +797,29 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <title>MONCHANCYCLE Setting</title>
 
       <para>This setting specifies if SecureServ should cycle the
-      MONCHAN&#39;s periodically (by default, it cycles one channel each time
-      a new channel is checked with the Onjoin Bots). This can help detect
-      OnJoin virus&#39;s in the channels you specify a monitor bot should be
-      placed. </para>
+      MONCHAN&#39;s periodically (by default, it cycles one channel interval
+      specified by the MONCHANCYCLETIME setting). This can help detect OnJoin
+      virus&#39;s in the channels you specify a monitor bot should be placed.</para>
 
       <para>To Change this setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set MONCHANCYCLE &#60;ON/OFF&#62;</screen>
+    </sect2>
+
+    <sect2>
+      <title>MONCHANCYCLETIME Setting</title>
+
+      <para>This setting specified the interval that SecureServ will cycle one
+      of the monchans. By Default, if MONCHANCYCLE is enabled, every 30
+      minutes, one of the MONCHAN&#39;s be selected and the monbot will cycle
+      the channel looking for ONJOIN virus&#39;s. For example, if you are
+      monitoring 4 channels, each channel will only be cycled every 2 hours
+      (30 minutes x 4 channels) so you should adjust this value accordingly.
+      </para>
+
+      <para>To Change this setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set MONCHANCYCLETIME &#60;seconds&#62;</screen>
     </sect2>
 
     <sect2>
@@ -979,6 +1002,34 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>To Change the setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set BOTECHO &#60;ON/OFF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>TREATCHANMSGASPM</title>
+
+      <para>This option changes the way that SecureServ treats Channel
+      Messages sent to channels that either a Onjoin bot is a member off, or a
+      channel that is being monitored via a MonBot. SecureServ has its own
+      list of channel messages that it considers as &#34;bad&#34; and will act
+      on accordingly, but sometimes Spambots will spam a channel instead of a
+      individual user. Enabling this option will cause SecureServ to check
+      channel messages against both the list of Signatures for Private
+      Messages as well as the list of Signatures for Channel Messages. </para>
+
+      <warning>
+        <para>Enabling this option is NOT a good idea if you have large
+        channels with lots of chatter, as it is very very CPU intensive (and
+        will get worse as we add more PM signatures to the official Viri.dat
+        file). You should only enable this if you enjoy wasting your CPU
+        cycles. Its added benifit is very small in terms of detection rates.
+        As a extra pre-caution, we make it difficult for you to enable this
+        option. This should give you a idea of how *bad* it is to enable.
+        </para>
+      </warning>
+
+      <para>To Change this setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set TREATCHANMSGASPM &#60;ON/OFF&#62;</screen>
     </sect2>
   </sect1>
 
@@ -1211,13 +1262,17 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>This option allows you to manipulate the list of channels that
       will be monitored all the time by SecureServ for Private Message type
       virus&#39;s. The bot that joins these channels is specified in the
-      monbot section of the set command.</para>
+      monbot section of the set command. You should also investigate the
+      MONCHANCYCLE and MONCHANCYCLETIME options listed above on how to enable
+      the monbot to cycle these monitored channels, as a OnJoin bot will not
+      check a MONCHAN channel.</para>
 
       <screen>/msg SecureServ monchan list</screen>
 
       <para>This option lists all the channels that will be monitored. If the
-      channels do not exist when SecureServ is started, they will
-      automatically be deleted from this list.</para>
+      channels do not exist when SecureServ is started, they will be joined
+      when the first user joins the channel. When the last user leaves the
+      channel, they will also leave the channel. </para>
 
       <screen>/msg SecureServ monchan add &#60;chan&#62;</screen>
 

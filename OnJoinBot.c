@@ -108,7 +108,12 @@ static Chans * GetNewChan ()
 				continue;
 			}
 
-			if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
+			if (!strcasecmp(me.chan, c->name)) {
+				/* this was the last channel we joined, don't join it again */
+				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as this is the services channel", c->name);
+				continue;
+			}
+			if (!strcasecmp(SecureServ.lastchan, c->name)) {
 				/* this was the last channel we joined, don't join it again */
 				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as we just did it", c->name);
 				continue;

@@ -10,6 +10,7 @@ SecureServ Module for NeoStats Changelog.
  - Cleaned up old includes of <fnmatch.h> (M)
  - Changed to use new module export API (M)
  - Added missing NULL checks for finduser results to avoid referencing NULL pointers (M)
+ - Renamed output module to secureserv to fix load/unload issues (M)
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

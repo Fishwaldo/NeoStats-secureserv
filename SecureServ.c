@@ -107,7 +107,6 @@ static bot_setting ss_settings[]=
 	{"SPLITTIME",	&SecureServ.timedif,	SET_TYPE_INT,		0,	1000,		NS_ULEVEL_ADMIN, "SplitTime",	NULL,	ts_help_set_splittime, NULL, (void *)300 },
 	{"CHANKEY",		&SecureServ.ChanKey,	SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "ChanKey",		NULL,	ts_help_set_chankey, NULL, (void *)"Eeeek" },
 	{"VERSION",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoVersionScan",NULL,	ts_help_set_version, NULL, (void *)0 },
-	{"SIGNONMSG",	&SecureServ.signonscanmsg,	SET_TYPE_MSG,	0,	BUFSIZE,	NS_ULEVEL_ADMIN,"SignOnMsg",	NULL,	ts_help_set_signonmsg, NULL, (void *)0 },
 	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
 	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
 	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"NoHelpMsg",	NULL,	ts_help_set_nohelpmsg, NULL, (void *)"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
@@ -154,6 +153,9 @@ BotInfo ss_botinfo =
 static int do_set_updateinfo(CmdParams *cmdparams, SET_REASON reason) 
 {
 	SET_SEGV_LOCATION();
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
 		if (strlen(SecureServ.updateuname)) {
@@ -176,6 +178,9 @@ static int do_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 
 static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason) 
 {
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	if (reason == SET_LIST) {
 		irc_prefmsg (ss_bot, cmdparams->source, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
 		return NS_SUCCESS;
@@ -211,17 +216,26 @@ static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 }
 static int do_set_monchancycletime(CmdParams *cmdparams, SET_REASON reason) 
 {
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	set_timer_interval ("MonBotCycle", SecureServ.monchancycletime);
 	return NS_SUCCESS;
 }
 static int do_set_cycletime(CmdParams *cmdparams, SET_REASON reason) 
 {
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	set_timer_interval ("JoinNewChan", SecureServ.stayinchantime);
 	return NS_SUCCESS;
 }
 
 static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason) 
 {
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
 		return NS_SUCCESS;
@@ -259,6 +273,9 @@ static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason)
 static int do_set_sampletime(CmdParams *cmdparams, SET_REASON reason) 
 {
 	int i, j;
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
 		if (SecureServ.FloodProt) {
 			irc_prefmsg (ss_bot, cmdparams->source, "SAMPLETIME:   %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
@@ -571,7 +588,6 @@ static int ScanNick(CmdParams *cmdparams)
 		return -1;
 	if (cmdparams->source->flags && NS_FLAGS_NETJOIN)
 		return -1;
-	irc_prefmsg (ss_bot, cmdparams->source, SecureServ.signonscanmsg);
 	return NS_SUCCESS;
 }
 
@@ -587,22 +603,15 @@ static int ss_kick_chan(CmdParams *cmdparams)
 }
 static int event_version_reply(CmdParams *cmdparams) 
 {
-	char *buf;
 	int positive = 0;
 	static int versioncount = 0;
 
 	SET_SEGV_LOCATION();
-	buf = cmdparams->av[0];	
-	buf += 9;	/* skip "\1version " */
-	
-	if (SecureServ.verbose) {
-		irc_chanalert (ss_bot, "Got Version Reply from %s: %s", cmdparams->source, buf);
-	}
-	positive = ScanCTCP(cmdparams->source, buf);
+	positive = ScanCTCP(cmdparams->source, cmdparams->param);
 	versioncount++;
 	/* why do we only change the version reply every 23 entries? Why not? */
 	if ((positive == 0) && (versioncount > 23)) {
-		strlcpy(SecureServ.sampleversion, buf, SS_BUF_SIZE);
+		strlcpy(SecureServ.sampleversion, cmdparams->param, SS_BUF_SIZE);
 		versioncount = 0;
 	}
 	return NS_SUCCESS;
@@ -617,7 +626,6 @@ int ModInit (Module *mod_ptr)
 	ModuleConfig (ss_settings);
 	SecureServ.sampletime = 5;
 	SecureServ.JoinThreshold = 5;
-	ircsnprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", ss_bot->name);
 	SS_InitExempts();
 	InitScanner();
 	InitOnJoinBots();

@@ -102,7 +102,6 @@ struct SecureServ {
 	int timedif;
 	int doscan;
 	int viriversion;
-	char signonscanmsg[BUFSIZE];
 	char akillinfo[BUFSIZE];
 	char nohelp[BUFSIZE];
 	char HelpChan[MAXCHANLEN];

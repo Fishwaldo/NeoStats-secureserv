@@ -139,8 +139,7 @@ void load_dat(void)
 			else
 			{
 				/* we *HAVE* to have a viri.dat file. Otherwise, no go */
-				nlog (LOG_WARNING, "TS: Error, No viri.dat file found. %s is disabled", ss_bot->name);
-				irc_chanalert (ss_bot, "Error not viri.dat file found, %s is disabled", ss_bot->name);
+				nlog (LOG_WARNING, "Error, No viri.dat file found.", ss_bot->name);
 			}
 			return;
 		} else {

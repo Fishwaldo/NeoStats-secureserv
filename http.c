@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: http.c,v 1.9 2003/08/20 11:28:38 fishwaldo Exp $
+** $Id: http.c,v 1.10 2003/08/20 11:30:01 fishwaldo Exp $
 */
 /***************************************************************************
  *
@@ -664,7 +664,7 @@ extern int http_write(int socknum, char *sockname) {
 }
 
 extern int http_error(int socknum, char *sockname) {
-return -1
+return -1;
 }
 
 

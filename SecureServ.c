@@ -374,7 +374,7 @@ static int ss_event_versionreply(CmdParams *cmdparams)
 /** Init module
  */
 
-int ModInit (Module *mod_ptr)
+int ModInit( void )
 {
 	SET_SEGV_LOCATION();
 #ifdef WIN32
@@ -445,7 +445,7 @@ int ModSynch (void)
 /** Fini module
  * This is required if you need to do cleanup of your module when it ends
  */
-void ModFini() 
+int ModFini( void )
 {
 	SET_SEGV_LOCATION();
 	FiniHelpers();
@@ -454,6 +454,7 @@ void ModFini()
 	pcre_malloc = old_malloc;
 	pcre_free = old_free;
 #endif
+	return NS_SUCCESS;
 }
 
 int ModAuthUser (Client *u)

@@ -42,7 +42,6 @@ void LoadConfig(void);
 int check_version_reply(char *origin, char **av, int ac);
 int do_set(User *u, char **av, int ac);
 int do_status(User *u, char **av, int ac);
-int do_reload(User *u, char **av, int ac);
 int do_update(User *u, char **av, int ac);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
@@ -50,6 +49,7 @@ static int CheckNick(char **av, int ac);
 static int DelNick(char **av, int ac);
 static void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
+static int ss_kick_chan(char **argv, int ac);
 
 static char ss_buf[SS_BUF_SIZE];
 char s_SecureServ[MAXNICK];
@@ -79,8 +79,6 @@ Functions __module_functions[] = {
 #endif
 	{ NULL,		NULL,		0 }
 };
-
-
 
 int __Bot_Message(char *origin, char **argv, int argc)
 {
@@ -782,7 +780,6 @@ static int Online(char **av, int ac)
 		strlcat(s_SecureServ, "_", MAXNICK);
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
 	}
-	LoadMonChans();
 	Helpers_init();
 	if (SecureServ.verbose) {
 		chanalert(s_SecureServ, "%d Trojans Patterns loaded", ViriCount());
@@ -936,10 +933,6 @@ void LoadConfig(void)
 		strlcpy(SecureServ.HelpChan, tmp, CHANLEN);
 		free(tmp);
 	}
-	
-	load_exempts();
-	OnJoinBotConf();
-	load_dat();
 }
 
 EventFnList __module_events[] = {
@@ -1089,12 +1082,6 @@ int __ModInit(int modnum, int apiversion) {
 	}
 	strlcpy(s_SecureServ, "SecureServ", MAXNICK);
 	
-	InitExempts();
-	InitScanner();
-	InitOnJoinBots();
-	InitJoinFloodHash();
-	InitNickFloodHash();
-	
 	SecureServ.inited = 0;			
 	SecureServ.helpcount = 0;
 	SecureServ.doUpdate = 0;
@@ -1109,6 +1096,12 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.modnum = modnum;
 
 	LoadConfig();
+	InitExempts();
+	InitScanner();
+	InitOnJoinBots();
+	InitJoinFloodHash();
+	InitNickFloodHash();
+
 	return 1;
 }
 
@@ -1251,19 +1244,6 @@ int AutoUpdate(void)
 	return 0;
 }	
 
-int do_reload(User *u, char **av, int ac)
-{
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to reload, but Permission was denied", u->nick);
-		return -1;
-	}			
-	prefmsg(u->nick, s_SecureServ, "Reloading virus definition files");
-    chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
-	load_dat();
-	return 1;
-}
-
 int do_update(User *u, char **av, int ac)
 {
 	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
@@ -1275,5 +1255,14 @@ int do_update(User *u, char **av, int ac)
 	http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 	prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 	chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
+	return 1;
+}
+
+int ss_kick_chan(char **argv, int ac) 
+{
+	if(CheckOnjoinBotKick(argv, ac)) {
+		return 1;
+	}
+	/* Can we use this event for anything else e.g. channel takeover checks? */
 	return 1;
 }

@@ -298,16 +298,18 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 	free(buf);
 }				
 
-int ss_kick_chan(char **argv, int ac) {
+int CheckOnjoinBotKick(char **argv, int ac) 
+{
 	lnode_t *mn;
 	
 	/* check its one of our nicks */
 	if (!strcasecmp(SecureServ.lastnick, argv[1]) && (!strcasecmp(SecureServ.lastchan, argv[0]))) {
-		nlog(LOG_DEBUG1, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
+		nlog(LOG_NOTICE, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
 		SecureServ.lastchan[0] = 0;
+		return 1;
 	}
 	if (SecureServ.monbot[0] == 0) {
-		return 1;
+		return 0;
 	}
 	/* if its our monbot, rejoin the channel! */
 	if (!strcasecmp(SecureServ.monbot, argv[1])) {
@@ -318,15 +320,18 @@ int ss_kick_chan(char **argv, int ac) {
 				join_bot_to_chan (SecureServ.monbot, argv[0], 0);
 				/* restore segvinmodules */
 				SET_SEGV_INMODULE("SecureServ");
-				if (SecureServ.verbose) chanalert(s_SecureServ, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
+				if (SecureServ.verbose) {
+					chanalert(s_SecureServ, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
+				}
+				nlog(LOG_NOTICE, LOG_MOD, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
 				return 1;
 			}
 			mn = list_next(monchans, mn);
 		}
+		return 1;
 	}					
-	return 1;
+	return 0;
 }		
-
 
 int MonChan(User *u, char *requestchan) {
 	Chans *c;
@@ -435,7 +440,8 @@ int ListMonChan(User *u) {
 }
 
 
-int LoadMonChans() {
+int LoadMonChans() 
+{
 	int i;
 	char **chan;
 	monchans = list_create(20);
@@ -448,7 +454,8 @@ int LoadMonChans() {
 	return 1;
 }
 
-int SaveMonChans() {
+int SaveMonChans() 
+{
 	lnode_t *node;
 	char buf[CONFBUFSIZE];
 	DelConf("MonChans");
@@ -526,10 +533,11 @@ int OnJoinBotConf(void)
 			strlcpy(SecureServ.monbot, tmp, MAXNICK);
 		} else {
 			SecureServ.monbot[0] = '\0';
-			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in randmon bot list for monbot", tmp);
+			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in random bot list for monbot", tmp);
 		}
 		free(tmp);
 	}
+	LoadMonChans();
 	return 1;
 }
 
@@ -539,6 +547,7 @@ int InitOnJoinBots(void)
 	nicks = list_create(MAX_NICKS);
 	/* init CTCP version response */
 	strlcpy(SecureServ.sampleversion, DEFAULT_VERSION_RESPONSE, SS_BUF_SIZE);
+	OnJoinBotConf();
 	return 1;
 }
 

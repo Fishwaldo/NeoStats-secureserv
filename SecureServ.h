@@ -143,7 +143,6 @@ void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
 int CheckChan(User *u, char *requestchan);
 int MonChan(User *u, char *requestchan);
-int ss_kick_chan(char **argv, int ac);
 int ListMonChan(User *u);
 int StopMon(User *u, char *chan);
 int LoadMonChans();
@@ -156,6 +155,7 @@ int do_checkchan(User* u, char **argv, int argc);
 int do_monchan(User* u, char **argv, int argc);
 int do_cycle(User* u, char **argv, int argc);
 int do_set_monbot(User* u, char **argv, int argc);
+int CheckOnjoinBotKick(char **argv, int ac);
 
 /* scan.c */
 int ScanFizzer(User *u);
@@ -164,6 +164,7 @@ int ScanUser(User *u, unsigned flags);
 int ScanMsg(User *u, char* buf);
 int ScanCTCP(User *u, char* buf);
 int do_list(User *u, char **av, int ac);
+int do_reload(User *u, char **av, int ac);
 void InitScanner(void);
 void load_dat(void);
 

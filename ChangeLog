@@ -23,6 +23,7 @@ SecureServ Module for NeoStats Changelog.
  - Tidy up config code and fix bug with onjoin bot initialisation freeing invalid pointer (M)
  - exempt related code move to exempt.c (M)
  - Tidy up bot_msg for future port to core function (M)
+ - Fix bot CTCP version replies; they should not come from SecureServ! (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

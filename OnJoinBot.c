@@ -266,7 +266,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 	if (!strcasecmp(argv[1], "\1version\1")) {
 		/* its a version request */
 		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot", u->nick);
-		notice(u->nick, s_SecureServ, "\1VERSION %s\1", SecureServ.sampleversion);
+		notice(u->nick, argv[0], "\1VERSION %s\1", SecureServ.sampleversion);
 		return;
 	}	
 

@@ -1185,7 +1185,7 @@ void do_list(User *u) {
 	prefmsg(u->nick, s_SecureServ, "End of List.");
 }
 
-int Online(char **av, int ac) {
+static int Online(char **av, int ac) {
 
 	SET_SEGV_LOCATION();
 	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {

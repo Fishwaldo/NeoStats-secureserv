@@ -170,25 +170,6 @@ typedef struct nicktrack_ nicktrack;
 
 hash_t *nickflood;
 
-/* this is a mess, but its aim is to handle the different IRCd's support */
-
-#ifndef MODE_ADMONLY
-#define MODE_ADMONLY 0
-#endif
-
-#ifndef MODE_OPERSONLY
-#define MODE_OPERSONLY 0
-#endif
-
-
-#ifndef MODE_OPERONLY
-#define MODE_OPERONLY MODE_OPERSONLY
-#endif
-
-#ifndef MODE_INVITE
-#define MODE_INVITE MODE_INVITEONLY
-#endif
-
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
 #define MAX_VIRI	-1

@@ -2,6 +2,7 @@ SecureServ Module for NeoStats Changelog.
 ==============================================================================
 1.1 - Fish (F) and Mark (M) - 2 Dec, 2003
  - Fixed incorrect parameters to printf style functions (M)
+ - Remove unused MODE_ defines. If needed they should be in the core anyway (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

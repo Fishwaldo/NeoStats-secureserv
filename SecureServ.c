@@ -174,7 +174,7 @@ static int do_set_autoupdate(User *u, char **av, int ac)
 			chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
 			SetConf((void *)1, CFGINT, "AutoUpdate");
 			if (SecureServ.autoupgrade != 1) {
-				add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 3600);
+				add_mod_timer("AutoUpdate", "DownLoadNewDat", __module_info.module_name, 7200);
 			}
 			SecureServ.autoupgrade = 1;
 			return 1;
@@ -334,7 +334,7 @@ static int Online(char **av, int ac)
 	SecureServ.isonline = 1;
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {
-		add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 3600);
+		add_mod_timer("AutoUpdate", "DownLoadNewDat", __module_info.module_name, 7200);
 	}
 
 

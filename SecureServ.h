@@ -159,7 +159,7 @@ struct SecureServ {
 /* update.c */
 int do_update(User *u, char **av, int ac);
 void GotHTTPAddress(char *data, adns_answer *a);
-
+int AutoUpdate(void);
 
 /* OnJoin.c */
 void JoinNewChan();

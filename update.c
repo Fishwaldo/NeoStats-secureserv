@@ -39,7 +39,6 @@
 void datver(void *data, int status, char *ver, int versize);
 void datdownload(void *data, int status, char *ver, int versize);
 void GotHTTPAddress(char *data, adns_answer *a);
-int AutoUpdate(void);
 static int DownLoadDat(void);
 
 static char ss_buf[SS_BUF_SIZE];

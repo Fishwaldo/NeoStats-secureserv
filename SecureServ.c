@@ -694,6 +694,7 @@ int do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Current SecureServ Settings:");
 		prefmsg(u->nick, s_SecureServ, "SPLITTIME:    %d", SecureServ.timedif);
 		prefmsg(u->nick, s_SecureServ, "VERSION:      %s", SecureServ.doscan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "CHECKFIZZER:  %s", SecureServ.dofizzer ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "MULTICHECK:   %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "FLOODPROT:    %s", SecureServ.FloodProt ? "Enabled" : "Disabled");
 		if (SecureServ.FloodProt) {

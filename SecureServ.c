@@ -136,8 +136,8 @@ static int do_set_treatchanmsgaspm(User *u, char **av, int ac)
 		SecureServ.treatchanmsgaspm = 1;
 		return 1;
 	} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-		prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
-		chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
+		prefmsg(u->nick, s_SecureServ, "Channel message checking is now disabled");
+		chanalert(s_SecureServ, "%s has disabled channel message checking", u->nick);
 		SetConf((void *)0, CFGINT, "ChanMsgAsPM");
 		SecureServ.treatchanmsgaspm = 0;
 		return 1;

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.12 2003/05/24 06:04:56 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.13 2003/05/24 09:19:57 fishwaldo Exp $
 */
 
 
@@ -32,7 +32,7 @@
 
 
 unsigned hrand(unsigned upperbound, unsigned lowerbound) {
-	if ((upperbound < 1) || (lowerbound < 1)) return 0;
+	if ((upperbound < 1)) return -1;
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
 }
   
@@ -44,7 +44,7 @@ Chans *GetRandomChan() {
 	
 	curno = 0;
 	randno = hrand(hash_count(ch), 1);	
-	if (randno == 0) {
+	if (randno == -1) {
 		return NULL;
 	}
 	hash_scan_begin(&cs, ch);
@@ -88,6 +88,7 @@ restartchans:
 		nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
 		if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
 			/* this was the last channel we joined, don't join it again */
+			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as we just did it", c->name);
 			goto restartchans;
 		}
 		/* if the channel is exempt, restart */
@@ -97,6 +98,7 @@ restartchans:
 		strncpy(SecureServ.lastchan, c->name, CHANLEN);
 	} else {
 		/* hu? */
+		nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");
 		strncpy(SecureServ.lastchan, "\0", CHANLEN);
 		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		return;
@@ -119,11 +121,13 @@ restartnicks:
 			nickname = lnode_get(rnn);
 			if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
 				/* its the same as last time, nope */
+				nlog(LOG_DEBUG1, LOG_MOD, "%s was used last time. Retring", nickname->nick);
 				goto restartnicks;
 			}
 			/* make sure no one is online with this nickname */
 			u = finduser(nickname->nick);
 			if (u != NULL) {
+				nlog(LOG_DEBUG1, LOG_MOD, "%s is online, can't use that nick, retring", nickname->nick);
 				goto restartnicks;
 			}
 			break;

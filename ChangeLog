@@ -6,6 +6,8 @@ TrojanServ Module for NeoStats Changelog.
  - Fixed a problem with Exclude lists not being saved after a delete (BugID #41)
  - HTTP agent wasn't reporting correct version to website
  - Update segv code
+- (M) Cleaned up help text and reformatted help to match the rest of NeoStats
+- (M) Cleaned up old includes of <fnmatch.h>
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

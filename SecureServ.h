@@ -85,9 +85,9 @@ struct SecureServ {
 	int timedif;
 	int doscan;
 	int viriversion;
-	char signonscanmsg[512];
-	char akillinfo[512];
-	char nohelp[512];
+	char signonscanmsg[BUFSIZE];
+	char akillinfo[BUFSIZE];
+	char nohelp[BUFSIZE];
 	char HelpChan[CHANLEN];
 	int breakorcont;
 	int doakill;

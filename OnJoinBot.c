@@ -74,12 +74,12 @@ void JoinNewChan() {
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (finduser(SecureServ.lastnick)) {
-		if (strlen(SecureServ.lastchan) > 1) {
+		if (SecureServ.lastchan[0] != 0) {
 			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
 		}
 		del_bot(SecureServ.lastnick, "Finished Scanning");
-		strncpy(SecureServ.lastchan, "\0", CHANLEN);
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 	}
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
@@ -101,8 +101,8 @@ restartchans:
 	if (trychan > 5) {
 		/* give up after 5 attempts */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a fresh Channel, Giving up");
-		strncpy(SecureServ.lastchan, "\0", CHANLEN);
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 		return;
 	}
 
@@ -135,8 +135,8 @@ restartchans:
 	} else {
 		/* hu? */
 		nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");
-		strncpy(SecureServ.lastchan, "\0", CHANLEN);
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 		return;
 	}
 	trynick = 0;
@@ -145,8 +145,8 @@ restartnicks:
 	if (trynick > 5) {
 		/* give up if we try five times */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
-		strncpy(SecureServ.lastchan, "\0", CHANLEN);
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 		return;
 	}
 	j = 1;
@@ -177,8 +177,8 @@ restartnicks:
 	/* ok, init the new bot. */
 	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+", "SecureServ") == -1) {
 		/* hu? Nick was in use. How is that possible? */
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
-		strncpy(SecureServ.lastchan, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
 		return;
 	}
@@ -215,8 +215,8 @@ restartnicksondemand:
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
 		prefmsg(u->nick, s_SecureServ, "Couldnt Find a free Nickname to check %s with. Giving up (Try again later)", requestchan);
 #if 0
-		strncpy(SecureServ.lastchan, "\0", CHANLEN);
-		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 #endif
 		return -1;
 	}
@@ -242,7 +242,7 @@ restartnicksondemand:
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (strlen(SecureServ.lastchan) > 1) {
+	if (SecureServ.lastchan[0] != 0) {
 		spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
 		del_bot(SecureServ.lastnick, "Finished Scanning");
 	}
@@ -315,7 +315,7 @@ int ss_kick_chan(char **argv, int ac) {
 	/* check its one of our nicks */
 	if (!strcasecmp(SecureServ.lastnick, argv[1]) && (!strcasecmp(SecureServ.lastchan, argv[0]))) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
-		strncpy(SecureServ.lastchan, "\0", MAXNICK);
+		SecureServ.lastchan[0] = 0;
 	}
 	return 1;
 }		
@@ -333,7 +333,7 @@ int MonChan(User *u, char *requestchan) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
 		return -1;
 	}			
-	if (strlen(SecureServ.monbot) < 1) {
+	if (SecureServ.monbot[0] ==0) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Warning, No Monitor Bot set. /msg %s help set", s_SecureServ);
 		return -1;
 	}

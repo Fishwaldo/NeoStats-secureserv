@@ -280,11 +280,11 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				}
 			}
 			exempts = malloc(sizeof(exemptinfo));
-			snprintf(exempts->host, MAXHOST, "%s", argv[3]);
+			strncpy(exempts->host, argv[3], MAXHOST);
 			exempts->server = atoi(argv[4]);
-			snprintf(exempts->who, MAXNICK, "%s", u->nick);
+			strncpy(exempts->who, u->nick, MAXNICK);
 			buf = joinbuf(argv, argc, 5);
-			snprintf(exempts->reason, MAXHOST, "%s", buf);
+			strncpy(exempts->reason, buf, MAXHOST);
 			free(buf);
 			node = lnode_create(exempts);
 			list_append(exempt, node);
@@ -397,10 +397,10 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			SetConf((void *)buf2, CFGSTR, buf);
 			free(buf);
 			bots = malloc(sizeof(randomnicks));
-			snprintf(bots->nick, MAXNICK, "%s", argv[3]);
-			snprintf(bots->user, MAXUSER, "%s", argv[4]);
-			snprintf(bots->host, MAXHOST, "%s", argv[5]);
-			snprintf(bots->rname, MAXREALNAME, "%s", buf2);
+			strncpy(bots->nick, argv[3], MAXNICK);
+			strncpy(bots->user, argv[4], MAXUSER);
+			strncpy(bots->host, argv[5], MAXHOST);
+			strncpy(bots->rname, buf2, MAXREALNAME);
 			free(buf2);
 			node = lnode_create(bots);
 			list_append(nicks, node);
@@ -915,7 +915,7 @@ void do_set(User *u, char **av, int ac) {
 		}
 		if (rnn != NULL) {
 			SetConf((void *)av[3], CFGSTR, "MonBot");
-			snprintf(SecureServ.monbot, MAXNICK, nickname->nick);
+			strncpy(SecureServ.monbot, nickname->nick, MAXNICK);
 			prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);
 			chanalert(s_SecureServ, "%s set the Monitor bot to %s", u->nick, av[3]);
 			return;
@@ -976,7 +976,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.signonscanmsg, buf, 512);
+		strncpy(SecureServ.signonscanmsg, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "Signon Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the Signon Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "SignOnMsg");
@@ -987,7 +987,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.akillinfo, buf, 512);
+		strncpy(SecureServ.akillinfo, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "Akill Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the Akill Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "AkillMsg");
@@ -998,7 +998,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.nohelp, buf, 512);
+		strncpy(SecureServ.nohelp, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "No Help Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the No Help Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "NoHelpMsg");
@@ -1109,41 +1109,41 @@ void do_list(User *u) {
 		i++;
 		switch (ve->dettype) {
 			case DET_CTCP:
-				snprintf(type, MAXHOST, "Version");
+				strncpy(type, "Version", MAXHOST);
 				break;
 			case DET_MSG:
-				snprintf(type, MAXHOST, "PM");
+				strncpy(type, "PM", MAXHOST);
 				break;
 			case DET_NICK:
-				snprintf(type, MAXHOST, "Nick");
+				strncpy(type, "Nick", MAXHOST);
 				break;
 			case DET_IDENT:
-				snprintf(type, MAXHOST, "Ident");
+				strncpy(type, "Ident", MAXHOST);
 				break;
 			case DET_REALNAME:
-				snprintf(type, MAXHOST, "RealName");
+				strncpy(type, "RealName", MAXHOST);
 				break;
 			case DET_CHAN:
-				snprintf(type, MAXHOST, "Chan");
+				strncpy(type, "Chan", MAXHOST);
 				break;
 			case DET_BUILTIN:
-				snprintf(type, MAXHOST, "Built-In");
+				strncpy(type, "Built-In", MAXHOST);
 				break;
 			default:
 				snprintf(type, MAXHOST, "Unknown(%d)", ve->dettype);
 		}
 		switch (ve->action) {
 			case ACT_SVSJOIN:
-				snprintf(action, MAXHOST, "SVSjoin");
+				strncpy(action, "SVSjoin", MAXHOST);
 				break;
 			case ACT_AKILL:
-				snprintf(action, MAXHOST, "Akill");
+				strncpy(action, "Akill", MAXHOST);
 				break;
 			case ACT_WARN:
-				snprintf(action, MAXHOST, "OpersWarn");
+				strncpy(action, "OpersWarn", MAXHOST);
 				break;
 			default:
-				snprintf(action, MAXHOST, "ClientWarn");
+				strncpy(action, "ClientWarn", MAXHOST);
 		}
 		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
 	} while ((node = list_next(viri, node)) != NULL);
@@ -1216,7 +1216,7 @@ void LoadTSConf() {
 		SecureServ.closechantime = 30;
 	} 
 	if (GetConf((void *)&tmp, CFGSTR, "ChanKey") <= 0) {
-		snprintf(SecureServ.ChanKey, CHANLEN, "Eeeek");
+		strncpy(SecureServ.ChanKey, "Eeeek", CHANLEN);
 	} else {
 		strncpy(SecureServ.ChanKey, tmp, CHANLEN);
 		free(tmp);
@@ -1310,25 +1310,25 @@ void LoadTSConf() {
 		SecureServ.JoinThreshold = 5;
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "SignOnMsg") <= 0) {
-		snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+		snprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
 	} else {
-		strncpy(SecureServ.signonscanmsg, tmp, 512);
+		strncpy(SecureServ.signonscanmsg, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "NoHelpMsg") <= 0) {
-		snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
+		strncpy(SecureServ.nohelp, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info", BUFSIZE);
 	} else {
-		strncpy(SecureServ.nohelp, tmp, 512);
+		strncpy(SecureServ.nohelp, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "AkillMsg") <= 0) {
-		snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
+		strncpy(SecureServ.akillinfo, "You have been Akilled from this network. Please get a virus scanner and check your PC", BUFSIZE);
 	} else {
-		strncpy(SecureServ.akillinfo, tmp, 512);
+		strncpy(SecureServ.akillinfo, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "HelpChan") <= 0) {
-		snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
+		strncpy(SecureServ.HelpChan, "#nohack", CHANLEN);
 	} else {
 		strncpy(SecureServ.HelpChan, tmp, CHANLEN);
 		free(tmp);
@@ -1416,7 +1416,7 @@ void LoadTSConf() {
 			node = list_next(nicks, node);
 		}
 		if (node != NULL) {
-			snprintf(SecureServ.monbot, MAXNICK, tmp);
+			strncpy(SecureServ.monbot, tmp, MAXNICK);
 		} else {
 			SecureServ.monbot[0] = '\0';
 			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in randmon bot list for monbot", tmp);
@@ -1447,7 +1447,7 @@ const char* DatFiles[NUM_DAT_FILES]=
 void load_dat() {
 	int i;
 	FILE *fp;
-	char buf[512];
+	char buf[BUFSIZE];
 	virientry *viridet;
 	lnode_t *node;
 	const char *error;
@@ -1479,12 +1479,12 @@ void load_dat() {
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = malloc(sizeof(virientry));
-	snprintf(viridet->name, MAXHOST, "FizzerBot");
+	strncpy(viridet->name, "FizzerBot", MAXHOST);
 	viridet->dettype = DET_BUILTIN;
 	viridet->var1 = 0;
 	viridet->var2 = 0;
-	snprintf(viridet->recvmsg, MAXHOST, "UserName is RealName Reversed");
-	snprintf(viridet->sendmsg, MAXHOST, "You're Infected with the Fizzer Virus");
+	strncpy(viridet->recvmsg, "UserName is RealName Reversed", MAXHOST);
+	strncpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", MAXHOST);
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
 	SecureServ.definitions[DET_BUILTIN]++;
@@ -1517,10 +1517,10 @@ void load_dat() {
 			if(i==0) 
 			{
 				/* first fgets always returns the version number */
-				fgets(buf, 512, fp);
+				fgets(buf, BUFSIZE, fp);
 				SecureServ.viriversion = atoi(buf);
 			}
-			while (fgets(buf, 512, fp)) {
+			while (fgets(buf, BUFSIZE, fp)) {
 				if (list_isfull(viri))
 					break;
 				viridet = malloc(sizeof(virientry));
@@ -1537,12 +1537,12 @@ void load_dat() {
 				}
 				
 				pcre_get_substring_list(buf, ovector, rc, &subs);		
-				snprintf(viridet->name, MAXHOST, "%s", subs[1]);
+				strncpy(viridet->name, subs[1], MAXHOST);
 				viridet->dettype = atoi(subs[2]);
 				viridet->var1 = atoi(subs[3]);
 				viridet->var2 = atoi(subs[4]);
-				snprintf(viridet->recvmsg, MAXHOST, "%s", subs[5]);
-				snprintf(viridet->sendmsg, MAXHOST, "%s", subs[6]);
+				strncpy(viridet->recvmsg, subs[5], MAXHOST);
+				strncpy(viridet->sendmsg, subs[6], MAXHOST);
 				viridet->action = atoi(subs[7]);
 				viridet->nofound = 0;
 				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
@@ -2086,10 +2086,10 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.inited = 0;			
 	SecureServ.timedif = 300;	
 	SecureServ.doscan = 1;
-	snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
-	snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
-	snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
-	snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
+	snprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+	strncpy(SecureServ.akillinfo, "You have been Akilled from this network. Please get a virus scanner and check your PC", BUFSIZE);
+	strncpy(SecureServ.nohelp, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info", BUFSIZE);
+	strncpy(SecureServ.HelpChan, "#nohack", CHANLEN);
 	SecureServ.monbot[0] = '\0';
 	SecureServ.breakorcont = 1;
 	SecureServ.doakill = 1;
@@ -2103,14 +2103,14 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.dofizzer = 1;
 	SecureServ.MaxAJPP = 0;
 	SecureServ.nfcount = 5;
-	strncpy(SecureServ.updateurl, "", 255);
-	strncpy(SecureServ.updateuname, "", 255);
-	strncpy(SecureServ.updatepw, "", 255);
+	SecureServ.updateurl[0] = 0;
+	SecureServ.updateuname[0] = 0;
+	SecureServ.updatepw[0] = 0;
 	for (i = 0; i > 20; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;
 	}
-	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
+	SecureServ.MaxAJPPChan[0] = 0;
 	SecureServ.modnum = modnum;
 	return 1;
 }
@@ -2186,7 +2186,7 @@ void datdownload(HTTP_Response *response) {
 		
 	
 		/* make a temp file and write the contents to it */
-		snprintf(tmpname, 255, "viriXXXXXX");
+		strncpy(tmpname, "viriXXXXXX", 255);
 		i = mkstemp(tmpname);
 		write(i, response->pData, response->lSize);
 		close(i);
@@ -2221,19 +2221,16 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
         	ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &show);
                 if (!ri) {
 			/* ok, we got a valid answer, lets maybe kick of the update check.*/
-			snprintf(url, 255, "%s", show);
+			strncpy(url, show, 255);
 			SecureServ.sendtohost.sin_addr.s_addr = inet_addr(show);
 			
 			SecureServ.sendtohost.sin_port = htons(2334);
 			SecureServ.sendtohost.sin_family = AF_INET;
 			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
 
-
-
-
 			strncpy(SecureServ.updateurl, url, 255);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
-			if ((strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {
+			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
 				snprintf(url2, 255, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 				http_request(url2, 2, HFLAG_NONE, datver); 
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
@@ -2254,7 +2251,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 int AutoUpdate() {
 	char url2[255];                
 
-	if ((SecureServ.autoupgrade > 0) && (strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {
+	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
 		snprintf(url2, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(url2, 2, HFLAG_NONE, datver); 
 	}

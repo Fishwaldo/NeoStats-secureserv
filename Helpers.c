@@ -88,8 +88,8 @@ int Helpers_add(User *u, char **av, int ac) {
 
 
 	helper = malloc(sizeof(SSHelpers));
-	snprintf(helper->nick, MAXNICK, "%s", av[3]);
-	snprintf(helper->pass, MAXNICK, "%s", av[4]);
+	strncpy(helper->nick, av[3], MAXNICK);
+	strncpy(helper->pass, av[4], MAXNICK);
 	helper->u = NULL;
 	node = hnode_create(helper);
  	hash_insert(helperhash, node, helper->nick);

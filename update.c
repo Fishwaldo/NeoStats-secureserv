@@ -118,7 +118,7 @@ bugid: 154
 		SecureServ.doUpdate = 2;
 		os_memset (ss_buf, 0, SS_BUF_SIZE);
 		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-		tmpname = tempnam(NULL, NULL);
+		tmpname = os_tempnam( NULL, NULL );
 		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
 			nlog (LOG_WARNING, "Definition download failed.");
 			irc_chanalert (ss_bot, "Definition download failed. Check log files");
@@ -133,9 +133,6 @@ bugid: 154
 */
 void datdownload(void *unuseddata, int status, char *data, int datasize) 
 {
-#ifdef WIN32
-	irc_chanalert (ss_bot, "update not available on Win32, do a manual update");
-#else
 	char tmpname[32];
 	char *tmp, *tmp1;
 	int i;
@@ -147,7 +144,6 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 		SecureServ.doUpdate = 0;
 	}
 	if (status == NS_SUCCESS) {
-
 		/* check response code */
 		tmp = ns_malloc (datasize);
 		strlcpy(tmp, data, datasize);
@@ -158,18 +154,14 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 			nlog (LOG_NORMAL, "Permission denied trying to download Dat file: %d", i);
 			irc_chanalert (ss_bot, "Permission denied trying to download Dat file: %d", i);
 			return;
-		}			
-		
-	
+		}	
 		/* make a temp file and write the contents to it */
 		strlcpy(tmpname, "viriXXXXXX", 32);
-		i = mkstemp(tmpname);
-		write(i, data, datasize);
-		close(i);
+		os_write_temp_file( tmpname, data, datasize );
 		/* rename the file to the datfile */
-		rename(tmpname, VIRI_DAT_NAME);
+		os_rename(tmpname, VIRI_DAT_NAME);
 		/* reload the dat file */
-		load_dat();
+ 		load_dat();
 		nlog (LOG_NOTICE, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
 		irc_chanalert (ss_bot, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
 	} else {
@@ -177,7 +169,6 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 		irc_chanalert (ss_bot, "Virus definition download failed. %s", data);
 		return;
 	}
-#endif	
 }
 	
 void GotHTTPAddress(char *data, adns_answer *a) 
@@ -262,7 +253,7 @@ int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 	DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
 	strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
 	strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
-	CommandReport(ss_bot, "%s changed the Update Username and Password", cmdparams->source);
+	CommandReport(ss_bot, "%s changed the Update Username and Password", cmdparams->source->name);
 	irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 	return NS_SUCCESS;
 }

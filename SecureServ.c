@@ -884,10 +884,11 @@ static int check_version_reply(User* u, char **av, int ac)
 	static int versioncount = 0;
 
 	SET_SEGV_LOCATION();
-	buf = joinbuf(av, ac, 2);
+	buf = av[2];	
+	buf += 9;	/* skip "\1version " */
+	
 	/* send a Module_Event, so StatServ can pick up the version info !!! */
 	/* nice little side effect isn't it? */
-
 	AddStringToList(&av1, u->nick, &ac1);
 	AddStringToList(&av1, buf, &ac1);	
  	ModuleEvent(EVENT_CLIENTVERSION, av1, ac1);
@@ -905,7 +906,6 @@ static int check_version_reply(User* u, char **av, int ac)
 		strlcpy(SecureServ.sampleversion, buf, SS_BUF_SIZE);
 		versioncount = 0;
 	}
-	free(buf);
 	return 0;
 }
 

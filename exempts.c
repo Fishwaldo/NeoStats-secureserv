@@ -172,7 +172,7 @@ static int ss_cmd_exempt_add(CmdParams *cmdparams)
 	exemptinfo *exempts = NULL;
 
 	SET_SEGV_LOCATION();
-	if (cmdparams->ac < 6) {
+	if (cmdparams->ac < 4) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);
 		return NS_SUCCESS;
 	}
@@ -227,7 +227,7 @@ static int ss_cmd_exempt_del(CmdParams *cmdparams)
 	int i;
 
 	SET_SEGV_LOCATION();
-	if (cmdparams->ac < 4) {
+	if (cmdparams->ac < 2) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);
 		return NS_SUCCESS;
 	}

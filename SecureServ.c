@@ -152,7 +152,7 @@ static int do_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 		}
 		return NS_SUCCESS;
 	}
-	if (cmdparams->ac < 5) {
+	if (cmdparams->ac < 3) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set", ss_bot->name);
 		return NS_SUCCESS;
 	}
@@ -174,7 +174,7 @@ static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 		irc_prefmsg (ss_bot, cmdparams->source, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
 		return NS_SUCCESS;
 	}
-	if (cmdparams->ac < 4) {
+	if (cmdparams->ac < 2) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
 		return NS_SUCCESS;
 	}			
@@ -229,7 +229,7 @@ static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason)
 		irc_prefmsg (ss_bot, cmdparams->source, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
 		return NS_SUCCESS;
 	}
-	if (cmdparams->ac < 4) {
+	if (cmdparams->ac < 2) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
 		return NS_SUCCESS;
 	}			

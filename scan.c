@@ -2,7 +2,7 @@
 ** Copyright (c) 1999-2002 Adam Rutter, Justin Hammond
 ** http://www.neostats.net/
 **
-**  This program is free software; you can redistribute it and/or modify
+**  This program is ns_free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
 **  the Free Software Foundation; either version 2 of the License, or
 **  (at your option) any later version.
@@ -21,12 +21,15 @@
 ** $Id$
 */
 
+#ifdef WIN32
+#include "win32modconfig.h"
+#else
 #include "modconfig.h"
+#endif
+
 #include <stdio.h>
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
-#else
-#include <unistd.h>
 #endif
 
 #include "neostats.h"
@@ -34,7 +37,7 @@
 
 #define MAX_VIRI	-1
 
-static void gotpositive(User *u, virientry *ve, int type);
+static void gotpositive(Client *u, virientry *ve, int type);
 
 /* this is the list of viri */
 static list_t *viri;
@@ -88,14 +91,14 @@ void load_dat(void)
 		while (node) {
 			viridet = lnode_get(node);
 			if(viridet) {
-				nlog(LOG_DEBUG1, LOG_MOD, "Deleting %s out of List", viridet->name);
+				dlog (DEBUG1, "Deleting %s out of List", viridet->name);
 				if (viridet->pattern) {
-					free(viridet->pattern);
+					ns_free (viridet->pattern);
 				}
 				if (viridet->patternextra) {
-					free(viridet->patternextra);
+					ns_free (viridet->patternextra);
 				}
-				free(viridet);
+				ns_free (viridet);
 			}
 			node = list_next(viri, node);
 		} 
@@ -107,7 +110,7 @@ void load_dat(void)
 	}	
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
-	viridet = malloc(sizeof(virientry));
+	viridet = ns_malloc (sizeof(virientry));
 	strlcpy(viridet->name, "FizzerBot", MAXVIRNAME);
 	viridet->dettype = DET_BUILTIN;
 	viridet->var1 = 0;
@@ -121,7 +124,7 @@ void load_dat(void)
 	SecureServ.definitions[DET_BUILTIN]++;
 	node = lnode_create(viridet);
 	list_prepend(viri, node);
-	nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
+	dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 	
 	for(i = 0; i < NUM_DAT_FILES; i++)
 	{
@@ -131,19 +134,19 @@ void load_dat(void)
 			{
 				/* We do not really care if the custom file is not present so don't report it except in debug */
 				/* as the comment says, we don't care about custom.dat, so don't fool users into thinking SecureSer is disabled by telling them it is! */
-				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found.");
+				dlog (DEBUG1, "No custom.dat file found.");
 			}
 			else
 			{
 				/* we *HAVE* to have a viri.dat file. Otherwise, no go */
-				nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
-				chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
+				nlog (LOG_WARNING, "TS: Error, No viri.dat file found. %s is disabled", ss_bot->name);
+				irc_chanalert (ss_bot, "Error not viri.dat file found, %s is disabled", ss_bot->name);
 			}
 			return;
 		} else {
 			re = pcre_compile("^([a-zA-Z0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) \"(.*)\" \"(.*)\" ([0-9]*).*" , 0, &error, &errofset, NULL);
 			if (re == NULL) {
-				nlog(LOG_CRITICAL, LOG_MOD, "PCRE_COMPILE of dat file format failed bigtime! %s at %d", error, errofset);		
+				nlog (LOG_CRITICAL, "PCRE_COMPILE of dat file format failed bigtime! %s at %d", error, errofset);		
 				return;
 			}
 			/* only set version for first file */
@@ -156,16 +159,16 @@ void load_dat(void)
 			while (fgets(buf, BUFSIZE, fp)) {
 				if (list_isfull(viri))
 					break;
-				viridet = malloc(sizeof(virientry));
+				viridet = ns_malloc (sizeof(virientry));
 				rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
 				if (rc <= 0) {
-					nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space! %d", rc);
-					nlog(LOG_WARNING, LOG_MOD, "Load Was: %s", buf);
-					free(viridet);
+					nlog (LOG_WARNING, "PCRE_EXEC didn't have enough space! %d", rc);
+					nlog (LOG_WARNING, "Load Was: %s", buf);
+					ns_free (viridet);
 					continue;
 				} else if (rc != 8) {
-					nlog(LOG_WARNING, LOG_MOD, "Didn't get required number of Subs (%d)", rc);
-					free(viridet);
+					nlog (LOG_WARNING, "Didn't get required number of Subs (%d)", rc);
+					ns_free (viridet);
 					continue;
 				}
 				
@@ -181,39 +184,39 @@ void load_dat(void)
 				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
 				if (viridet->pattern == NULL) {
 					/* it failed for some reason */
-					nlog(LOG_WARNING, LOG_MOD, "Regular Expression Compile of %s Failed: %s at %d", viridet->name, error, errofset);
-					free(subs);
-					free(viridet);
+					nlog (LOG_WARNING, "Regular Expression Compile of %s Failed: %s at %d", viridet->name, error, errofset);
+					ns_free (subs);
+					ns_free (viridet);
 					continue;
 				}	
 				viridet->iscustom=i;
 				viridet->patternextra = pcre_study(viridet->pattern, 0, &error);
 				if (error != NULL) {
-					nlog(LOG_WARNING, LOG_MOD, "Regular Expression Study for %s failed: %s", viridet->name, error);
+					nlog (LOG_WARNING, "Regular Expression Study for %s failed: %s", viridet->name, error);
 					/* don't exit */
 				}
 				SecureServ.definitions[viridet->dettype]++;
 				node = lnode_create(viridet);
 				list_prepend(viri, node);
-				nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
-				free(subs);
+				dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
+				ns_free (subs);
 			}
-			free(re);
+			ns_free (re);
 			fclose(fp);
 		}
 	}	
 }
 
-int do_reload(User *u, char **av, int ac)
+int do_reload(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	prefmsg(u->nick, s_SecureServ, "Reloading virus definition files");
-   	chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
+	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
+   	irc_chanalert (ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
 	load_dat();
 	return 1;
 }
 
-int do_list(User *u, char **av, int ac) 
+int do_list(CmdParams *cmdparams) 
 {
 	lnode_t *node;
 	virientry *ve;
@@ -226,8 +229,8 @@ int do_list(User *u, char **av, int ac)
 	i = 0;
 	node = list_first(viri);
 	if (node) {
-		prefmsg(u->nick, s_SecureServ, "Virus List:");
-		prefmsg(u->nick, s_SecureServ, "===========");
+		irc_prefmsg (ss_bot, cmdparams->source, "Virus List:");
+		irc_prefmsg (ss_bot, cmdparams->source, "===========");
 		do {
 			ve = lnode_get(node);
 			i++;
@@ -275,16 +278,16 @@ int do_list(User *u, char **av, int ac)
 				default:
 					strlcpy(action, "ClientWarn", LOCALBUFSIZE);
 			}
-			prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
+			irc_prefmsg (ss_bot, cmdparams->source, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
 		} while ((node = list_next(viri, node)) != NULL);
-		prefmsg(u->nick, s_SecureServ, "End of List.");
+		irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
 	} else {
-		prefmsg(u->nick, s_SecureServ, "No definitions found.");
+		irc_prefmsg (ss_bot, cmdparams->source, "No definitions found.");
 	}
 	return 1;
 }
 
-int ScanFizzer(User *u) 
+int ScanFizzer(Client *u) 
 {
 	lnode_t *node;
 	virientry *viridetails;
@@ -294,18 +297,18 @@ int ScanFizzer(User *u)
 	SET_SEGV_LOCATION();
 							
 	/* fizzer requires realname info, which we don't store yet. */
-	user = malloc(MAXREALNAME);
-	strlcpy(user, u->realname, MAXREALNAME); 
+	user = ns_malloc (MAXREALNAME);
+	strlcpy(user, u->info, MAXREALNAME); 
 	s1 = strtok(user, " ");
 	s2 = strtok(NULL, "");
-	ircsnprintf(username, 10, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
-	free(user);
+	ircsnprintf(username, 10, "%s%s%s", u->user->username[0] == '~' ? "~" : "",  s2, s1);
+	ns_free (user);
 #ifdef DEBUG
-	nlog(LOG_DEBUG2, LOG_MOD, "Fizzer RealName Check %s -> %s", username, u->username);
+	dlog (DEBUG2, "Fizzer RealName Check %s -> %s", username, u->user->username);
 #endif
 	SecureServ.trigcounts[DET_BUILTIN]++;
-	if (!strcmp(username, u->username)) {
-		nlog(LOG_NOTICE, LOG_MOD, "Fizzer Bot Detected: %s (%s -> %s)", u->nick, u->username, u->realname);
+	if (!strcmp(username, u->user->username)) {
+		nlog (LOG_NOTICE, "Fizzer Bot Detected: %s (%s -> %s)", u->name, u->user->username, u->info);
 		/* do kill */
 		node = list_first(viri);
 		if (node) {
@@ -322,7 +325,7 @@ int ScanFizzer(User *u)
 	return 0;
 }
 
-int ScanUser(User *u, unsigned flags) 
+int ScanUser(Client *u, unsigned flags) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -338,13 +341,13 @@ int ScanUser(User *u, unsigned flags)
 			if ((flags & SCAN_NICK) && (viridetails->dettype == DET_NICK)) {
 				SecureServ.trigcounts[DET_NICK]++;
 #ifdef DEBUG
-				nlog(LOG_DEBUG1, LOG_MOD, "Checking Nick %s against %s", u->nick, viridetails->recvmsg);
+				dlog (DEBUG1, "Checking Nick %s against %s", u->name, viridetails->recvmsg);
 #endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->name, strlen(u->name), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Nick Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch Nick Failed: (%d)", rc);
 				} else if (rc > -1) {					
-					nlog(LOG_NOTICE, LOG_MOD, "Got positive nick %s for %s against %s", u->nick, viridetails->name, viridetails->recvmsg);
+					nlog (LOG_NOTICE, "Got positive nick %s for %s against %s", u->name, viridetails->name, viridetails->recvmsg);
 					gotpositive(u, viridetails, DET_NICK);
 					positive++;
 					if (SecureServ.breakorcont != 0) {
@@ -354,13 +357,13 @@ int ScanUser(User *u, unsigned flags)
 			} else if ((flags & SCAN_IDENT) && (viridetails->dettype == DET_IDENT)) {
 				SecureServ.trigcounts[DET_IDENT]++;
 #ifdef DEBUG
-				nlog(LOG_DEBUG1, LOG_MOD, "Checking ident %s against %s", u->username, viridetails->recvmsg);
+				dlog (DEBUG1, "Checking ident %s against %s", u->user->username, viridetails->recvmsg);
 #endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->username, strlen(u->username), 0, 0, NULL, 0);
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->user->username, strlen(u->user->username), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch UserName Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch UserName Failed: (%d)", rc);
 				} else if (rc > -1) {					
-					nlog(LOG_NOTICE, LOG_MOD, "Got positive ident %s for %s against %s", u->username, viridetails->name, viridetails->recvmsg);
+					nlog (LOG_NOTICE, "Got positive ident %s for %s against %s", u->user->username, viridetails->name, viridetails->recvmsg);
 					gotpositive(u, viridetails, DET_IDENT);
 					positive++;
 					if (SecureServ.breakorcont != 0) {
@@ -370,13 +373,13 @@ int ScanUser(User *u, unsigned flags)
 			} else if ((flags & SCAN_REALNAME) && (viridetails->dettype == DET_REALNAME)) {
 				SecureServ.trigcounts[DET_REALNAME]++;
 #ifdef DEBUG
-				nlog(LOG_DEBUG1, LOG_MOD, "Checking Realname %s against %s", u->realname, viridetails->recvmsg);
+				dlog (DEBUG1, "Checking Realname %s against %s", u->info, viridetails->recvmsg);
 #endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->realname, strlen(u->realname), 0, 0, NULL, 0);
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->info, strlen(u->info), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch RealName Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch RealName Failed: (%d)", rc);
 				} else if (rc > -1) {					
-					nlog(LOG_NOTICE, LOG_MOD, "Got positive realname %s for %s against %s", u->realname, viridetails->name, viridetails->recvmsg);
+					nlog (LOG_NOTICE, "Got positive realname %s for %s against %s", u->info, viridetails->name, viridetails->recvmsg);
 					gotpositive(u, viridetails, DET_REALNAME);
 					positive++;
 					if (SecureServ.breakorcont != 0) {
@@ -389,7 +392,7 @@ int ScanUser(User *u, unsigned flags)
 	return positive;
 }
 
-int ScanCTCP(User *u, char* buf) 
+int ScanCTCP(Client *u, char* buf) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -404,13 +407,13 @@ int ScanCTCP(User *u, char* buf)
 			if (((viridetails->dettype == DET_CTCP) || (viridetails->dettype > MAX_PATTERN_TYPES))) {
 				SecureServ.trigcounts[DET_CTCP]++;
 #ifdef DEBUG
-				nlog(LOG_DEBUG1, LOG_MOD, "Checking Version %s against %s", buf, viridetails->recvmsg);
+				dlog (DEBUG1, "Checking Version %s against %s", buf, viridetails->recvmsg);
 #endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch CTCP Version Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch CTCP Version Failed: (%d)", rc);
 				} else if (rc > -1) {					
-					nlog(LOG_NOTICE, LOG_MOD, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
+					nlog (LOG_NOTICE, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
 					gotpositive(u, viridetails, DET_CTCP);
 					positive++;
 					if (SecureServ.breakorcont != 0) {
@@ -423,7 +426,7 @@ int ScanCTCP(User *u, char* buf)
 	return positive;
 }
 
-int ScanMsg(User *u, char* buf, int chanmsg) 
+int ScanMsg(Client *u, char* buf, int chanmsg) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -451,7 +454,7 @@ int ScanMsg(User *u, char* buf, int chanmsg)
 			if (doscan == 1) {
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch PrivateMessage Failed: (%d)", rc);
 				} else if (rc > -1) {					
 					gotpositive(u, viridetails, chanmsg ? DET_CHANMSG : DET_MSG);
 					positive++;
@@ -465,7 +468,7 @@ int ScanMsg(User *u, char* buf, int chanmsg)
 	return positive;
 }
 
-int ScanChan(User* u, Chans *c) 
+int ScanChan(Client* u, Channel *c) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -481,11 +484,11 @@ int ScanChan(User* u, Chans *c)
 			if (viridetails->dettype == DET_CHAN) {
 				SecureServ.trigcounts[DET_CHAN]++;
 #ifdef DEBUG
-				nlog(LOG_DEBUG1, LOG_MOD, "Checking Chan %s against %s", c->name, viridetails->recvmsg);
+				dlog (DEBUG1, "Checking Chan %s against %s", c->name, viridetails->recvmsg);
 #endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
 				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
+					nlog (LOG_WARNING, "PatternMatch Chan Failed: (%d)", rc);
 				} else if (rc > -1) {
 					gotpositive(u, viridetails, DET_CHAN);
 					positive++;
@@ -499,9 +502,9 @@ int ScanChan(User* u, Chans *c)
 	return positive;
 }
 
-void gotpositive(User *u, virientry *ve, int type) 
+void gotpositive(Client *u, virientry *ve, int type) 
 {
-	char chan[CHANLEN];
+	char chan[MAXCHANLEN];
 	char buf[1400];
 	char buf2[3];
 	UserDetail *ud;
@@ -513,121 +516,116 @@ void gotpositive(User *u, virientry *ve, int type)
 	/* Initial message is based on an assumption that the action determines the threat level */
 	switch(ve->action) {
 		case ACT_SVSJOIN:
-			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is an infected IRC client called %s", s_SecureServ, ve->name);
+			irc_prefmsg (ss_bot, u, "%s has detected that your client is an infected IRC client called %s", ss_bot->name, ve->name);
 			break;
 		case ACT_AKILL:
-			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan or War Script called %s", s_SecureServ, ve->name);
+			irc_prefmsg (ss_bot, u, "%s has detected that your client is a Trojan or War Script called %s", ss_bot->name, ve->name);
 			break;
 		case ACT_KILL:
-			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan or War Script called %s", s_SecureServ, ve->name);
+			irc_prefmsg (ss_bot, u, "%s has detected that your client is a Trojan or War Script called %s", ss_bot->name, ve->name);
 			break;
 		case ACT_WARN:
-			prefmsg(u->nick, s_SecureServ, "%s has detected that you or your client is sending unsolicted messages to other users", s_SecureServ);
+			irc_prefmsg (ss_bot, u, "%s has detected that you or your client is sending unsolicted messages to other users", ss_bot->name);
 			break;
 		case ACT_NOTHING:
-			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a vulnerable script or client called %s", s_SecureServ, ve->name);
+			irc_prefmsg (ss_bot, u, "%s has detected that your client is a vulnerable script or client called %s", ss_bot->name, ve->name);
 			break;
 	} 		
-	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
+	irc_prefmsg (ss_bot, u, ve->sendmsg);
 	/* Do not generate a URL for local custom definitions since it will not exist*/
 	if(!ve->iscustom)
-		prefmsg(u->nick, s_SecureServ, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
+		irc_prefmsg (ss_bot, u, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
 	ve->nofound++;
 	SecureServ.actioncounts[type]++;
 	switch (ve->action) {
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {
 				if (SecureServ.helpcount > 0) {		
-					ud = malloc(sizeof(UserDetail));
+					ud = ns_malloc (sizeof(UserDetail));
 					ud->type = USER_INFECTED;
 					ud->data = (void *)ve;
-					u->moddata[SecureServ.modnum] = ud;					
-					chanalert(s_SecureServ, "SVSJoining %s to %s for Virus %s", u->nick, SecureServ.HelpChan, ve->name);
+					SetUserModValue (u, (void *)ud);
+					irc_chanalert (ss_bot, "SVSJoining %s to %s for Virus %s", u->name, SecureServ.HelpChan, ve->name);
 					if(ve->iscustom) {
-						globops(s_SecureServ, "SVSJoining %s for Virus %s", u->nick, ve->name);
+						irc_globops (ss_bot, "SVSJoining %s for Virus %s", u->name, ve->name);
 					} else {
-						globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+						irc_globops (ss_bot, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->name, ve->name, ve->name);
 					}
-					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
-#if defined(GOTSVSJOIN)
-						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
-#else 
-						sinvite_cmd(s_SecureServ, u->nick, SecureServ.HelpChan);
-#endif
+					if (!IsChannelMember(find_channel(SecureServ.HelpChan), u)) {
+						irc_svsjoin (ss_bot, u, SecureServ.HelpChan);
 					}
-					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s to %s for Virus %s", u->nick, SecureServ.HelpChan, ve->name);
-					ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+					nlog (LOG_NOTICE, "SVSJoining %s to %s for Virus %s", u->name, SecureServ.HelpChan, ve->name);
+					ircsnprintf(chan, MAXCHANLEN, "@%s", SecureServ.HelpChan);
 					if(ve->iscustom) {
-						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
+						irc_chanprivmsg (ss_bot, chan, "%s is infected with %s.", u->name, ve->name);
 					} else {
-						prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+						irc_chanprivmsg (ss_bot, chan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
 					}
-#if !defined(GOTSVSJOIN)
-					prefmsg(chan, s_SecureServ, "%s was invited to the Channel", u->nick);
-#endif
 					break;
 				} else {
-					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
-					chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
+					irc_prefmsg (ss_bot, u, SecureServ.nohelp);
+					irc_chanalert (ss_bot, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->name, u->user->username, u->user->hostname, ve->name);
 					if(ve->iscustom) {
-						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+						irc_globops (ss_bot, "Akilling %s for Virus %s (No Helpers Logged in)", u->name, ve->name);
 					}
 					else {
-						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+						irc_globops (ss_bot, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->name, ve->name, ve->name);
 					}
-					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
-					nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
+					irc_akill (ss_bot, u->user->hostname, u->user->username, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
+					nlog (LOG_NOTICE, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->name, u->user->username, u->user->hostname, ve->name);
 					break;
 				}
 			}
 		case ACT_AKILL:
 			if (SecureServ.doakill > 0) {
-				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
-				chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+				irc_prefmsg (ss_bot, u, SecureServ.akillinfo);
+				irc_chanalert (ss_bot, "Akilling %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 				if(ve->iscustom) {
-					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s ", ve->name);
+					irc_akill (ss_bot, u->user->hostname, "*", SecureServ.akilltime, "Infected with: %s ", ve->name);
 				} else {
-					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+					irc_akill (ss_bot, u->user->hostname, "*", SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
 				}
-				nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+				nlog (LOG_NOTICE, "Akilling %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 				break;
 			}
 		case ACT_KILL:
-			prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
-			chanalert(s_SecureServ, "Killing %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+			irc_prefmsg (ss_bot, u, SecureServ.akillinfo);
+			irc_chanalert (ss_bot, "Killing %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 			if(ve->iscustom) {
-				skill_cmd(s_SecureServ, u->nick, "Infected with: %s ", ve->name);
+				irc_kill (ss_bot, u->name, "Infected with: %s ", ve->name);
 			} else {
-				skill_cmd(s_SecureServ, u->nick, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+				irc_kill (ss_bot, u->name, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
 			}
-			nlog(LOG_NOTICE, LOG_MOD, "Killing %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+			nlog (LOG_NOTICE, "Killing %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 			break;
 		case ACT_WARN:
-			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
+			irc_chanalert (ss_bot, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->name, ve->name);
 			if(ve->iscustom) {
-				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
+				irc_globops (ss_bot, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);
 			} else {
-				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
+				irc_globops (ss_bot, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->name, ve->name, ve->name);
 			}
 			if (SecureServ.helpcount > 0) {
-				ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+				ircsnprintf(chan, MAXCHANLEN, "@%s", SecureServ.HelpChan);
 				if(ve->iscustom) {
-					prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
+					irc_chanprivmsg (ss_bot, chan, "%s is infected with %s.", u->name, ve->name);
 				} else {
-					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+					irc_chanprivmsg (ss_bot, chan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
 				}
 			}
-			nlog(LOG_NOTICE, LOG_MOD, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
+			nlog (LOG_NOTICE, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);
 			break;
 		case ACT_NOTHING:
-			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
-			nlog(LOG_NOTICE, LOG_MOD, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
+			if (SecureServ.verbose) irc_chanalert (ss_bot, "SecureServ warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
+			nlog (LOG_NOTICE, "SecureServ warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
 			break;
 	}
+#ifndef WIN32
 	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
 		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, __module_info.module_version, SecureServ.viriversion);
+		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->user->hostname, "TODO", SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
+#endif
 }

@@ -2,7 +2,7 @@
 ** Copyright (c) 1999-2004 Justin Hammond
 ** http://www.neostats.net/
 **
-**  This program is free software; you can redistribute it and/or modify
+**  This program is ns_free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
 **  the Free Software Foundation; either version 2 of the License, or
 **  (at your option) any later version.
@@ -23,8 +23,6 @@
 
 #ifndef SECURESERV_H
 #define SECURESERV_H
-
-#include "modconfig.h"
 
 #define VIRI_DAT_DIR		"data"
 #define VIRI_DAT_NAME		"data/viri.dat"
@@ -76,7 +74,7 @@ typedef struct virientry {
 #define SCAN_IDENT		0x00000002
 #define SCAN_REALNAME	0x00000004
 
-extern char s_SecureServ[MAXNICK];
+extern Bot *ss_bot;
 
 typedef struct UserDetail {
 	int type;
@@ -100,9 +98,6 @@ typedef struct ChannelDetail {
 #define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
-	char user[MAXUSER]; 
-	char host[MAXHOST]; 
-	char realname[MAXREALNAME]; 
 	int isonline;
 	int timedif;
 	int doscan;
@@ -110,7 +105,7 @@ struct SecureServ {
 	char signonscanmsg[BUFSIZE];
 	char akillinfo[BUFSIZE];
 	char nohelp[BUFSIZE];
-	char HelpChan[CHANLEN];
+	char HelpChan[MAXCHANLEN];
 	int breakorcont;
 	int doakill;
 	int akilltime;
@@ -127,20 +122,20 @@ struct SecureServ {
 	int MaxAJPP;
 	int DoOnJoin;
 	int BotEcho;
-	char MaxAJPPChan[CHANLEN];
+	char MaxAJPPChan[MAXCHANLEN];
 	int trigcounts[MAX_PATTERN_TYPES];
 	int actioncounts[MAX_PATTERN_TYPES];
 	int definitions[MAX_PATTERN_TYPES];
 	char updateurl[SS_BUF_SIZE];
 	char updateuname[MAXNICK];
 	char updatepw[MAXNICK];
-	char lastchan[CHANLEN];
+	char lastchan[MAXCHANLEN];
 	char lastnick[MAXNICK];
 	char monbot[MAXNICK];
 	char botquitmsg[BUFSIZE];
 	int nfcount;
 	int doprivchan;
-	char ChanKey[CHANLEN];
+	char ChanKey[MAXCHANLEN];
 	int closechantime;
 	int FloodProt;
 	struct sockaddr_in sendtohost;
@@ -157,67 +152,68 @@ struct SecureServ {
 /* SecureServ.c */
 
 /* update.c */
-int do_update(User *u, char **av, int ac);
+int do_update(CmdParams *cmdparams);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
 
 /* OnJoin.c */
-void JoinNewChan();
-void OnJoinBotMsg(User *u, char *botname, char *msg);
-int ListMonChan(User *u);
+int JoinNewChan(void);
+void OnJoinBotMsg(Client *u, char *botname, char *msg);
+int ListMonChan(Client *u);
 int LoadMonChans();
 int MonChanCount(void);
 int OnJoinBotConf(void);
 int ViriCount(void);
 int InitOnJoinBots(void);
 int ExitOnJoinBots(void);
-int do_bots(User* u, char **argv, int argc);
-int do_checkchan(User* u, char **argv, int argc);
-int do_monchan(User* u, char **argv, int argc);
-int do_cycle(User* u, char **argv, int argc);
-int do_set_monbot(User* u, char **argv, int argc);
-int CheckOnjoinBotKick(char **argv, int ac);
-int MonJoin(Chans *c);
-int MonBotDelChan(Chans *);
+int do_bots(CmdParams *cmdparams);
+int do_checkchan(CmdParams *cmdparams);
+int do_monchan(CmdParams *cmdparams);
+int do_cycle(CmdParams *cmdparams);
+int do_set_monbot (CmdParams *cmdparams, SET_REASON reason);
+int CheckOnjoinBotKick(CmdParams *cmdparams);
+int MonJoin(Channel *c);
+int MonBotDelChan(Channel *);
 int CheckMonBotKill(char* nick);
-void OnJoinDelChan(Chans* c);
+void OnJoinDelChan(Channel* c);
+int MonBotCycle(void);
 
 /* scan.c */
-int ScanFizzer(User *u);
-int ScanChan(User* u, Chans *c);
-int ScanUser(User *u, unsigned flags);
-int ScanMsg(User *u, char* buf, int chanmsg);
-int ScanCTCP(User *u, char* buf);
-int do_list(User *u, char **av, int ac);
-int do_reload(User *u, char **av, int ac);
+int ScanFizzer(Client *u);
+int ScanChan(Client* u, Channel *c);
+int ScanUser(Client *u, unsigned flags);
+int ScanMsg(Client *u, char* buf, int chanmsg);
+int ScanCTCP(Client *u, char* buf);
+int do_list(CmdParams *cmdparams);
+int do_reload(CmdParams *cmdparams);
 void InitScanner(void);
 void load_dat(void);
 
 /* exempts.c */
-int SS_IsChanExempt(Chans *c);
-int SS_IsUserExempt(User *u);
-int SS_do_exempt(User* u, char **argv, int argc);
+int SS_IsChanExempt(Channel *c);
+int SS_IsUserExempt(Client *u);
+int SS_do_exempt(CmdParams *cmdparams);
 int SS_InitExempts(void);
 
 /* FloodCheck.c */
 int InitJoinFlood(void);
-int JoinFloodJoinChan(User *u, Chans *c);
-int JoinFloodDelChan(Chans *c);
+int JoinFloodJoinChan(Client *u, Channel *c);
+int JoinFloodDelChan(Channel *c);
 int CheckLockChan(void);
 int InitNickFlood(void);
 int CleanNickFlood(void);
 int NickFloodSignOff(char * n);
-int CheckNickFlood(User* u);
+int CheckNickFlood(Client* u);
  
 /* Helpers.c */
 int HelpersInit(void);
-int HelpersLogin(User *u, char **av, int ac);
-int HelpersLogout(User *u, char **av, int ac);
-int HelpersSignoff(User *u);
-int HelpersAway(char **av, int ac);
-int HelpersAssist(User *u, char **av, int ac);
-int do_helpers(User *u, char **av, int ac);
-int HelpersChpass(User *u, char **av, int ac);
+int HelpersLogin(CmdParams *cmdparams);
+int HelpersLogout(CmdParams *cmdparams);
+int HelpersSignoff(CmdParams *cmdparams);
+int HelpersAway(CmdParams *cmdparams);
+int HelpersAssist(CmdParams *cmdparams);
+int do_helpers(CmdParams *cmdparams);
+int HelpersChpass(CmdParams *cmdparams);
 
 
 /* SecureServ_help.c */

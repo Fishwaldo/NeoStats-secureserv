@@ -1,5 +1,8 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
+3.0 - Mark (M)
+ - Port to 3.0 API and Win32
+
 1.3 - Fish (F) and Mark (M) - 27 Aug, 2004
  - Fix bug 183 - secureserv echoing messages for other module bots. (M)
  - Fix bug 190 - wrong message displayed for chan message off. (M)

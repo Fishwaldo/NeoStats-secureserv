@@ -2,7 +2,7 @@
 ** Copyright (c) 1999-2004 Justin Hammond
 ** http://www.neostats.net/
 **
-**  This program is free software; you can redistribute it and/or modify
+**  This program is ns_free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
 **  the Free Software Foundation; either version 2 of the License, or
 **  (at your option) any later version.
@@ -29,7 +29,7 @@
 
 /* the structure to keep track of joins per period (ajpp = average joins per period) */
 typedef struct ChanInfo {
-	Chans *c;
+	Channel *c;
 	int ajpp;
 	time_t sampletime;
 	int locked;
@@ -57,7 +57,7 @@ int InitJoinFlood(void)
 }
 
 /* update ajpp for chan, if required */
-int JoinFloodJoinChan (User *u, Chans *c) 
+int JoinFloodJoinChan (Client *u, Channel *c) 
 {
 	ChanInfo *ci;
 	hnode_t *cn;
@@ -65,32 +65,9 @@ int JoinFloodJoinChan (User *u, Chans *c)
 	
 	SET_SEGV_LOCATION();
 	
-#ifndef NS_FLAGS_NETJOIN
-	/* check for netjoins!!!*/
-	/* XXX this isn't really the best, as a lot of 
-	* floodbots could connect to an IRC server, wait 
-	* SecureServ.timediff, and then join the channel, 
-	* and SecureServ isn't going to flag them. It would be
-	* nicer if the IRCd protocol could easily identify nicks
-	* that are ridding in on a netjoin. 
-	*/
-	if ((time(NULL) - u->TS) > SecureServ.timedif) {
-		nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", u->nick);
-		/* forget the update */
-		return -1;
-	}
-
-	/* ok, now if the server just linked in as well, ignore this */
-	/* XXX should this time be configurable? */
-	if ((time(NULL) - u->server->connected_since) < 120) {
-		nlog(LOG_DEBUG2, LOG_MOD, "Ignoring %s joining %s as it seems server %s just linked", u->nick, c->name, u->server->name);
-		return -1;
-	}
-#else 
 	if (u->flags && NS_FLAGS_NETJOIN) {
 		return -1;
 	}
-#endif
 	/* if channel flood protection is disabled, return here */
 	if (SecureServ.FloodProt == 0) {
 		return 1;
@@ -101,8 +78,8 @@ int JoinFloodJoinChan (User *u, Chans *c)
 	if (!cn) {
 
 		/* if it doesn't exist, means we have to create it ! */
-		nlog(LOG_DEBUG2, LOG_MOD, "Creating Channel Record in JoinSection %s", c->name);
-		ci = malloc(sizeof(ChanInfo));
+		dlog (DEBUG2, "Creating Channel Record in JoinSection %s", c->name);
+		ci = ns_malloc (sizeof(ChanInfo));
 		ci->ajpp = 0;
 		ci->sampletime = 0;
 		ci->c = c;
@@ -117,7 +94,7 @@ int JoinFloodJoinChan (User *u, Chans *c)
 	 * then reset the time, and set ajpp to 1
 	 */
 	if ((time(NULL) - ci->sampletime) > SecureServ.sampletime) {
-		nlog(LOG_DEBUG2, LOG_MOD, "ChanJoin: SampleTime Expired, Resetting %s", c->name);
+		dlog (DEBUG2, "ChanJoin: SampleTime Expired, Resetting %s", c->name);
 		ci->sampletime = time(NULL);
 		ci->ajpp = 1;
 		return 1;
@@ -131,27 +108,27 @@ int JoinFloodJoinChan (User *u, Chans *c)
 	ci->ajpp++;	
 
 	if ((ci->ajpp > SecureServ.JoinThreshold) && (ci->locked > 0)) {
-		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);
-		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
-		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
-		prefmsg(ci->c->name, s_SecureServ, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
+		nlog (LOG_WARNING, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);
+		irc_chanalert (ss_bot, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		irc_globops (ss_bot, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		irc_chanprivmsg (ss_bot, ci->c->name, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
 		/* uh oh, channel is under attack. Close it down. */
-		schmode_cmd(s_SecureServ, ci->c->name, "+ik", SecureServ.ChanKey);
+		irc_cmode (ss_bot, ci->c->name, "+ik", SecureServ.ChanKey);
 		ci->locked = time(NULL);
 	}		
 
 	/* just some record keeping */
 	if (ci->ajpp > SecureServ.MaxAJPP) {
-		nlog(LOG_DEBUG1, LOG_MOD, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
-		if (SecureServ.verbose) chanalert(s_SecureServ, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
+		dlog (DEBUG1, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
+		if (SecureServ.verbose) irc_chanalert (ss_bot, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
 		SecureServ.MaxAJPP = ci->ajpp;
-		strlcpy(SecureServ.MaxAJPPChan, c->name, CHANLEN);
+		strlcpy(SecureServ.MaxAJPPChan, c->name, MAXCHANLEN);
 	}
 	return 1;
 }
 
 /* delete the channel from our hash */
-int JoinFloodDelChan(Chans *c) 
+int JoinFloodDelChan(Channel *c) 
 {
 	ChanInfo *ci;
 	hnode_t *cn;
@@ -161,12 +138,12 @@ int JoinFloodDelChan(Chans *c)
 	if (cn) {
 		ci = hnode_get(cn);
 		hash_delete(FC_Chans, cn);
-		free(ci);
+		ns_free (ci);
 		hnode_destroy(cn);
 #if 0		
 	} else {
 		/* ignore this, as it just means since we started SecureServ, no one has joined the channel, and now the last person has left. Was just flooding logfiles */
-		//nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
+		//nlog (LOG_WARNING, "Can't Find Channel %s in our Hash", c->name);
 #endif
 	}
 	return 1;
@@ -185,10 +162,10 @@ int CheckLockChan()
 		ci = hnode_get(cn);
 		/* if the locked time plus closechantime is greater than current time, then unlock the channel */
 		if ((ci->locked > 0) && (ci->locked + SecureServ.closechantime < time(NULL))) {
-			schmode_cmd(s_SecureServ, ci->c->name, "-ik", SecureServ.ChanKey);
-			chanalert(s_SecureServ, "Unlocking %s after floodprotection timeout", ci->c->name);
-			globops(s_SecureServ, "Unlocking %s after flood protection timeout", ci->c->name);
-			prefmsg(ci->c->name, s_SecureServ, "Unlocking the channel now");
+			irc_cmode (ss_bot, ci->c->name, "-ik", SecureServ.ChanKey);
+			irc_chanalert (ss_bot, "Unlocking %s after floodprotection timeout", ci->c->name);
+			irc_globops (ss_bot, "Unlocking %s after flood protection timeout", ci->c->name);
+			irc_chanprivmsg (ss_bot, ci->c->name, "Unlocking the channel now");
 			ci->locked = 0;
 		}					
 	}
@@ -216,21 +193,21 @@ int CleanNickFlood()
         nick = hnode_get(nfnode);
         if ((time(NULL) - nick->when) > 10) {
         	/* delete the nickname */
-		nlog(LOG_DEBUG2, LOG_MOD, "Deleting %s out of NickFlood Hash", nick->nick);
+		dlog (DEBUG2, "Deleting %s out of NickFlood Hash", nick->nick);
         	hash_scan_delete(nickflood, nfnode);
-        	free(nick);
+        	ns_free (nick);
         }
     }
 	return 1;
 }       
 	                
-int CheckNickFlood(User* u)
+int CheckNickFlood(Client* u)
 {
 	hnode_t *nfnode;
 	nicktrack *nick;
 
 	SET_SEGV_LOCATION();
-	nfnode = hash_lookup(nickflood, u->nick);
+	nfnode = hash_lookup(nickflood, u->name);
 	if (nfnode) {
 		/* its already there */
 		nick = hnode_get(nfnode);
@@ -238,39 +215,39 @@ int CheckNickFlood(User* u)
 		hash_delete(nickflood, nfnode);
 		/* increment the nflood count */
 		nick->changes++;
-		nlog(LOG_DEBUG2, LOG_MOD, "NickFlood Check: %d in 10", nick->changes);
+		dlog (DEBUG2, "NickFlood Check: %d in 10", nick->changes);
 		if ((nick->changes > SecureServ.nfcount) && ((time(NULL) - nick->when) <= 10)) {
 			/* its a bad bad bad flood */
-			chanalert(s_SecureServ, "NickFlood Detected on %s", u->nick);
+			irc_chanalert (ss_bot, "NickFlood Detected on %s", u->name);
 			/* XXX Do Something bad !!!! */
 			
-			/* free the struct */
+			/* ns_free the struct */
 			hnode_destroy(nfnode);
-			free(nick);
+			ns_free (nick);
 		} else if ((time(NULL) - nick->when) > 10) {
-			nlog(LOG_DEBUG2, LOG_MOD, "Resetting NickFlood Count on %s", u->nick);
-			strlcpy(nick->nick, u->nick, MAXNICK);
+			dlog (DEBUG2, "Resetting NickFlood Count on %s", u->name);
+			strlcpy(nick->nick, u->name, MAXNICK);
 			nick->changes = 1;
 			nick->when = time(NULL);
 			hash_insert(nickflood, nfnode, nick->nick);
 		} else {			
 			/* re-insert it into the hash */
-			strlcpy(nick->nick, u->nick, MAXNICK);
+			strlcpy(nick->nick, u->name, MAXNICK);
 			hash_insert(nickflood, nfnode, nick->nick);
 		}
 	} else {
 		/* this is because maybe we already have a record from a signoff etc */
-		if (!hash_lookup(nickflood, u->nick)) {
+		if (!hash_lookup(nickflood, u->name)) {
 			/* this is a first */
-			nick = malloc(sizeof(nicktrack));
-			strlcpy(nick->nick, u->nick, MAXNICK);
+			nick = ns_malloc (sizeof(nicktrack));
+			strlcpy(nick->nick, u->name, MAXNICK);
 			nick->changes = 1;
 			nick->when = time(NULL);
 			nfnode = hnode_create(nick);
 			hash_insert(nickflood, nfnode, nick->nick);
-			nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
+			dlog (DEBUG2, "NF: Created New Entry");
 		} else {
-			nlog(LOG_DEBUG2, LOG_MOD, "Already got a record for %s in NickFlood", u->nick);
+			dlog (DEBUG2, "Already got a record for %s in NickFlood", u->name);
 		}
 	}
 	return 0;
@@ -282,14 +259,14 @@ int NickFloodSignOff(char * n)
 	nicktrack *nick;
 
 	SET_SEGV_LOCATION();
-	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s", n);
+	dlog (DEBUG2, "DelNick: looking for %s", n);
 	nfnode = hash_lookup(nickflood, n);
 	if (nfnode) {
 		nick = hnode_get(nfnode);
 		hash_delete(nickflood, nfnode);
        		hnode_destroy(nfnode);
-		free(nick);
+		ns_free (nick);
 	}
-	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: After nickflood Code");
+	dlog (DEBUG2, "DelNick: After nickflood Code");
 	return 1;
 }

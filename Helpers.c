@@ -111,7 +111,7 @@ static int HelperLogout (CmdParams *cmdparams)
 		if (SecureServ.helpcount > 0)
 			SecureServ.helpcount--;
 		if ((SecureServ.helpcount == 0) && (IsChannelMember(find_channel(SecureServ.HelpChan), ss_bot->u) == 1)) {
-			irc_part (ss_bot, SecureServ.HelpChan);
+			irc_part( ss_bot, SecureServ.HelpChan, NULL );
 		}
 		return NS_SUCCESS;
 	}

@@ -268,7 +268,7 @@ int MonBotCycle()
 					continue;
 				}
 				if (IsChannelMember(c, find_user(SecureServ.monbot))) {
-					irc_part (monbotptr, c->name);
+					irc_part( monbotptr, c->name, NULL );
 				}
 				irc_join (monbotptr, c->name, 0);
 			}
@@ -288,7 +288,7 @@ int JoinNewChan()
 	if (lastnick[0] != 0) {
 		if (find_user(lastnick)) {
 			if (lastchan[0] != 0) {
-				irc_part (ojbotptr, lastchan);
+				irc_part(ojbotptr, lastchan, NULL );
 			}
 			irc_quit (ojbotptr, "Finished Scanning");
 			lastchan[0] = 0;
@@ -363,7 +363,7 @@ static int CheckChan(Client *u, char *requestchan)
 	}
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (lastchan[0] != 0) {
-		irc_part ( ojbotptr, lastchan);
+		irc_part( ojbotptr, lastchan, NULL );
 		irc_quit (ojbotptr, "Finished Scanning");
 	}
 	strlcpy(lastnick, nickname->nick, MAXNICK);
@@ -576,7 +576,7 @@ int ss_cmd_monchan_del( CmdParams *cmdparams )
 	}
 	chan = lnode_get(node);
 	irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s out of monitored channel list.", (char*)lnode_get(node));
-	irc_part (monbotptr, cmdparams->av[1]);
+	irc_part( monbotptr, cmdparams->av[1], NULL );
 	lnode_destroy(list_delete(monchans, node));
 	ns_free (chan);
 	SaveMonChans();
@@ -691,7 +691,7 @@ void FiniOnJoinBots(void)
 	if (ojbotptr) {
 		irc_chanalert (ss_bot, "SecureServ is unloading, OnJoinBot %s leaving", lastnick);
 		if (lastchan[0] != 0) {
-			irc_part (ojbotptr, lastchan);
+			irc_part( ojbotptr, lastchan, NULL );
 		}
 		irc_quit (ojbotptr, SecureServ.botquitmsg);
 		lastchan[0] = 0;
@@ -909,7 +909,7 @@ int ss_event_emptychan(CmdParams *cmdparams)
 {
 	if (monbotptr && cmdparams->bot == monbotptr)
 	{
-		irc_part (monbotptr, cmdparams->channel->name);
+		irc_part( monbotptr, cmdparams->channel->name, NULL );
 	}
 	else if (ojbotptr && cmdparams->bot == ojbotptr)
 	{

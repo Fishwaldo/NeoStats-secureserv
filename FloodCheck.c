@@ -24,7 +24,6 @@
 /* http://sourceforge.net/projects/muhstik/ */
 
 #include <stdio.h>
-#include <fnmatch.h>
 #include "dl.h"
 #include "log.h"
 #include "stats.h"

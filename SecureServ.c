@@ -127,6 +127,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_helper);
 				privmsg_list(u->nick, s_SecureServ, ts_help_oper);
 			}
+			privmsg_list(u->nick, s_SecureServ, ts_help_on_help);			
 		} else if (argc == 3) {
 			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= 185)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_set);

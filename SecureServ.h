@@ -220,6 +220,7 @@ int Helpers_away(char **, int);
 int Helpers_Assist(User *, char **, int);
 /* SecureServ_help.c */
 extern const char *ts_help[];
+extern const char *ts_help_on_help[];
 extern const char *ts_help_oper[];
 extern const char *ts_help_set[];
 extern const char *ts_help_checkchan[];

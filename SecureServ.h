@@ -86,9 +86,14 @@ typedef struct ServerDetail {
 	int tsoutcount;
 } ServerDetail;
 
+typedef struct ChannelDetail {
+	int scanned;
+} ChannelDetail;
+
 /* type list */
 #define USER_HELPER 1
 #define USER_INFECTED 2
+
 
 #define SS_BUF_SIZE 255
 #define MAX_PATTERN_TYPES	20

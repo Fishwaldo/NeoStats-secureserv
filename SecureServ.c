@@ -920,6 +920,10 @@ static int Online(char **av, int ac)
 		lnode = list_first(c->chanmembers);
 		while (lnode) {
 			u = finduser(lnode_get(lnode));
+			if (SS_IsUserExempt(u) > 0) {
+				lnode = list_next(c->chanmembers, lnode);
+				continue;
+			}
 			if (u && ScanChan(u, c) == 0) {
 				break;
 			}
@@ -1086,11 +1090,33 @@ static int LoadConfig(void)
 	}
 	return 1;
 }
+int ss_new_chan(char **av, int ac)
+{
+	Chans* c;
+	ChannelDetail *cd;
+
+	SET_SEGV_LOCATION();
+	/* if we not even inited, exit this */
+	if (!SecureServ.inited) {
+		return -1;
+	}
+	/* find the chan in the Core */
+	c = findchan(av[0]);
+	if (!c) {
+		nlog(LOG_WARNING, LOG_MOD, "newchan: Can't Find Channel %s", av[0]);
+		return -1;
+	}
+	cd = malloc(sizeof(ChannelDetail));
+	cd->scanned = 0;
+	c->moddata[SecureServ.modnum] = cd;
+	return 1;
+}
 
 int ss_join_chan(char **av, int ac)
 {
 	Chans* c;
 	User* u;
+	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
 	/* if we not even inited, exit this */
@@ -1138,9 +1164,11 @@ int ss_join_chan(char **av, int ac)
 	  * such as a IRCop, then the usercount will be screwed up next time someone joins it and really should 
 	  * be killed 
 	  */
-	if(c->cur_users == 1)
+	cd = c->moddata[SecureServ.modnum];
+	if(cd->scanned == 0) {
 		ScanChan(u, c);
-
+		cd->scanned = 1;
+	}
 	if(JoinFloodJoinChan(u, c))
 		return 1;
 
@@ -1163,6 +1191,7 @@ int ss_part_chan(char **av, int ac)
 int ss_del_chan(char **av, int ac) 
 {
 	Chans* c;
+	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
 	c = findchan(av[0]);
@@ -1170,6 +1199,9 @@ int ss_del_chan(char **av, int ac)
 		nlog(LOG_WARNING, LOG_MOD, "Can't find Channel %s", av[0]);
 		return -1;
 	}
+	cd = c->moddata[SecureServ.modnum];
+	free(cd);
+	c->moddata[SecureServ.modnum] = NULL;
 
 	JoinFloodDelChan(c);
 
@@ -1225,6 +1257,7 @@ EventFnList __module_events[] = {
 	{ EVENT_NICKCHANGE, NickChange},
 	{ EVENT_KICK,		ss_kick_chan},
 	{ EVENT_AWAY, 		ss_user_away},
+	{ EVENT_NEWCHAN,	ss_new_chan},
 #ifndef NS_FLAGS_NETJOIN
 	{ EVENT_SERVER,		ss_new_server},
 	{ EVENT_SQUIT,		ss_quit_server},

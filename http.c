@@ -588,7 +588,7 @@ extern int http_write(int socknum, char *sockname) {
                                             //  and/or if the data is encoded. ajd 8/28/2001
             sprintf( szContent, "%s%d\r\n", "Content-Length: ", strlen( pContent ) );
             strcat( hd->pRequest, szContent );
-            strcat( hd->pRequest, "User-Agent: SecureServ/0.9.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/1.0\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             strcat( hd->pRequest, pContent );
@@ -597,7 +597,7 @@ extern int http_write(int socknum, char *sockname) {
         case kHMethodHead:
         {
             sprintf( hd->pRequest, "HEAD %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
-            strcat( hd->pRequest, "User-Agent: SecureServ/0.9.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/1.0\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;
@@ -609,7 +609,7 @@ extern int http_write(int socknum, char *sockname) {
                                             //  as that was preventing some servers
                                             //  from responding properly.
             sprintf( hd->pRequest, "GET %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
-            strcat( hd->pRequest, "User-Agent: SecureServ/0.9.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/1.0\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;

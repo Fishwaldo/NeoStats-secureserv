@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DIRINST BUILDPCRE PACKAGE VERSION HAVE_MEMMOVE HAVE_STRERROR LINK_SIZE MATCH_LIMIT NEWLINE POSIX_MALLOC_THRESHOLD UTF8 LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DIRINST PACKAGE VERSION HAVE_MEMMOVE HAVE_STRERROR LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1265,7 +1265,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
           ac_config_headers="$ac_config_headers modconfig.h"
 
 PACKAGE=SecureServ
-VERSION=0.9.5
+VERSION=1.0
 DIRINST=~/NeoStats/
 
 CFLAGS="$CFLAGS -O2 -Wall"
@@ -2240,11 +2240,6 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
-
-
-cat >>confdefs.h <<\_ACEOF
-#define POSIX_MALLOC_THRESHOLD 10
-_ACEOF
 
 
 
@@ -3446,7 +3441,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int main(void) {
 	if (MAJOR >= 2) {
 		if (MINOR >= 5) {
-			if (REV >= 5) {
+			if (REV >= 9) {
 				exit(0);
 			}
 		}
@@ -3481,8 +3476,8 @@ if test "$ns_version_ok" = "yes"; then
 	echo "$as_me:$LINENO: result: Compatible Version" >&5
 echo "${ECHO_T}Compatible Version" >&6;
 else
-	{ { echo "$as_me:$LINENO: error: This Module requires NeoStats 2.5.5 or Higher" >&5
-echo "$as_me: error: This Module requires NeoStats 2.5.5 or Higher" >&2;}
+	{ { echo "$as_me:$LINENO: error: This Module requires NeoStats 2.5.9 or Higher" >&5
+echo "$as_me: error: This Module requires NeoStats 2.5.9 or Higher" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3511,12 +3506,6 @@ else
 echo "${ECHO_T}no" >&6
 
 fi;
-
-
-
-
-
-
 
 
 
@@ -4149,16 +4138,10 @@ s,@INSTALL_DATA@,$INSTALL_DATA,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@DIRINST@,$DIRINST,;t t
-s,@BUILDPCRE@,$BUILDPCRE,;t t
 s,@PACKAGE@,$PACKAGE,;t t
 s,@VERSION@,$VERSION,;t t
 s,@HAVE_MEMMOVE@,$HAVE_MEMMOVE,;t t
 s,@HAVE_STRERROR@,$HAVE_STRERROR,;t t
-s,@LINK_SIZE@,$LINK_SIZE,;t t
-s,@MATCH_LIMIT@,$MATCH_LIMIT,;t t
-s,@NEWLINE@,$NEWLINE,;t t
-s,@POSIX_MALLOC_THRESHOLD@,$POSIX_MALLOC_THRESHOLD,;t t
-s,@UTF8@,$UTF8,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF

@@ -881,6 +881,12 @@ static int do_status(User *u, char **av, int ac)
 
 static int Online(char **av, int ac) 
 {
+	Chans *c;
+	User *u;
+	lnode_t *lnode;
+	hnode_t *hnode;
+	hscan_t hs;
+	
 	SET_SEGV_LOCATION();
 	if (init_bot(s_SecureServ,"TS",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
@@ -902,6 +908,24 @@ static int Online(char **av, int ac)
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.inited = 1;
 	LoadMonChans();
+
+	/* here, we run though the channel lists, as when we were booting, we were not checking. */
+	hash_scan_begin(&hs, ch);
+	while ((hnode = hash_scan_next(&hs)) != NULL) {
+		c = hnode_get(hnode);
+		if (!c)
+			continue;
+
+		/* now scan channel members */
+		lnode = list_first(c->chanmembers);
+		while (lnode) {
+			u = finduser(lnode_get(lnode));
+			if (u && ScanChan(u, c) == 0) {
+				break;
+			}
+			lnode = list_next(c->chanmembers, lnode);
+		}
+	}
 
 	return 1;
 };
@@ -1109,6 +1133,11 @@ int ss_join_chan(char **av, int ac)
 	 * a channel name once, not everytime someone joins the channel. 
 	 * -Fish
 	 */
+	 
+	 /* this is actually pretty screwed up. You know why? because if a exempt user joins a bad channel 
+	  * such as a IRCop, then the usercount will be screwed up next time someone joins it and really should 
+	  * be killed 
+	  */
 	if(c->cur_users == 1)
 		ScanChan(u, c);
 

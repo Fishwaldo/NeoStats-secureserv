@@ -1,5 +1,11 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
+1.2 - Fish (F) and Mark (M) - 12 Feb, 2004
+ - Fix up a monbot channel cycle crash (M)
+ - Scan All channels names in the online function, so we can catch bad channels
+   after we link (F)
+ - CheckChan now also scans the channel name against the list (F)
+
 1.1 - Fish (F) and Mark (M) - 2 Dec, 2003
  - Fixed incorrect parameters to printf style functions (M)
  - Remove unused MODE_ defines. If needed they should be in the core anyway (M)

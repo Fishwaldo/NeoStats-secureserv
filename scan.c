@@ -309,7 +309,9 @@ int ScanFizzer(User *u)
 	s2 = strtok(NULL, "");
 	ircsnprintf(username, 10, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
 	free(user);
+#ifdef DEBUG
 	nlog(LOG_DEBUG2, LOG_MOD, "Fizzer RealName Check %s -> %s", username, u->username);
+#endif
 	SecureServ.trigcounts[DET_BUILTIN]++;
 	if (!strcmp(username, u->username)) {
 		nlog(LOG_NOTICE, LOG_MOD, "Fizzer Bot Detected: %s (%s -> %s)", u->nick, u->username, u->realname);
@@ -344,7 +346,9 @@ int ScanUser(User *u, unsigned flags)
 			viridetails = lnode_get(node);
 			if ((flags & SCAN_NICK) && (viridetails->dettype == DET_NICK)) {
 				SecureServ.trigcounts[DET_NICK]++;
+#ifdef DEBUG
 				nlog(LOG_DEBUG1, LOG_MOD, "Checking Nick %s against %s", u->nick, viridetails->recvmsg);
+#endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
 				if (rc < -1) {
 					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Nick Failed: (%d)", rc);
@@ -358,7 +362,9 @@ int ScanUser(User *u, unsigned flags)
 				}
 			} else if ((flags & SCAN_IDENT) && (viridetails->dettype == DET_IDENT)) {
 				SecureServ.trigcounts[DET_IDENT]++;
+#ifdef DEBUG
 				nlog(LOG_DEBUG1, LOG_MOD, "Checking ident %s against %s", u->username, viridetails->recvmsg);
+#endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->username, strlen(u->username), 0, 0, NULL, 0);
 				if (rc < -1) {
 					nlog(LOG_WARNING, LOG_MOD, "PatternMatch UserName Failed: (%d)", rc);
@@ -372,7 +378,9 @@ int ScanUser(User *u, unsigned flags)
 				}
 			} else if ((flags & SCAN_REALNAME) && (viridetails->dettype == DET_REALNAME)) {
 				SecureServ.trigcounts[DET_REALNAME]++;
+#ifdef DEBUG
 				nlog(LOG_DEBUG1, LOG_MOD, "Checking Realname %s against %s", u->realname, viridetails->recvmsg);
+#endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->realname, strlen(u->realname), 0, 0, NULL, 0);
 				if (rc < -1) {
 					nlog(LOG_WARNING, LOG_MOD, "PatternMatch RealName Failed: (%d)", rc);
@@ -404,7 +412,9 @@ int ScanCTCP(User *u, char* buf)
 			viridetails = lnode_get(node);
 			if (((viridetails->dettype == DET_CTCP) || (viridetails->dettype > MAX_PATTERN_TYPES))) {
 				SecureServ.trigcounts[DET_CTCP]++;
+#ifdef DEBUG
 				nlog(LOG_DEBUG1, LOG_MOD, "Checking Version %s against %s", buf, viridetails->recvmsg);
+#endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 				if (rc < -1) {
 					nlog(LOG_WARNING, LOG_MOD, "PatternMatch CTCP Version Failed: (%d)", rc);
@@ -479,7 +489,9 @@ int ScanChan(User* u, Chans *c)
 			viridetails = lnode_get(node);
 			if (viridetails->dettype == DET_CHAN) {
 				SecureServ.trigcounts[DET_CHAN]++;
+#ifdef DEBUG
 				nlog(LOG_DEBUG1, LOG_MOD, "Checking Chan %s against %s", c->name, viridetails->recvmsg);
+#endif
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
 				if (rc < -1) {
 					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
@@ -487,7 +499,7 @@ int ScanChan(User* u, Chans *c)
 					gotpositive(u, viridetails, DET_CHAN);
 					positive++;
 					if (SecureServ.breakorcont != 0) {
-						return 1;
+						return positive;
 					}
 				}
 			}

@@ -296,6 +296,8 @@ static int CheckChan(User *u, char *requestchan)
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
+	lnode_t *lnode;
+	User *cm;
 	
 	SET_SEGV_LOCATION();
 	c = findchan(requestchan);
@@ -303,6 +305,21 @@ static int CheckChan(User *u, char *requestchan)
 		prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
 		return -1;
 	}			
+
+	/* first, run the channel through the viri list, make sure its not bad */
+	
+	/* now scan channel members */
+	lnode = list_first(c->chanmembers);
+	while (lnode) {
+		cm = finduser(lnode_get(lnode));
+		if (cm && ScanChan(cm, c) == 0) {
+			/* if its 0, means its ok, no need to scan other members */
+			break;
+		}
+		lnode = list_next(c->chanmembers, lnode);
+	}
+
+
 
 	nickname = GetNewBot(0);
 	if(nickname ==NULL) {

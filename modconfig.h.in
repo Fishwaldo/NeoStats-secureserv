@@ -2,3 +2,12 @@
 #undef DEBUG
 
 #undef HAVE_CRYPT_H
+
+/* Version number of package */
+#undef SECURESERV_VERSION
+
+/* Major Version */
+#undef MAJOR
+
+/* Minor Version */
+#undef MINOR

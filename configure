@@ -1264,8 +1264,23 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
           ac_config_headers="$ac_config_headers modconfig.h"
 
+
 PACKAGE=SecureServ
-VERSION=1.2
+MAJOR=1
+MINOR=3
+VERSION=$MAJOR.$MINOR
+cat >>confdefs.h <<_ACEOF
+#define MAJOR $MAJOR
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define MINOR $MINOR
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define SECURESERV_VERSION "$VERSION"
+_ACEOF
+
 DIRINST=~/NeoStats/
 
 CFLAGS="$CFLAGS -O2"

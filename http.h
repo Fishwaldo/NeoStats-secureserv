@@ -42,7 +42,8 @@
  * Allow you to disable library functionality you don't need. - Jean II
  */
 #define HF_FIND_HEADER		/* find_header() function */
-#define HF_DO_FILE		/* do_file() function & functionality */
+#undef HF_DO_FILE		/* do_file() function & functionality */
+#define HTTPHOST "www.neostats.net"
 
 #define BUFLEN 8192
 #define GETLEN 8192
@@ -84,9 +85,9 @@ typedef enum
                     
 char *find_header_end( char *buf, int bytes );
 char *parse_url( char *url, char *scheme, char *host, int *port );
-HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_Method, unsigned long in_Flags );
+int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags,void (*callback)(HTTP_Response response) );
 #ifdef HF_DO_FILE
-HTTP_Response do_file(char *in_URL);
+int do_file(char *in_URL);
 #endif /* HF_DO_FILE */
 #ifdef HF_FIND_HEADER
 char *find_header( char *buf, int bytes, char *type, char *value, int maxv );

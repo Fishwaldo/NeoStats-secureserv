@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.5 2003/04/22 12:49:26 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.6 2003/04/23 13:54:13 fishwaldo Exp $
 */
 
 
@@ -29,6 +29,7 @@
 #include "stats.h"
 #include "conf.h"
 #include "SecureServ.h"
+#include "http.h"
 
 const char tsversion_date[] = __DATE__;
 const char tsversion_time[] = __TIME__;
@@ -42,6 +43,7 @@ void LoadTSConf();
 int check_version_reply(char *origin, char **av, int ac);
 void gotpositive(User *u, virientry *ve, int type);
 void do_list(User *u);
+void http_response(HTTP_Response response);
 
 Module_Info my_info[] = { {
 	"SecureServ",
@@ -155,6 +157,9 @@ int Online(char **av, int ac) {
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
+
+	http_request("http://202.181.4.129/viri.dat", 2, HFLAG_NONE, http_response);
+
 	return 1;
 };
 
@@ -452,6 +457,13 @@ void _init() {
 	SecureServ.sampletime = 5;
 	SecureServ.JoinThreshold = 5;
 	
+
+
+}
+
+void http_response(HTTP_Response response) {
+printf("gotresponse\n");
+
 }
 
 

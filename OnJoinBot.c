@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.3 2003/04/22 12:49:26 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.4 2003/04/23 13:54:13 fishwaldo Exp $
 */
 
 
@@ -74,6 +74,8 @@ restartchans:
 	if (trychan > 5) {
 		/* give up after 5 attempts */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a fresh Channel, Giving up");
+		strncpy(lastchan, "\0", CHANLEN);
+		strncpy(lastnick, "\0", MAXNICK);
 		return;
 	}
 
@@ -85,6 +87,11 @@ restartchans:
 			goto restartchans;
 		}
 		strncpy(lastchan, c->name, CHANLEN);
+	} else {
+		/* hu? */
+		strncpy(lastchan, "\0", CHANLEN);
+		strncpy(lastnick, "\0", MAXNICK);
+		return;
 	}
 	trynick = 0;
 restartnicks:
@@ -92,6 +99,8 @@ restartnicks:
 	if (trynick > 5) {
 		/* give up if we try five times */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
+		strncpy(lastchan, "\0", CHANLEN);
+		strncpy(lastnick, "\0", MAXNICK);
 		return;
 	}
 	j = 1;

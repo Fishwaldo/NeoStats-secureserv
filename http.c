@@ -28,6 +28,8 @@
  ***************************************************************************/
 
 #include <ctype.h>
+#include "stats.h"
+#include "log.h"
 #include "http.h"
 
 #ifdef DEBUG
@@ -37,6 +39,27 @@
  #define debug(path, args...)
  #define debug2(ptr, args...)
 #endif
+
+typedef struct http_details {
+	char path[8192];
+	int port;
+	char host[MAXHOST];
+	HTTP_Response response;
+	int method;
+	char *pRequest;
+	void (*callback)(HTTP_Response response);
+    	struct sockaddr_in addr;
+	char *pData;
+	char *pBase;
+        unsigned long total_bytes;
+        unsigned long bytes;
+        unsigned long header_size;
+        unsigned long data_size;
+        unsigned long alloc_size;
+        int in_header;
+} http_details;
+
+struct http_details *hd;
 
 char *find_header_end( char *buf, int bytes )
 {
@@ -186,15 +209,12 @@ char *parse_url( char *url, char *scheme, char *host, int *port )
  *                        megabytes of data.
  *
  */
-HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_Method, unsigned long in_Flags )
+int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, void (*callback)(HTTP_Response response))
 {
-    char *pBuf;
-    char *pRequest;
-	char *path;
     char scheme[50], host[MAXPATHLEN];
-    char *pData, *pBase, *pContent, *pHCode, *pHMsgEnd; // *pScheme, *pHost, *pPath, 
-    char szContent[32];
+    char *pData, *pBase, *pHCode, *pHMsgEnd; // *pScheme, *pHost, *pPath, 
     char *proxy;
+    char *path;
     int port;
     struct hostent *nameinfo;
     int s;
@@ -203,11 +223,12 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
     unsigned long total_bytes, bytes, header_size = 0UL, data_size = 0UL, alloc_size = 0UL;
     fd_set set;
     int in_header;
-    char *h_end_ptr;
 #ifdef DEBUG
     long secs, usecs, bytes_per_sec;
 #endif
-    HTTP_Response   hResponse = { 0,0,0,0,0,"","" };
+
+
+
 
 #ifdef HF_DO_FILE
 // CRH  It's a file or directory
@@ -215,26 +236,26 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
         return do_file( in_URL );
 #endif /* HF_DO_FILE */
 
-    memset( hResponse.szHCode, '\0', HCODESIZE );
-    memset( hResponse.szHMsg, '\0', HMSGSIZE );
-	memset( host, '\0', MAXPATHLEN );
+    hd = malloc(sizeof(http_details));
+    hd->response.lSize = 0;
+    hd->response.iError = -1;
+#if 0    
+    memset( hd->response.szHCode, '\0', HCODESIZE );
+    memset( hd->response.szHMsg, '\0', HMSGSIZE );
+    memset( hd->host, '\0', MAXPATHLEN );
     memset( scheme, '\0', 50 );
-    memset( szContent, '\0', 32 );
-
-    pBuf = (char *)calloc( 1, BUFLEN + 1 );
-    if( pBuf == NULL )
-        return( hResponse );
+#endif
+    hd->method = in_Method;
+    
                                             //  the GET and POST as of 9/4/2001
     if( in_Method == kHMethodPost )
     {
                                             //  add 1024 bytes for the header
-        pRequest = (char *)calloc( 1, strlen( in_URL ) + 1024 );
-        if( pRequest == NULL )
+        hd->pRequest = (char *)calloc( 1, strlen( in_URL ) + 1024 );
+        if( hd->pRequest == NULL )
         {
-			if( pBuf ) free( pBuf );
-            hResponse.iError = errno;
-            hResponse.pError = strerror( errno );
-            return( hResponse );
+	    hd->callback(hd->response);
+            return(-1);
         }
     }
     else                                    //  allocate enough for the 
@@ -243,24 +264,22 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
         {
                                             //  allocate the size of the URL
                                             //  add 1024 bytes for the header
-            pRequest = (char *)calloc( 1, strlen( in_URL ) + 1024 );
-            if( pRequest == NULL )
+            hd->pRequest = (char *)calloc( 1, strlen( in_URL ) + 1024 );
+            if( hd->pRequest == NULL )
             {
-                hResponse.iError = errno;
-                hResponse.pError = strerror( errno );
-                return( hResponse );
+	        hd->callback(hd->response);
+                return(-1);
             }
         }
         else 
         {
             debug( stderr, "*** Request too large, truncating to 8192 max size\n*** will try request anyway...\n" );
             *(in_URL + 8192) = '\0';
-            pRequest = (char *)calloc( 1, GETLEN + 1024 );
-            if( pRequest == NULL )
+            hd->pRequest = (char *)calloc( 1, GETLEN + 1024 );
+            if( hd->pRequest == NULL )
             {
-                hResponse.iError = errno;
-                hResponse.pError = strerror( errno );
-                return( hResponse );
+	        hd->callback(hd->response);
+                return(-1);
             }
         }
     }
@@ -274,88 +293,230 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
         debug( stderr, "URL host = %s\n", host );
         debug( stderr, "URL port = %d\n", port );
         debug( stderr, "URL path = %s\n", path );
-                                     //  check for http scheme to be safe.
+        //  check for http scheme to be safe.
         if( strcasecmp(scheme, "http") != 0 )
         {
-            fprintf( stderr, "http_request cannot operate on %s URLs without a proxy\n", scheme );
-			if( path ) free( path );
-            if( pBuf ) free( pBuf );
-            if( pRequest ) free( pRequest );
-            return( hResponse );
+            nlog(LOG_WARNING, LOG_MOD, "http_request cannot operate on %s URLs without a proxy\n", scheme );
+            hd->callback(hd->response);
+            if( path ) free( path );
+            if( hd->pRequest ) free( hd->pRequest );
+            return(-1);
         }
     }
     else
     {
         path = parse_url( proxy, scheme, host, &port );
-		if( path ) free( path );            // 	free it, in_URL will be assigned to it
+	if( path ) free( path );            // 	free it, in_URL will be assigned to it
         debug( stderr, "Using proxy server at %s:%d\n", host, port );
         // add jjsa 2/17/2002
-		path = (char *)calloc( 1, strlen( in_URL) + 1 );
-		if( path == NULL )
-		{
-            if( pBuf ) free( pBuf );
-            if( pRequest ) free( pRequest );
-            return( hResponse );
-		}
+	path = (char *)calloc( 1, strlen( in_URL) + 1 );
+	if( path == NULL )
+	{
+            hd->callback(hd->response);
+            if( hd->pRequest ) free( hd->pRequest );
+            return(-1);
+	}
         path = in_URL;
     }
     /* -- Note : --
      * After this point, in_URL is no longer used and you should only
      * use "path". - Jean II
      */
+    strncpy(hd->path, path, 8192);
+    strncpy(hd->host, host, MAXHOST);
+    hd->port = port;
+    nlog(LOG_DEBUG1, LOG_MOD, "HTTP_Request: %s:%d/%s and Request %s", hd->host, hd->port, hd->path, hd->pRequest);
 
-    /* Find out the IP address */
 
-    if( (nameinfo = gethostbyname( host )) == NULL )
-    {
-        addr.sin_addr.s_addr = inet_addr( host );
-        if( (int)addr.sin_addr.s_addr == -1 )
+    addr.sin_addr.s_addr = inet_addr( host );
+    if( (int)addr.sin_addr.s_addr == -1 )
         {
-            hResponse.iError = errno;
-            hResponse.pError = strerror( errno );
-            
-            fprintf( stderr, "Unknown host %s\n", host );
-			if( path ) free( path );
-            if( pBuf ) free( pBuf );
-            if( pRequest ) free( pRequest );
-            return( hResponse );
+	nlog(LOG_CRITICAL, LOG_MOD, "Host %s is not a valid IP address", hd->host);
+	hd->callback(hd->response);
+        if( hd->pRequest ) free( hd->pRequest );
+	return(-1);
+    } else {
+    	/* do connect, as the host, was a IP address */
+	sock_connect(SOCK_STREAM, addr.sin_addr.s_addr, hd->port, "SecureServ", "SecureServ", "http_read", "http_write", "http_error");
+    } 
+    return(1);
+}
+
+
+extern int http_read(int socknum, char *sockname) {
+	int i;
+	char *buf;
+    	char *h_end_ptr, *pHCode, *pHMsgEnd;
+    	unsigned long header_size = 0UL;
+	
+	buf = malloc(BUFLEN);
+	bzero(buf, BUFLEN);
+	i = recv(socknum, buf, BUFLEN, 0);
+	if (i < 0) {
+		nlog(LOG_NOTICE, LOG_MOD, "HttpGet Error in Read %s", strerror(errno));
+	        hd->response.iError = errno;
+                hd->response.pError = strerror( errno );
+                hd->callback(hd->response);
+        	sock_disconnect(sockname);
+		free(buf);
+        	return -1;
+        } else if (i == 0) {
+		free(buf);
+        	nlog(LOG_DEBUG1, LOG_MOD, "HttpGet Successfull");
+
+	    	h_end_ptr = find_header_end( hd->pBase, hd->total_bytes );
+
+    		if( h_end_ptr != NULL )
+    		{
+        		//  we'll get response and response message
+		        pHCode = strchr( hd->pBase, ' ' );
+		        if( pHCode != NULL )
+		        {
+		            pHCode++;
+		            strncpy( hd->response.szHCode, pHCode, 3 );
+		            //  now get message
+		            pHCode += 4;            //  increment past code
+		            //  and search for new line
+		            pHMsgEnd = strchr( pHCode, '\n' );
+		            if( pHMsgEnd != NULL )  //  get the rest of line for the response message
+		            {
+		                strncpy( hd->response.szHMsg, pHCode, 
+		                (pHMsgEnd - pHCode) <= (HMSGSIZE - 1) ? (pHMsgEnd - pHCode ) : (HMSGSIZE - 1) );
+		            }
+		        }
+	    	}
+	    	else
+    		{
+		        hd->header_size = hd->total_bytes;
+		        h_end_ptr = hd->pBase + hd->total_bytes;
+    		}
+
+    		//  now we'll store the size of the header, since we'll need to
+    		//  subtract that from the total of bytes downloaded to get the
+    		//  real size of the data.
+    		header_size = (unsigned long)(h_end_ptr - hd->pBase);
+
+    		/* Found, print up to delimiter to stderr and rest to stdout */
+    		debug( stderr, "----- HTTP reply header follows -----\n" );
+    		debug2( hd->pBase, h_end_ptr - hd->pBase, 1, stderr );
+    		debug( stderr, "----- HTTP reply header end -----\n" );
+    		debug( stderr, "Header size: %d\n", header_size );
+
+    		if( hd->method == kHMethodHead )
+    		{
+			if( hd->path ) free( hd->path );
+        		if( buf ) free( buf );
+        		if( hd->pRequest ) free( hd->pRequest );
+        		hd->pBase = realloc( hd->pBase, header_size );
+        		if( hd->pBase == NULL ) {
+				sock_disconnect(sockname);
+				/* callback */
+	            		return(-1);
+	            	}
+        		hd->response.lSize = (long)header_size;
+        		hd->response.pData = hd->pBase;
+			sock_disconnect(sockname);
+			/* callback */
+        		return(-1);
+    		}
+
+	    	/* Delete HTTP headers */
+    		memcpy(hd->pBase, h_end_ptr, hd->total_bytes - hd->header_size);
+
+    		//  realloc the data if we've gotten anything. chances are
+    		//  we'll have more allocated than we've transfered. ajd 8/27/2001
+    		if( (hd->total_bytes - header_size) > 0 )
+    		{
+        		hd->pBase = realloc( hd->pBase, (hd->total_bytes - header_size) + 1 );
+        		if( hd->pBase == NULL )
+        		{
+            			hd->response.iError = errno;
+            			hd->response.pError = strerror( errno );
+
+            			if( hd->pBase ) free( hd->pBase );
+				if( hd->path ) free( hd->path );
+            			if( buf ) free( buf );
+            			if( hd->pRequest ) free( hd->pRequest );
+				sock_disconnect(sockname);
+				/* callback */
+            			return( -1);
+        		}                                   
+    		}                                       //  now, if we've gotten this far we must
+                                            //  have our data, so store the size and
+                                            //  the pointer to the data in our response
+                                            //  structure for return.
+    		if( hd->method != kHMethodHead )         //  HEAD would be set already
+    		{
+        		hd->response.lSize = (long)(hd->total_bytes - header_size);
+        		hd->response.pData = hd->pBase;
+    		}
+		if( hd->path ) free( hd->path );
+//    		if( buf ) free( buf ); //
+    		if( hd->pRequest ) free( hd->pRequest );
+
+
+
+
+printf("%s\n", hd->pBase);
+printf("%s\n", hd->response.szHCode);
+//        	hd->callback(hd->response);
+        	sock_disconnect(sockname);
+        	return -1;
+	}                		
+        hd->total_bytes += i;
+printf("TotalBytes %d\n", hd->total_bytes);
+
+        if( (hd->data_size + i ) > hd->alloc_size )
+        {
+            hd->pBase = realloc( hd->pBase, (hd->alloc_size + XFERLEN) );
+            if( hd->pBase == NULL )
+            {
+                                        //  get outta dodge and free the
+                                        //  the allocated memory...there
+                                        //  could be a chance that we ran
+                                        //  out of resource, and we'll
+                                        //  free it.
+                hd->response.iError = errno;
+                hd->response.pError = strerror( errno );
+                
+		if( hd->path ) free( hd->path );
+                if( hd->pBase ) free( hd->pBase );
+                if( hd->pRequest ) free( hd->pRequest );
+		free(buf);
+//                hd->callback(hd->response);
+                sock_disconnect(sockname);
+                return(-1);
+            }
+            hd->pData = hd->pBase + hd->data_size;
+            hd->alloc_size += XFERLEN;
+            debug( stderr, "." );
         }
-    }
-    else
-    {
-        memcpy( (char *)&addr.sin_addr.s_addr, nameinfo->h_addr, nameinfo->h_length );
-    }
 
-    /* Create socket and connect */
+        memcpy( hd->pData, buf, i );   //  copy data
+        hd->pData += i;                 //  increment pointer
+        hd->data_size += i;             //  increment size of data
 
-    if( (s = socket( PF_INET, SOCK_STREAM, 0 )) == -1 )
-    {
-        hResponse.iError = errno;
-        hResponse.pError = strerror( errno );
-		if( path ) free( path );
-        if( pBuf ) free( pBuf );
-        if( pRequest ) free( pRequest );
-        return( hResponse );
-    }
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons( port );
+    return 1;
+}
+extern int http_write(int socknum, char *sockname) {
+    int i;
+    char szContent[32];
+    char *pBuf, *pContent;
 
-    if( connect( s, (struct sockaddr *)&addr, sizeof(addr) ) == -1 )
-    {
-        hResponse.iError = errno;
-        hResponse.pError = strerror( errno );
-		if( path ) free( path );
-        if( pBuf ) free( pBuf );
-        if( pRequest ) free( pRequest );
-        return( hResponse );
+    if (strlen(hd->pRequest) > 0) {
+    	return 1;
     }
 
-    debug( stderr, "Connected to %s:%d\n", host, port );
+
+
+    pBuf = (char *)calloc( 1, BUFLEN + 1 );
+    if( pBuf == NULL )
+        return(-1);
 
     //  at this point we can construct our actual request. I'm trying to 
     //  incorporate more methods than the GET method supported by httpget
 
-    switch( in_Method )
+    switch( hd->method )
     {
         case kHMethodPost:
         {
@@ -364,7 +525,7 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
                                             //  a post URL should include some type of
                                             //  data appended with a '?', so we will
                                             //  require a '?' be present to continue.
-            pContent = strchr( path, '?' );
+            pContent = strchr( hd->path, '?' );
             if( pContent != NULL )
             {
             /* Real lenght of the path.
@@ -373,55 +534,41 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
          * request. It's size will be in Content-Length
          * The real "path" will go in the first line of the request.
          * Jean II */
-            pathlen = pContent - path;
+            pathlen = pContent - hd->path;
 
                 pContent++;                 //  increment to first char of content
-                debug( stderr, "path: %.*s\n", pathlen, path );
+                debug( stderr, "path: %.*s\n", pathlen, hd->path );
                 debug( stderr, "content: %s\n", pContent );
             }
             else
             {
-                hResponse.iError = errno;
-                hResponse.pError = "ERROR, invalid URL for POST request";
-                fprintf( stderr, "ERROR: invalid URL for POST request, no content found\n" );
+                hd->response.iError = errno;
+                hd->response.pError = "ERROR, invalid URL for POST request";
+                hd->callback(hd->response);
                 if( pBuf ) free( pBuf );
-                if( pRequest ) free( pRequest );
-                return( hResponse );
+                if( hd->pRequest ) free( hd->pRequest );
+                return(1);
             }
 
-            sprintf( pRequest, "POST %.*s HTTP/1.0\r\nHost: %s\r\n",
-             pathlen, path, host );
+            sprintf( hd->pRequest, "POST %.*s HTTP/1.0\r\nHost: %s\r\n",
+             pathlen, hd->path, HTTPHOST );
                                             //  the following Content-Type may need to be changed
                                             //  depending on what type of data you are sending,
                                             //  and/or if the data is encoded. ajd 8/28/2001
-        /* If the caller provides already a Content-Type header, no need
-         * to do it ourselves - Jean II */
-        if( ! (in_Flags & HFLAG_POST_USER_TYPE) )
-                strcat( pRequest, "Content-Type: application/x-www-form-urlencoded\r\n");
             sprintf( szContent, "%s%d\r\n", "Content-Length: ", strlen( pContent ) );
-            strcat( pRequest, szContent );
-            if( strlen( in_ReqAddition ) )            //  add any additional entities
-            {
-                strcat( pRequest, in_ReqAddition );
-                strcat( pRequest, "\r\n" );
-            }
-            strcat( pRequest, "User-Agent: hget/0.5\r\n" );
-            strcat( pRequest, "Pragma: no-cache\r\n" );
-            strcat( pRequest, "Accept: */*\r\n\r\n" );
-            strcat( pRequest, pContent );
+            strcat( hd->pRequest, szContent );
+            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "Pragma: no-cache\r\n" );
+            strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
+            strcat( hd->pRequest, pContent );
             break;
         }
         case kHMethodHead:
         {
-            sprintf( pRequest, "HEAD %s HTTP/1.0\r\nHost: %s\r\n", path, host );
-            strcat( pRequest, "User-Agent: hget/0.5\r\n" );
-            if( strlen( in_ReqAddition ) )
-            {
-                strcat( pRequest, in_ReqAddition );
-                strcat( pRequest, "\r\n" );
-            }
-            strcat( pRequest, "Pragma: no-cache\r\n" );
-            strcat( pRequest, "Accept: */*\r\n\r\n" );
+            sprintf( hd->pRequest, "HEAD %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
+            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "Pragma: no-cache\r\n" );
+            strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;
         }
         case kHMethodGet:
@@ -430,44 +577,34 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
                                             //  added in the Host: header entity
                                             //  as that was preventing some servers
                                             //  from responding properly.
-            sprintf( pRequest, "GET %s HTTP/1.0\r\nHost: %s\r\n", path, host );
-            strcat( pRequest, "User-Agent: hget/0.5\r\n" );
-            if( strlen( in_ReqAddition ) )
-            {
-                strcat( pRequest, in_ReqAddition );
-                strcat( pRequest, "\r\n" );
-            }
-            strcat( pRequest, "Pragma: no-cache\r\n" );
-            strcat( pRequest, "Accept: */*\r\n\r\n" );
+            sprintf( hd->pRequest, "GET %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
+            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "Pragma: no-cache\r\n" );
+            strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;
         }
     }
 
-    gettimeofday( &from_request, NULL );
 
     debug( stderr, "----- HTTP request follows -----\n" );
-    debug( stderr, "%s\n", pRequest );
+    debug( stderr, "%s\n", hd->pRequest );
     debug( stderr, "----- HTTP request end -----\n" );
-    write( s, pRequest, strlen( pRequest) );
-
-    FD_ZERO( &set );
-    FD_SET( s, &set );
-
-    if( select( FD_SETSIZE, &set, NULL, NULL, NULL ) == -1 )
-    {
-        hResponse.iError = errno;
-        hResponse.pError = strerror( errno );
-		if( path ) free( path );
+    i = write( socknum, hd->pRequest, strlen( hd->pRequest) );
+    if (i < 0) {
+    	nlog(LOG_NOTICE, LOG_MOD, "HTTP_Get: Write Error: %s", strerror(errno));
+        hd->response.iError = errno;
+        hd->response.pError = strerror( errno );
+        hd->callback(hd->response);
         if( pBuf ) free( pBuf );
-        if( pRequest ) free( pRequest );
-        return( hResponse );
+        if( hd->pRequest ) free( hd->pRequest );
+       	sock_disconnect(sockname);
+       	return -1;
     }
 
-    gettimeofday( &from_reply, NULL );
+    /* if we get here, we can allocate some space, and setup the temp buffer */
+    hd->in_header = 1;
 
-    in_header = 1;
-
-    total_bytes = 0UL;
+    hd->total_bytes = 0UL;
 
     //  first we'll allocate a 64k chunk of memory. we don't know the exact size of the
     //  response. Most web pages fit in 64k of memory, and the is practical. for larger
@@ -476,22 +613,34 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
     //  8k of read buffer.
     //  ajd 8/27/2001
 
-    data_size = 0UL;
-    pBase = (char *)malloc( XFERLEN );
-    if( pBase == NULL )
+    hd->data_size = 0UL;
+    hd->pBase = (char *)malloc( XFERLEN );
+    if( hd->pBase == NULL )
     {
-        hResponse.iError = errno;
-        hResponse.pError = strerror( errno );
+        hd->response.iError = errno;
+        hd->response.pError = strerror( errno );
         
-        fprintf(stderr, "ERROR (malloc): recv (errno = %d = %s)\n",
-                                                     errno, strerror(errno));
-        fflush( stderr );
-		if( path ) free( path );
-        if( pBuf ) free( pBuf );
-        if( pRequest ) free( pRequest );
-        return( hResponse );
+	if( hd->path ) free( hd->path );
+        if( hd->pRequest ) free( hd->pRequest );
+	hd->callback(hd->response);
+	sock_disconnect(sockname);
+        return(-1);
     }
-    alloc_size = XFERLEN;
+    hd->pData = hd->pBase;
+    hd->alloc_size = XFERLEN;
+
+
+
+    return 1;
+}
+
+extern int http_error(int socknum, char *sockname) {
+printf("error\n");
+}
+
+
+#if 0
+
     pData = pBase;                          //  assign the data ptr as base to start
 
                                             //  for better or worse I've
@@ -660,6 +809,7 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
     if( pRequest ) free( pRequest );
     return( hResponse );
 }
+#endif
 
 #ifdef HF_DO_FILE
 /*
@@ -677,7 +827,7 @@ HTTP_Response http_request( char *in_URL, char *in_ReqAddition, HTTP_Method in_M
  *                        megabytes of data.
  *
  */
-HTTP_Response do_file(char *in_URL)
+int do_file(char *in_URL)
     {
     HTTP_Response   hResponse = { 0,0,0,0,"","" };
     struct stat status;

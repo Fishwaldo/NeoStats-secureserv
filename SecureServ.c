@@ -39,12 +39,6 @@
 #include "SecureServ.h"
 #include "http.h"
 
-const char tsversion_date[] = __DATE__;
-const char tsversion_time[] = __TIME__;
-
-
-
-
 extern const char *ts_help[];
 static int ScanNick(char **av, int ac);
 void LoadTSConf();
@@ -64,18 +58,21 @@ static void save_exempts();
 int AutoUpdate();
 int CleanNickFlood();
 
-Module_Info my_info[] = { {
+ModuleInfo __module_info = {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.5"
-} };
+	"0.9.5",
+	__DATE__,
+	__TIME__
+};
 
 
 int new_m_version(char *origin, char **av, int ac) {
-	snumeric_cmd(351,origin, "Module SecureServ Loaded, Version: %s %s %s",my_info[0].module_version,tsversion_date,tsversion_time);
+	snumeric_cmd(351,origin, "Module SecureServ Loaded, Version: %s %s %s",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time);
 	return 0;
 }
-Functions my_fn_list[] = {
+
+Functions __module_functions[] = {
 	{ MSG_VERSION,	new_m_version,	1 },
 #ifdef HAVE_TOKEN_SUP
 	{ TOK_VERSION,	new_m_version,	1 },
@@ -1155,10 +1152,10 @@ void do_list(User *u) {
 int Online(char **av, int ac) {
 
 	SET_SEGV_LOCATION();
-	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name) == -1 ) {
+	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		s_SecureServ = strcat(s_SecureServ, "_");
-		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name);
+		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name);
 	}
 	LoadTSConf();
 	LoadMonChans();
@@ -1166,11 +1163,11 @@ int Online(char **av, int ac) {
 	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
-	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
+	add_mod_timer("JoinNewChan", "RandomJoinChannel", __module_info.module_name, SecureServ.stayinchantime);
 	/* start cleaning the nickflood list now */
 	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
-	add_mod_timer("CleanNickFlood", "CleanNickFlood", my_info[0].module_name, 60);
-	add_mod_timer("CheckLockChan", "CheckLockedChans", my_info[0].module_name, 10);
+	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
+	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 10);
 	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 
 	return 1;
@@ -1544,7 +1541,7 @@ void load_dat() {
 }
 
 
-EventFnList my_event_list[] = {
+EventFnList __module_events[] = {
 	{ "ONLINE", 	Online},
 	{ "SIGNON", 	ScanNick},
 	{ "SIGNOFF", 	DelNick},
@@ -1555,20 +1552,6 @@ EventFnList my_event_list[] = {
 	{ "KICK",	ss_kick_chan},
 	{ "AWAY", 	Helpers_away},
 	{ NULL, 	NULL}
-};
-
-
-
-Module_Info *__module_get_info() {
-	return my_info;
-};
-
-Functions *__module_get_functions() {
-	return my_fn_list;
-};
-
-EventFnList *__module_get_events() {
-	return my_event_list;
 };
 
 int is_exempt(User *u) {
@@ -1991,7 +1974,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
 		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, my_info[0].module_version, SecureServ.viriversion);
+		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, __module_info.module_version, SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
 
@@ -2079,7 +2062,7 @@ void datver(HTTP_Response *response) {
 		if (myversion > SecureServ.viriversion) {
 			if (SecureServ.autoupgrade > 0) {
 				SecureServ.doUpdate = 1;
-				add_mod_timer("DownLoadDat", "DownLoadNewDat", my_info[0].module_name, 1);
+				add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 1);
 			 } else
 				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
 		}
@@ -2180,7 +2163,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 				snprintf(url2, 255, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 				http_request(url2, 2, HFLAG_NONE, datver); 
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
-				add_mod_timer("AutoUpdate", "AutoUpdateDat", my_info[0].module_name, 86400);
+				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
 			} else {
 				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
 			}

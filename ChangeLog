@@ -8,6 +8,7 @@ SecureServ Module for NeoStats Changelog.
  - Update segv code (M/F)
  - Cleaned up help text and reformatted help to match the rest of NeoStats (M)
  - Cleaned up old includes of <fnmatch.h> (M)
+ - Changed to use new module export API (M)
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

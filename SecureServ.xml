@@ -335,12 +335,19 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       Virus&#39;s that infect Mirc). These users are granted the ability to
       &#34;release&#34; a infected user from SecureServ or kill
       un-cooperative, or unresponsive users that SecureServ has identified as
-      being infected. </para>
+      being infected. Users that have been joined to the help channel are
+      &#34;held&#34; by SecureServ and are usually prevented from joining
+      other channels (if your IRCd supports this option). This can be helpfull
+      so you can clean up users that are infected with simple script based
+      virus&#39;s and you require their attention to help you clean their
+      computer. More information about the commands available to use on
+      infected users is available via the assist command detailed below.
+      </para>
 
       <caution>
         <para>Although SecureServ limits who a &#34;Helper&#34; may kill (only
         infected users joined to the Help Channel) you should only give out
-        login accounts to trusted users. </para>
+        login accounts to trusted users.</para>
       </caution>
 
       <para><emphasis role="bold">Adding a Entry</emphasis></para>
@@ -352,7 +359,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>Where:</para>
 
       <para>&#60;login&#62; = The login name to use to gain access. Does not
-      have to be a nickname. </para>
+      have to be a nickname.</para>
 
       <para>&#60;pass&#62; = The password to use to login</para>
 
@@ -372,7 +379,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       provided after the login name, it means that this nick is logged into
       this particular helper account.</para>
 
-      <para> The output is as follows:</para>
+      <para>The output is as follows:</para>
 
       <screen>&#62;secureserv&#60; helpers list
 -SecureServ- Helpers List (2):
@@ -788,7 +795,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       well as providing Summarized data to the public (No Private information,
       such as infected hostnames, or your networks infection rate is reported
       to the public though - See the secure.irc-chat.net site for more
-      infomation. </para>
+      infomation.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -800,8 +807,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>SecureServ has the ability to automatically logout helpers that
       set away while being logged in. This ensures that infected users are
-      only joined to the help channel if a helper is available to help them.
-      </para>
+      only joined to the help channel if a helper is available to help them.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -815,7 +821,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       helper logs in, and leave the help channel when the last helper logs
       out. No additional functionality is provided when SecureServ joins the
       channel, its only for the &#34;look&#34; and &#34;feel&#34; of having
-      SecureServ in your antivirus channel. </para>
+      SecureServ in your antivirus channel.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -995,6 +1001,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <listitem>
         <para>monchan</para>
       </listitem>
+
+      <listitem>
+        <para>assist</para>
+      </listitem>
     </itemizedlist>
 
     <para>The following Sections Describe these commands in detail</para>
@@ -1121,7 +1131,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       your Antivirus or help channel to login to SecureServ to gain
       additionaly functionality with regards to handling infected users. The
       helpers must have a valid login account and password as set in the
-      helpers command. </para>
+      helpers command.</para>
 
       <para>The format of the command is as follows:</para>
 
@@ -1135,7 +1145,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       he is going to be away or not paying attention to the help channel for a
       period of time. You should encourage your users to logout if they can
       not provide timely response to infected users that may be forcejoined to
-      the channel. </para>
+      the channel.</para>
 
       <para>The format of the command is as follows:</para>
 
@@ -1186,6 +1196,34 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <screen>/msg SecureServ bots del &#60;chan&#62;</screen>
 
       <para>This option lists will delete a channel from the monitored list.</para>
+    </sect2>
+
+    <sect2>
+      <title>assist Command</title>
+
+      <para>This option is only available to &#34;helpers&#34; that have
+      logged into secureserv and is used to control SecureServ&#39;s limits
+      over users that have been identified as infected with simple virus&#39;s
+      and joined to a help channel. They allow the &#34;helpers&#34; to either
+      release a user from SecureServ&#39;s restrictions, or kill
+      un-cooperative, or un-responsive users from the network. The helpers may
+      only perform these actions on users that SecureServ has identified as
+      infected with a simple virus, and automatically joined to the help
+      channel. Helpers may not &#34;kill&#34; users that SecureServ has NOT
+      identified as infected. </para>
+
+      <para>The format of the assist command is as follows:</para>
+
+      <screen>/msg SecureServ assist release/kill &#60;target&#62;</screen>
+
+      <para>The release option allows the user to join all previous channels
+      and continue as normal. After release is used on a user, a helper can no
+      longer kill the target.</para>
+
+      <para>The kill option removes the user from the network via a akill
+      command and broadcasts a message to all opers indicating the helper that
+      used the kill command, and the initial virus the users was detected as
+      having. </para>
     </sect2>
   </sect1>
 

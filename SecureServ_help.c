@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.9 2003/08/14 14:53:15 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.10 2003/08/18 15:19:19 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -32,6 +32,13 @@ const char *ts_help[] = {
 "",
 "COMMANDS:",
 "     LOGIN    LOGOUT",
+"",
+NULL
+};
+
+const char *ts_help_helper[] = {
+"HELPER COMMANDS:",
+"     ASSIST",
 "",
 NULL
 };
@@ -185,7 +192,18 @@ const char *ts_help_status[] = {
 NULL
 };
 
-
+const char *ts_help_assist[] = {
+"Usage: \2ASSIST <RELEASE/KILL> <target>\2",
+"",
+"This command allows Helpers to Release or akill infected users that have been joined to the",
+"help channel",
+"This command is only available to Helpers that are logged in",
+"     \2RELEASE\2     - Releases SecureServ's Hold on <target> so they may rejoin channel",
+"     \2KILL\2        - Kills <target> from the network. Should only be used when the helper",
+"                       is unable to clean/help the <target> user",
+"",
+NULL
+};
 
 
 

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.42 2003/08/14 14:53:15 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.43 2003/08/18 15:19:19 fishwaldo Exp $
 */
 
 
@@ -92,6 +92,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	randomnicks *bots;
 	int i;
 	char *buf, *buf2;
+	UserDetail *ud;
 
 	strcpy(segv_location, "TS:Bot_Message");
 	u = finduser(origin); 
@@ -110,12 +111,31 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	if (!strcasecmp(argv[1], "help")) {
 		if (argc == 2) {
 			privmsg_list(u->nick, s_SecureServ, ts_help);
+			if ((UserLevel(u) < 40) && (u->moddata[SecureServ.modnum] != NULL)) {
+				ud = (UserDetail *)u->moddata[SecureServ.modnum];
+				if (ud->type == USER_HELPER) {
+					privmsg_list(u->nick, s_SecureServ, ts_help_helper);
+				}
+			}
 			if (UserLevel(u) >= 40) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_helper);
 				privmsg_list(u->nick, s_SecureServ, ts_help_oper);
 			}
 		} else if (argc == 3) {
 			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= 185)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_set);
+			} else if (!strcasecmp(argv[2], "assist")) {
+				if (u->moddata[SecureServ.modnum] != NULL) {
+					ud = (UserDetail *)u->moddata[SecureServ.modnum];
+					if (ud->type == USER_HELPER) {
+						privmsg_list(u->nick, s_SecureServ, ts_help_assist);
+						return 1;
+					}
+				}
+				if (UserLevel(u) > 40) {
+					privmsg_list(u->nick, s_SecureServ, ts_help_assist);
+					return 1;
+				}
 			} else if (!strcasecmp(argv[2], "login")) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_login);
 			} else if (!strcasecmp(argv[2], "logout")) {
@@ -189,6 +209,13 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			return -1;
 		}			
 		do_list(u);
+		return 1;
+	} else if (!strcasecmp(argv[1], "ASSIST")) {
+		if (argc < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
+			return -1;
+		}
+		Helpers_Assist(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
 		if (UserLevel(u) < 50) {
@@ -1594,6 +1621,7 @@ static int DelNick(char **av, int ac) {
        		hnode_destroy(nfnode);
 		free(nick);
 	}
+	/* u->moddata is free'd in helpers_signoff */
 	Helpers_signoff(finduser(av[0]));
 	return 1;
 }
@@ -1619,6 +1647,7 @@ static int CheckNick(char **av, int ac) {
 		nlog(LOG_WARNING, LOG_MOD, "Cant Find user %s", av[1]);
 		return 1;
 	}
+	u->moddata[SecureServ.modnum] = NULL;
 	if (is_exempt(u) > 0) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Bye, I'm Exempt %s", u->nick);
 		return -1;
@@ -1890,6 +1919,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 	char chan[CHANLEN];
 	char buf[1400];
 	char buf2[3];
+	UserDetail *ud;
 	int i;
 
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
@@ -1901,6 +1931,10 @@ void gotpositive(User *u, virientry *ve, int type) {
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {
 				if (SecureServ.helpcount > 0) {		
+					ud = malloc(sizeof(UserDetail));
+					ud->type = USER_INFECTED;
+					ud->data = (void *)ve;
+					u->moddata[SecureServ.modnum] = ud;					
 					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
@@ -1999,6 +2033,11 @@ int __ModInit(int modnum, int apiversion) {
 		SecureServ.actioncounts[i] = 0;
 	}
 	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
+	SecureServ.modnum = get_mod_num("SecureServ");
+	if (SecureServ.modnum == -1) {
+		nlog(LOG_WARNING, LOG_MOD, "Couldn't Get Module Number, Exiting SecureServ");
+		return -1;
+	}
 	return 1;
 }
 

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.24 2003/08/14 14:53:15 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.25 2003/08/18 15:19:19 fishwaldo Exp $
 */
 
 
@@ -64,6 +64,16 @@ typedef struct virientry {
 
 char *s_SecureServ;
 
+typedef struct UserDetail {
+	int type;
+	void *data;
+} UserDetail;
+
+/* type list */
+#define USER_HELPER 1
+#define USER_INFECTED 2
+
+
 
 struct SecureServ {
 	int inited;
@@ -108,6 +118,7 @@ struct SecureServ {
 	int signoutaway;
 	int report;
 	int joinhelpchan;
+	int modnum;
 } SecureServ;
 
 
@@ -206,7 +217,7 @@ int Helpers_Login(User *, char **, int);
 int Helpers_Logout(User *);
 int Helpers_signoff(User *);
 int Helpers_away(char **, int);
-
+int Helpers_Assist(User *, char **, int);
 /* SecureServ_help.c */
 extern const char *ts_help[];
 extern const char *ts_help_oper[];
@@ -221,5 +232,6 @@ extern const char *ts_help_exclude[];
 extern const char *ts_help_list[];
 extern const char *ts_help_bots[];
 extern const char *ts_help_monchan[];
-
+extern const char *ts_help_assist[];
+extern const char *ts_help_helper[];
 #endif /* TS_H */

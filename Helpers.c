@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.3 2003/08/14 14:53:14 fishwaldo Exp $
+** $Id: Helpers.c,v 1.4 2003/08/18 15:19:18 fishwaldo Exp $
 */
 
 
@@ -141,6 +141,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 	hnode_t *node;
 	SSHelpers *helper;
 	hscan_t hlps;
+	UserDetail *ud;
 	
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -156,6 +157,10 @@ int Helpers_Login(User *u, char **av, int ac) {
 		helper = hnode_get(node);
 		if (!strcasecmp(helper->pass, av[3])) {
 			helper->u = u;
+			ud = malloc(sizeof(UserDetail));
+			ud->type = USER_HELPER;
+			ud->data = (void *) helper;
+			u->moddata[SecureServ.modnum] = (void *)ud;
 			prefmsg(u->nick, s_SecureServ, "Login Successfull");
 			if (IsChanMember(findchan(SecureServ.HelpChan), u) != 1) {
 				prefmsg(u->nick, s_SecureServ, "Joining you to the Help Channel");
@@ -195,6 +200,9 @@ int Helpers_Logout(User *u) {
 			prefmsg(u->nick, s_SecureServ, "You have been logged out of %s", helper->nick);
 			chanalert(s_SecureServ, "%s logged out of account %s", u->nick, helper->nick);
 			helper->u = NULL;
+			if (u->moddata[SecureServ.modnum] != NULL) {
+				free(u->moddata[SecureServ.modnum]);
+			}
 			SecureServ.helpcount--;
 			if (SecureServ.helpcount < 0) {
 				SecureServ.helpcount = 0;
@@ -220,6 +228,9 @@ int Helpers_signoff(User *u) {
 		if (helper->u == u) {
 			chanalert(s_SecureServ, "%s logged out of account %s after he quit", u->nick, helper->nick);
 			helper->u = NULL;
+			if (u->moddata[SecureServ.modnum] != NULL) {
+				free(u->moddata[SecureServ.modnum]);
+			}
 			SecureServ.helpcount--;
 			if (SecureServ.helpcount < 0) {
 				SecureServ.helpcount = 0;
@@ -249,6 +260,9 @@ int Helpers_away(char **av, int ac) {
 			chanalert(s_SecureServ, "%s logged out of account %s after set away", u->nick, helper->nick);
 			prefmsg(u->nick, s_SecureServ, "You have been logged out of SecureServ");
 			helper->u = NULL;
+			if (u->moddata[SecureServ.modnum] != NULL) {
+				free(u->moddata[SecureServ.modnum]);
+			}
 			SecureServ.helpcount--;
 			if (SecureServ.helpcount < 0) {
 				SecureServ.helpcount = 0;
@@ -261,3 +275,55 @@ int Helpers_away(char **av, int ac) {
 	}
 	return -1;
 }
+int Helpers_Assist(User *u, char **av, int ac) {
+	UserDetail *ud, *td;
+	User *tu;
+	virientry *ve;
+	if (u->moddata[SecureServ.modnum] == NULL) {
+		prefmsg(u->nick, s_SecureServ, "Access Denied");
+		chanalert(s_SecureServ, "%s tried to use assist %s on %s, but is not logged in", u->nick, av[2], av[3]);
+		return -1;
+	}
+	ud = (UserDetail *)u->moddata[SecureServ.modnum];
+	if (ud->type != USER_HELPER) {
+		prefmsg(u->nick, s_SecureServ, "Access Denied");
+		chanalert(s_SecureServ, "%s tried to use assist %s on %s, but is not logged in", u->nick, av[2], av[3]);
+		return -1;
+	}
+	/* if we get here, they are ok, so check the target user*/
+	tu = finduser(av[3]);
+
+	if (tu->moddata[SecureServ.modnum] == NULL) {
+		prefmsg(u->nick, s_SecureServ, "Invalid User %s. Not Recorded as requiring assistance", tu->nick);
+		chanalert(s_SecureServ, "%s tried to use assist %s on %s, but the target is not requiring assistance", u->nick, av[2], av[3]);
+		return -1;
+	}
+	td = (UserDetail *)tu->moddata[SecureServ.modnum];
+	if (td->type != USER_INFECTED) {
+		prefmsg(u->nick, s_SecureServ, "Invalid User %s. Not Recorded as requiring assistance", tu->nick);
+		chanalert(s_SecureServ, "%s tried to use assist %s on %s, but the target is not requiring assistance", u->nick, av[2], av[3]);
+		return -1;
+	}
+
+	/* ok, so far so good, lets see what the helper wants to do with the target user */
+	if (!strcasecmp(av[2], "RELEASE")) {
+		tu->moddata[SecureServ.modnum] = NULL;
+		td->data = NULL;
+		free(td);
+		prefmsg(u->nick, s_SecureServ,  "Hold on %s is released", tu->nick);
+		chanalert(s_SecureServ, "%s released %s", u->nick, tu->nick);
+		return -1;
+	} else if (!strcasecmp(av[2], "KILL")) {
+		ve = (virientry *)td->data;
+		prefmsg(u->nick, s_SecureServ, "Roger. Killing %s as they are infected with %s", tu->nick, ve->name);	
+		chanalert(s_SecureServ, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
+		nlog(LOG_NORMAL, LOG_CORE, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
+		globops(s_SecureServ, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->nick, u->nick, ve->name, ve->name);
+		sakill_cmd(tu->hostname, tu->username, s_SecureServ, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, u->nick);
+		return 1;
+	} else {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
+		return -1;
+	}		
+}	
+	

@@ -49,6 +49,7 @@ SecureServ Manual
         4.7. logout Command
         4.8. bots Command
         4.9. monchan Command
+        4.10. assist Command
 
    5. Final Words
 
@@ -333,7 +334,14 @@ Caution
    virus's  that  could be removed with simple instructions (such as Spam
    Virus's  that  infect  Mirc).  These  users are granted the ability to
    "release"  a  infected user from SecureServ or kill un-cooperative, or
-   unresponsive users that SecureServ has identified as being infected.
+   unresponsive  users  that SecureServ has identified as being infected.
+   Users  that  have  been  joined  to  the  help  channel  are "held" by
+   SecureServ  and  are usually prevented from joining other channels (if
+   your IRCd supports this option). This can be helpfull so you can clean
+   up  users  that  are infected with simple script based virus's and you
+   require  their  attention  to  help  you  clean  their  computer. More
+   information  about  the commands available to use on infected users is
+   available via the assist command detailed below.
 
 Caution
 
@@ -789,6 +797,7 @@ Warning
      * logout
      * bots
      * monchan
+     * assist
 
    The following Sections Describe these commands in detail
 
@@ -945,6 +954,30 @@ Warning
 /msg SecureServ bots del <chan>
 
    This option lists will delete a channel from the monitored list.
+
+4.10. assist Command
+
+   This  option  is  only  available  to  "helpers" that have logged into
+   secureserv  and is used to control SecureServ's limits over users that
+   have  been  identified as infected with simple virus's and joined to a
+   help  channel.  They allow the "helpers" to either release a user from
+   SecureServ's  restrictions,  or  kill un-cooperative, or un-responsive
+   users  from the network. The helpers may only perform these actions on
+   users  that SecureServ has identified as infected with a simple virus,
+   and  automatically  joined to the help channel. Helpers may not "kill"
+   users that SecureServ has NOT identified as infected.
+
+   The format of the assist command is as follows:
+/msg SecureServ assist release/kill <target>
+
+   The  release  option allows the user to join all previous channels and
+   continue  as  normal. After release is used on a user, a helper can no
+   longer kill the target.
+
+   The  kill option removes the user from the network via a akill command
+   and  broadcasts a message to all opers indicating the helper that used
+   the  kill  command,  and  the  initial virus the users was detected as
+   having.
 
 5. Final Words
 

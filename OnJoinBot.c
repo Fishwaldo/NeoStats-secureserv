@@ -151,7 +151,7 @@ static Channel *GetNewChan ()
 	int i;
 
 	for(i = 0; i < 5; i++) {
-		c = GetRandomChan();
+		c = GetRandomChannel();
 		if (c == NULL) {
 			dlog (DEBUG1, "Hu? Couldn't find a channel");
 			break;

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.5 2003/08/19 13:20:23 fishwaldo Exp $
+** $Id: Helpers.c,v 1.6 2003/08/19 14:36:05 fishwaldo Exp $
 */
 
 
@@ -175,7 +175,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 			        sjoin_cmd(s_SecureServ, SecureServ.HelpChan, MODE_CHANADMIN);
 #else
 		                sjoin_cmd(s_SecureServ, SecureServ.HelpChan);
-		                schmode_cmd(s_SecureServ, SecureServ.HelpChan, "+oa", NULL);
+		                schmode_cmd(s_SecureServ, SecureServ.HelpChan, "+o", s_SecureServ);
 #endif
 			}
 				                

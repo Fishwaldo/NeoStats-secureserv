@@ -856,7 +856,6 @@ void do_set(User *u, char **av, int ac) {
 			SecureServ.DoOnJoin = 1;
 			return;
 		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			return;
 			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now disabled");
 			chanalert(s_SecureServ, "%s disabled OnJoin Virus Checking", u->nick);
 			SetConf((void *)0, CFGINT, "DoOnJoin");
@@ -2112,11 +2111,7 @@ int __ModInit(int modnum, int apiversion) {
 		SecureServ.actioncounts[i] = 0;
 	}
 	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
-	SecureServ.modnum = get_mod_num("SecureServ");
-	if (SecureServ.modnum == -1) {
-		nlog(LOG_WARNING, LOG_MOD, "Couldn't Get Module Number, Exiting SecureServ");
-		return -1;
-	}
+	SecureServ.modnum = modnum;
 	return 1;
 }
 

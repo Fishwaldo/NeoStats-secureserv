@@ -70,8 +70,7 @@ typedef struct virientry {
 #define ACT_WARN 2
 #define ACT_NOTHING 3
 
-
-char *s_SecureServ;
+extern char s_SecureServ[MAXNICK];
 
 typedef struct UserDetail {
 	int type;
@@ -179,10 +178,12 @@ hash_t *nickflood;
 #define MAX_EXEMPTS	100
 #define MAX_VIRI	-1
 #define MAX_NICKS	100
+
 /* SecureServ.c */
 void gotpositive(User *u, virientry *ve, int type);
 int Chan_Exempt(Chans *c);
 int is_exempt(User *u);
+
 /* OnJoin.c */
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
@@ -201,16 +202,17 @@ int ss_del_chan(char **av, int ac);
 int CheckLockChan();
 
 /* Helpers.c */
-void Helpers_init();
-int Helpers_add(User *, char **, int);
-int Helpers_del(User *, char *);
-int Helpers_list(User *);
-int Helpers_chpass(User *, char **, int);
-int Helpers_Login(User *, char **, int);
-int Helpers_Logout(User *);
-int Helpers_signoff(User *);
-int Helpers_away(char **, int);
-int Helpers_Assist(User *, char **, int);
+void Helpers_init(void);
+int Helpers_add(User *u, char **av, int ac);
+int Helpers_del(User *u, char *nick);
+int Helpers_list(User *u);
+int Helpers_chpass(User *u, char **av, int ac);
+int Helpers_Login(User *u, char **av, int ac);
+int Helpers_Logout(User *u);
+int Helpers_signoff(User *u);
+int Helpers_away(char **av, int ac);
+int Helpers_Assist(User *u, char **av, int ac);
+
 /* SecureServ_help.c */
 extern const char *ts_help[];
 extern const char *ts_help_on_help[];

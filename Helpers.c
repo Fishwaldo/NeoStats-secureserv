@@ -29,20 +29,20 @@
 #include "conf.h"
 #include "SecureServ.h"
 
-hash_t *helperhash;
+static hash_t *helperhash;
 
-struct hlpstr {
+typedef struct SSHelpers{
 	char nick[MAXNICK];
 	char pass[MAXNICK];
 	User *u;
-};
+}SSHelpers;
 
-typedef struct hlpstr SSHelpers;
+static int IsHelpersInit = 0;
+static char confpath[CONFBUFSIZE];
 
-int HlpsOk = 0;
-
-void Helpers_init() {
-	char **data, path[CONFBUFSIZE], *tmp;
+void Helpers_init(void) 
+{
+	char **data, *tmp;
 	SSHelpers *helper;
 	int i;
 	hnode_t *node;
@@ -52,30 +52,28 @@ void Helpers_init() {
 		for (i = 0; data[i] != NULL; i++) {	
 			helper = malloc(sizeof(SSHelpers));
 			strlcpy(helper->nick, data[i], MAXNICK);
-			ircsnprintf(path, CONFBUFSIZE, "Helper/%s/Pass", helper->nick);
-			if (GetConf((void *)&tmp, CFGSTR, path) <= 0) {
+			ircsnprintf(confpath, CONFBUFSIZE, "Helper/%s/Pass", helper->nick);
+			if (GetConf((void *)&tmp, CFGSTR, confpath) <= 0) {
 				free(helper);
-				continue;
 			} else {
 				strlcpy(helper->pass, tmp, MAXNICK);
 				free(tmp);
+				helper->u = NULL;
+				node = hnode_create(helper);
+				hash_insert(helperhash, node, helper->nick);
 			}
-			helper->u = NULL;
-			node = hnode_create(helper);
-			hash_insert(helperhash, node, helper->nick);
 		}
+		free(data);
 	}	
-	free(data);
-	HlpsOk = 1;
+	IsHelpersInit = 1;
 }
 
 int Helpers_add(User *u, char **av, int ac) 
 {
 	SSHelpers *helper;
 	hnode_t *node;
-	char path[CONFBUFSIZE];
 	
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
 	
 	if (ac < 5) {
@@ -87,7 +85,6 @@ int Helpers_add(User *u, char **av, int ac)
 		return -1;
 	}
 
-
 	helper = malloc(sizeof(SSHelpers));
 	strlcpy(helper->nick, av[3], MAXNICK);
 	strlcpy(helper->pass, av[4], MAXNICK);
@@ -96,8 +93,8 @@ int Helpers_add(User *u, char **av, int ac)
  	hash_insert(helperhash, node, helper->nick);
 
 	/* ok, now save the helper */
-	ircsnprintf(path, CONFBUFSIZE, "Helper/%s/Pass", helper->nick);
-	SetConf((void *)helper->pass, CFGSTR, path);
+	ircsnprintf(confpath, CONFBUFSIZE, "Helper/%s/Pass", helper->nick);
+	SetConf((void *)helper->pass, CFGSTR, confpath);
 
 	prefmsg(u->nick, s_SecureServ, "Successfully added Helper %s with Password %s to Helpers List", helper->nick, helper->pass);
 	return 1;
@@ -106,9 +103,8 @@ int Helpers_add(User *u, char **av, int ac)
 int Helpers_del(User *u, char *nick) 
 {
 	hnode_t *node;
-	char path[CONFBUFSIZE];
 
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
 	
 	node = hash_lookup(helperhash, nick);
@@ -116,24 +112,23 @@ int Helpers_del(User *u, char *nick)
 		hash_delete(helperhash, node);
 		free(hnode_get(node));
 		hnode_destroy(node);
-		ircsnprintf(path, CONFBUFSIZE, "Helper/%s", nick);
-		DelConf(path);
+		ircsnprintf(confpath, CONFBUFSIZE, "Helper/%s", nick);
+		DelConf(confpath);
 		prefmsg(u->nick, s_SecureServ, "Deleted %s from Helpers List", nick);
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Error, Could not find %s in helpers list. /msg %s helpers list", nick, s_SecureServ);
 	}
 	return 1;
-	
 }
 
-int Helpers_list(User *u) {
+int Helpers_list(User *u) 
+{
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
-
 	
 	prefmsg(u->nick, s_SecureServ, "Helpers List (%d):", (int)hash_count(helperhash));
 	hash_scan_begin(&hlps, helperhash);
@@ -145,22 +140,21 @@ int Helpers_list(User *u) {
 	return -1;
 }
 
-int Helpers_chpass(User *u, char **av, int ac) {
-
+int Helpers_chpass(User *u, char **av, int ac) 
+{
 	return 1;
-
 }
 
-int Helpers_Login(User *u, char **av, int ac) {
+int Helpers_Login(User *u, char **av, int ac) 
+{
 	hnode_t *node;
 	SSHelpers *helper;
 	hscan_t hlps;
 	UserDetail *ud;
 
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
 
-	
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);
@@ -206,14 +200,14 @@ int Helpers_Login(User *u, char **av, int ac) {
 	return -1;
 }
 
-int Helpers_Logout(User *u) {
+int Helpers_Logout(User *u) 
+{
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
-
 
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -239,16 +233,16 @@ int Helpers_Logout(User *u) {
 	return -1;
 }
 
-int Helpers_signoff(User *u) {
+int Helpers_signoff(User *u) 
+{
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
 	if (!u) /* User not found */
 		return -1;
-
 
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -272,15 +266,15 @@ int Helpers_signoff(User *u) {
 	return -1;
 }
 
-int Helpers_away(char **av, int ac) {
+int Helpers_away(char **av, int ac) 
+{
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
 	User *u;
 
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
-
 
 	if (SecureServ.signoutaway != 1) {
 		return 1;
@@ -310,14 +304,15 @@ int Helpers_away(char **av, int ac) {
 	}
 	return -1;
 }
-int Helpers_Assist(User *u, char **av, int ac) {
+
+int Helpers_Assist(User *u, char **av, int ac) 
+{
 	UserDetail *ud, *td;
 	User *tu;
 	virientry *ve;
 
-	if (HlpsOk == 0) 
+	if (IsHelpersInit == 0) 
 		return -1;
-
 
 	if (u->moddata[SecureServ.modnum] == NULL) {
 		prefmsg(u->nick, s_SecureServ, "Access Denied");

@@ -59,6 +59,7 @@ int AutoUpdate();
 int CleanNickFlood();
 
 static char ss_buf[SS_BUF_SIZE];
+char s_SecureServ[MAXNICK];
 
 ModuleInfo __module_info = {
 	"SecureServ",
@@ -1196,7 +1197,7 @@ static int Online(char **av, int ac) {
 	SET_SEGV_LOCATION();
 	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
-		s_SecureServ = strcat(s_SecureServ, "_");
+		strlcat(s_SecureServ, "_", MAXNICK);
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
 	}
 	LoadMonChans();
@@ -2123,7 +2124,7 @@ int __ModInit(int modnum, int apiversion) {
 		nlog(LOG_CRITICAL, LOG_MOD, "Can't Load SecureServ. API Version MisMatch");
 		return -1;
 	}
-	s_SecureServ = "SecureServ";
+	strlcpy(s_SecureServ, "SecureServ", MAXNICK);
 	SET_SEGV_INMODULE("SecureServ");
 	
 	/* init the exemptions list */

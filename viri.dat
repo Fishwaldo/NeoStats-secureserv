@@ -1,15 +1,15 @@
 1 
 HTTPSpam 1 0 0 ".*visit.*http://.*" "Sending People URL's when they don't request it is bad. IRCops have been warned of your actions." 2
 IRCSpam 1 0 0 ".*/server.*" "Spamming other IRC networks is considered Bad. The IRCOperators have been Notified" 2
-Mirc2BUF 0 0 0 "mIRC32 2.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
-Mirc3BUF 0 0 0 "mIRC32 3.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
-Mirc4BUF 0 0 0 "mIRC32 4.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
-Mirc5BUF 0 0 0 "mIRC32 5.*" "The Version of Mirc you are using is Vulnerable to Hacking. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
-Mirc6DCC 0 0 0 "mIRC 6\.0 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
-Mirc6DCC 0 0 0 "mIRC 6\.0\.1 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
-Mirc6ASCtime 0 0 0 "mIRC 6\.0 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
-Mirc6ASCtime 0 0 0 "mIRC 6\.01 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
-Mirc6ASCtime 0 0 0 "mIRC 6\.02 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+Mirc2BUF 0 0 0 "mIRC32 v2.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc3BUF 0 0 0 "mIRC32 v3.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc4BUF 0 0 0 "mIRC32 v4.*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc5BUF 0 0 0 "mIRC32 v5.*" "The Version of Mirc you are using is Vulnerable to Hacking. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc6DCC 0 0 0 "mIRC v6\.0 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
+Mirc6DCC 0 0 0 "mIRC v6\.0\.1 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "mIRC v6\.0 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "mIRC v6\.01 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "mIRC v6\.02 .*" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
 MircGondRonk 1 0 0 ".*http://www.geocities.com/sayangku_anty/.*" "It appears you are infected with a Virus. (GondRonk - GeoCities)" 0
 LitMusBot 0 0 0 ".*Litmus.*" "Your the LitMus Bot. Your Bad. GoodBye" 1
 SDBOT 0 0 0 ".*sdbot.*" "Your the SDBot. Your Bad. GoodBye" 1

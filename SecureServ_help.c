@@ -135,7 +135,7 @@ const char *ts_help_list[] = {
 
 const char *ts_help_exclude[] = {
 	"Syntax: \2EXCLUDE LIST\2",
-	"        \2EXCLUDE ADD <hostname> <type> <reason>\2",
+	"        \2EXCLUDE ADD <hostname> <flag> <reason>\2",
 	"        \2EXCLUDE DEL <index>\2",
 	"",
 	"This command lets you view or manipulate the exception",
@@ -147,10 +147,12 @@ const char *ts_help_exclude[] = {
 	"\2LIST\2 will list the current exceptions together with an",
 	"ID number for use in removing entries.",
 	"",
-	"\2ADD\2 will add an entry of <hostname> to the exception" 
-	"list. Flag should be 1 to indicate a server name",
-	"(eg, services.irc-chat.net) or 0 to indicate a hostname",
-	"(eg, *.adsl.home.com). Reason allows you to set a"
+	"\2ADD\2 will add an entry of <hostname> to the exception",
+	"list. Possible flags are:",
+	"2 to indicate a channel name (eg, #help)",
+	"1 to indicate a server name (eg, services.irc-chat.net)",
+	"0 to indicate a hostname (eg, *.adsl.home.com).",
+	"Reason allows you to set a",
 	"reason for the exclusion for future reference",
 	"Wildcards such as * and ? may be used in the hostname.",
 	"",

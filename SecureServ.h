@@ -32,7 +32,6 @@
 #define REQUIREDAPIVER 1
 
 #define MAXVIRNAME		64
-#define MAXREASON		128
 #define MAXCTCPTYPE		64
 #define LOCALBUFSIZE	32
 

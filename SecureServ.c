@@ -904,7 +904,7 @@ static int Online(char **av, int ac)
 	/* start cleaning the nickflood list now */
 	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
-	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 10);
+	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 60);
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.inited = 1;
 	LoadMonChans();

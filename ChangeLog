@@ -7,6 +7,8 @@ SecureServ Module for NeoStats Changelog.
  - CheckChan now also scans the channel name against the list (F)
  - We now try to read nick, user, host and realname so these can be configured more 
    easily (M)
+ - CheckLockChan timer changed to 60 seconds from 10 to reduce load a little (M)
+ - Fix finduser call with NULL when lastnick is NULL (M)
 
 1.1 - Fish (F) and Mark (M) - 2 Dec, 2003
  - Fixed incorrect parameters to printf style functions (M)

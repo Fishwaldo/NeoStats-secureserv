@@ -264,13 +264,15 @@ void JoinNewChan()
 	SET_SEGV_LOCATION();
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (finduser(SecureServ.lastnick)) {
-		if (SecureServ.lastchan[0] != 0) {
-			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+	if (SecureServ.lastnick[0] != 0) {
+		if (finduser(SecureServ.lastnick)) {
+			if (SecureServ.lastchan[0] != 0) {
+				spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+			}
+			del_bot(SecureServ.lastnick, "Finished Scanning");
+			SecureServ.lastchan[0] = 0;
+			SecureServ.lastnick[0] = 0;
 		}
-		del_bot(SecureServ.lastnick, "Finished Scanning");
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
 	}
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");

@@ -1638,6 +1638,7 @@ static int DelNick(char **av, int ac) {
        		hnode_destroy(nfnode);
 		free(nick);
 	}
+	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: After nickflood Code");
 	/* u->moddata is free'd in helpers_signoff */
 	Helpers_signoff(finduser(av[0]));
 	return 1;

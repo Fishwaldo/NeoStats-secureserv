@@ -128,7 +128,7 @@ int ss_cmd_chpass(CmdParams *cmdparams)
 		helper = (Helper *)ud->data;
 		strlcpy(helper->pass, cmdparams->av[0], MAXNICK);
 		DBAStore ("helpers", helper->nick, (void *)helper, sizeof (Helper));
-		irc_prefmsg (ss_bot, cmdparams->source, "Successfully Changed your Password");
+		irc_prefmsg (ss_bot, cmdparams->source, "Successfully changed your password");
 		irc_chanalert (ss_bot, "%s changed their helper password", cmdparams->source);
 		return NS_SUCCESS;
 	}

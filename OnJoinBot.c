@@ -27,6 +27,100 @@
 #define MAX_NICKS	100
 #define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
 
+BotInfo defaultbots[]= 
+{
+	{
+		"Bob",
+		"Bob",
+		"Blah",
+		"cp127.ppp0.singnet.com.sg",
+		"Can't Get Enough",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"Sven",
+		"Sven",
+		"Sven",
+		"h48n3c1.bredband.skanova.com",
+		"Sven",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"Scarab",
+		"Scarab",
+		"~email",
+		"dsl-283-923-23-847.arcor-ip.net.jp",
+		"Mr Qaz",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"Cledus",
+		"Cledus",
+		"~Fud1",
+		"ip768-14-131-1924.uh.ix.cox.net",
+		"fwsgh1",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"Rubarb",
+		"Rubarb",
+		"ident",
+		"dialup-01.kpa.ida.myisp.id",
+		"Chat to me",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"ShangMan",
+		"ShangMan",
+		"ShangMan",
+		"adsl-204-12-85-12.ma.us.rogers.com",
+		"I'm to lame to read BitchX.doc",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"VJTD3",
+		"VJTD3",
+		"VJTD3",
+		"ppp203.net267.fl.sprint-hsd.net",
+		"VJTD3",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"static",
+		"static",
+		"nobody",
+		"adsl463.lqd.adsl.inernode.on.net",
+		"Tim",
+		0,
+		NULL,
+		NULL
+	},
+	{
+		"BluD",
+		"BluD",
+		"~blud",
+		"592-12.021.popsite.net",
+		"BluD",
+		0,
+		NULL,
+		NULL
+	},
+};
+
 static list_t *monchans;
 static int SaveMonChans();
 /* this is the list of random nicknames */
@@ -445,8 +539,7 @@ static int MonChan(Client *u, char *requestchan)
 	/* append it to the list */
 	buf = ns_calloc (MAXCHANLEN);
 	strlcpy(buf, requestchan, MAXCHANLEN);
-	mn = lnode_create(buf);
-	list_append(monchans, mn);
+	lnode_create_append(monchans, buf);
 	/* join the monitor bot to the new channel */
 	irc_join (monbotptr, c->name, 0);
 	if (SecureServ.verbose) irc_chanalert (ss_bot, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->name : ss_bot->name);
@@ -535,14 +628,26 @@ int SaveMonChans()
 void LoadRandomNick (void *data)
 {
 	BotInfo *rnicks;
-	lnode_t *node;
 
 	rnicks = ns_calloc (sizeof(BotInfo));
 	os_memcpy (rnicks, data, sizeof(BotInfo));
 	dlog (DEBUG2, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
-	node = lnode_create(rnicks);
-	list_prepend(nicks, node);			
+	lnode_create_append(nicks, rnicks);
 }
+
+void LoadDefaultNicks ()
+{
+	BotInfo *rnicks;
+	int i;
+
+	for(i = 0; i < (sizeof(defaultbots)/sizeof(BotInfo)); i++) {
+		rnicks = ns_calloc (sizeof(BotInfo));
+		os_memcpy (rnicks, &defaultbots[i], sizeof(BotInfo));
+		dlog (DEBUG2, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
+		lnode_create_append(nicks, rnicks);
+	}
+}
+
 
 int InitOnJoinBots(void)
 {
@@ -555,7 +660,10 @@ int InitOnJoinBots(void)
 	/* init CTCP version response */
 	strlcpy(SecureServ.sampleversion, DEFAULT_VERSION_RESPONSE, SS_BUF_SIZE);
 	/* get Random Nicknames */
-	DBAFetchRows ("randomnicks", LoadRandomNick);
+	if (DBAFetchRows ("randomnicks", LoadRandomNick) == 0)
+	{
+		LoadDefaultNicks ();
+	}
 	if (DBAFetchConfigStr ("MonBot", SecureServ.monbot, MAXNICK) != NS_SUCCESS) {
 		SecureServ.monbot[0] = '\0';
 	} else {
@@ -614,7 +722,6 @@ int ss_cmd_bots_list(CmdParams *cmdparams)
 int ss_cmd_bots_add(CmdParams *cmdparams)
 {
 	char *buf2;
-	lnode_t *node;
 	BotInfo *bots;
 
 	if (cmdparams->ac < 5) {
@@ -631,8 +738,7 @@ int ss_cmd_bots_add(CmdParams *cmdparams)
 	buf2 = joinbuf(cmdparams->av, cmdparams->ac, 3);
 	strlcpy(bots->realname, buf2, MAXREALNAME);
 	ns_free (buf2);
-	node = lnode_create(bots);
-	list_append(nicks, node);
+	lnode_create_append(nicks, bots);
 	DBAStore ("randomnicks", cmdparams->av[1], bots, sizeof(BotInfo));
 	irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->realname);
 	irc_chanalert (ss_bot, "%s added %s (%s@%s - %s) Bot to Bot list", cmdparams->source->name, bots->nick, bots->user, bots->host, bots->realname);

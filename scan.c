@@ -148,8 +148,7 @@ void load_dat(void)
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
 	SecureServ.definitions[DET_BUILTIN]++;
-	node = lnode_create(viridet);
-	list_prepend(viri, node);
+	lnode_create_prepend(viri, viridet);
 	dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 	
 	for(i = 0; i < NUM_DAT_FILES; i++)
@@ -221,8 +220,7 @@ void load_dat(void)
 					/* don't exit */
 				}
 				SecureServ.definitions[viridet->dettype]++;
-				node = lnode_create(viridet);
-				list_prepend(viri, node);
+				lnode_create_prepend(viri, viridet);
 				dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 				ns_free (subs);
 			}

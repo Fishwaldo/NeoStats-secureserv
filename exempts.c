@@ -213,10 +213,11 @@ static int ss_cmd_exempt_del(CmdParams *cmdparams)
 		exempts = lnode_get(node);
 		if (ircstrcasecmp (cmdparams->av[1], exempts->host) == 0) {
 			list_delete(exemptlist, node);
+			lnode_destroy(node);
+			ns_free (exempts);
+			DBADelete ("Exempt", exempts->host);
 			irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s %s out of exception list", exempts->host, ExcludeDesc[exempts->type]);
 			irc_chanalert (ss_bot, "%s deleted %s %s out of exception list", cmdparams->source->name, exempts->host, ExcludeDesc[exempts->type]);
-			DBADelete ("Exempt", exempts->host);
-			ns_free (exempts);
 			return NS_SUCCESS;
 		}
 		node = list_next(exemptlist, node);

@@ -1161,7 +1161,8 @@ int ss_join_chan(char **av, int ac)
 	  * be killed 
 	  */
 	cd = c->moddata[SecureServ.modnum];
-	if(cd->scanned == 0) {
+	/* if cd doesn't exist, soemthing major is wrong */
+	if(cd && cd->scanned == 0) {
 		ScanChan(u, c);
 		cd->scanned = 1;
 	}

@@ -78,11 +78,6 @@ ModuleInfo module_info = {
 
 static bot_cmd ss_commands[]=
 {
-	{"LOGIN",	ss_cmd_login,		2,	0,				ts_help_login,		ts_help_login_oneline},
- 	{"LOGOUT",	ss_cmd_logout,		0,	30,				ts_help_logout,		ts_help_logout_oneline},
-	{"CHPASS",	ss_cmd_chpass,		1,	30,				ts_help_chpass,		ts_help_chpass_oneline},
-	{"ASSIST",	ss_cmd_assist,		2,	30,				ts_help_assist,		ts_help_assist_oneline},
-	{"HELPERS",	ss_cmd_helpers,		1,	NS_ULEVEL_OPER, ts_help_helpers,	ts_help_helpers_oneline},
 	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list,		ts_help_list_oneline},
 	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan,	ts_help_checkchan_oneline},
 	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle,		ts_help_cycle_oneline},

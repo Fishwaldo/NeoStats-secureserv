@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.8 2003/06/03 11:38:43 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.9 2003/07/30 15:38:41 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -36,6 +36,7 @@ struct ci_ {
 	Chans *c;
 	int ajpp;
 	time_t sampletime;
+	int locked;
 };
 
 typedef struct ci_ ChanInfo;
@@ -128,6 +129,12 @@ int ss_join_chan(char **av, int ac) {
 		nlog(LOG_WARNING, LOG_MOD, "Can't find nick %s", av[1]);
 		return -1;
 	}
+
+	/* if channel flood protection is disabled, return here */
+	if (SecureServ.FloodProt == 0) {
+		return 1;
+	}
+
 	/* find the chan in SecureServ's list */
 	cn = hash_lookup(FC_Chans, c->name);
 	if (!cn) {
@@ -138,6 +145,7 @@ int ss_join_chan(char **av, int ac) {
 		ci->ajpp = 0;
 		ci->sampletime = 0;
 		ci->c = c;
+		ci->locked = 0;
 		cn = hnode_create(ci);
 		hash_insert(FC_Chans, cn, c->name);
 	} else {		
@@ -164,8 +172,11 @@ int ss_join_chan(char **av, int ac) {
 	if (ci->ajpp > SecureServ.JoinThreshold) {
 		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
 		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
-		/* TODO: Something here */
-			
+		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		prefmsg(ci->c->name, s_SecureServ, "Temporarly closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
+		/* uh oh, channel is under attack. Close it down. */
+		schmode_cmd(s_SecureServ, ci->c->name, "+ik", SecureServ.ChanKey);
+		ci->locked = time(NULL);
 	}		
 
 	/* just some record keeping */
@@ -200,6 +211,27 @@ int ss_del_chan(char **av, int ac) {
 		/* ignore this, as it just means since we started SecureServ, no one has joined the channel, and now the last person has left. Was just flooding logfiles */
 		//nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
 #endif
+	}
+	return 1;
+}
+
+int CheckLockChan() {
+	hscan_t cs;
+	hnode_t *cn;
+	ChanInfo *ci;
+	
+	/* scan through the channels */
+	hash_scan_begin(&cs, FC_Chans);
+	while ((cn = hash_scan_next (&cs)) != NULL) {
+		ci = hnode_get(cn);
+		/* if the locked time plus closechantime is greater than current time, then unlock the channel */
+		if ((ci->locked > 0) && (ci->locked + SecureServ.closechantime < time(NULL))) {
+			schmode_cmd(s_SecureServ, ci->c->name, "-ik", SecureServ.ChanKey);
+			chanalert(s_SecureServ, "Unlocking %s after floodprotection timeout", ci->c->name);
+			globops(s_SecureServ, "Unlocking %s after flood protection timeout", ci->c->name);
+			prefmsg(ci->c->name, s_SecureServ, "Unlocking the Channel now");
+			ci->locked = 0;
+		}					
 	}
 	return 1;
 }

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.16 2003/07/23 10:29:57 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.17 2003/07/30 15:38:41 fishwaldo Exp $
 */
 
 
@@ -99,6 +99,9 @@ struct SecureServ {
 	char lastnick[MAXNICK];
 	int nfcount;
 	int doprivchan;
+	char ChanKey[CHANLEN];
+	int closechantime;
+	int FloodProt;
 } SecureServ;
 
 
@@ -180,6 +183,7 @@ int ss_kick_chan(char **argv, int ac);
 void ss_init_chan_hash();
 int ss_join_chan(char **av, int ac);
 int ss_del_chan(char **av, int ac);
+int CheckLockChan();
 
 /* SecureServ_help.c */
 extern const char *ts_help[];

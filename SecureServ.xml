@@ -464,6 +464,18 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>FLOODPROT</para>
+      </listitem>
+
+      <listitem>
+        <para>CHANKEY</para>
+      </listitem>
+
+      <listitem>
+        <para>CHANLOCKTIME</para>
+      </listitem>
+
+      <listitem>
         <para>MULTICHECK</para>
       </listitem>
 
@@ -598,6 +610,50 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>To Change this Setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set DOPRIVCHAN &#60;ON/OFF&#62;</screen>
+    </sect2>
+
+    <sect2>
+      <title>FLOODPROT</title>
+
+      <para>This setting enables SecureServ to monitor the Channels for
+      possible FloodBot attacks, and to temporarly set the channel +ik when a
+      attack occurs. This option uses the settings from CHANLOCKTIME,
+      SAMPLETIME, and CHANKEY to be configured to work correctly as well.</para>
+
+      <para>To Change this setting, issue the following command:</para>
+
+      <screen>/msg SecureServ set FLOODPROT &#60;ON/OFF&#62;</screen>
+    </sect2>
+
+    <sect2>
+      <title>CHANKEY</title>
+
+      <para>This settting controls what key will be used when SecureServ
+      &#34;Locks&#34; a channel during a attack. (+k key). You should try to
+      change this key regulary so that attackers can not re-program their
+      floodbots to gain access to your channels with a well known key. If you
+      don&#39;t set this option, SecureServ uses a default Key. The length of
+      this key is restricted, and if you try to set a key that is too long,
+      you will recieve a error message. </para>
+
+      <para>To Change this setting, issue the following command:</para>
+
+      <screen>/msg SecureServ set CHANKEY &#60;newkey)</screen>
+    </sect2>
+
+    <sect2>
+      <title>CHANLOCKTIME</title>
+
+      <para>This settting controls how long SecureServ will &#34;Lock&#34; a
+      channel after detecting a attack. During this time, Channel
+      Administrotors/Operators may remove the mode set, and SecureServ will
+      not mind. If after this time period (+/- 10 seconds) the channel will
+      have the modes that SecureServ set automatically removed, so the channel
+      can return to normal operation. </para>
+
+      <para>To Change this setting, issue the following command:</para>
+
+      <screen>/msg SecureServ set CHANLOCKTIME &#60;seconds&#62;</screen>
     </sect2>
 
     <sect2>

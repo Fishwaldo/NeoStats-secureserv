@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.31 2003/07/18 06:48:57 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.32 2003/07/30 15:38:41 fishwaldo Exp $
 */
 
 
@@ -340,6 +340,7 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 		return;
 	}
+	
 	if (!strcasecmp(av[2], "SPLITTIME")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -368,6 +369,16 @@ void do_set(User *u, char **av, int ac) {
 		chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
 		prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 		return;
+	} else if (!strcasecmp(av[2], "CHANKEY")) {
+		if ((ac < 4) || (strlen(av[3]) > CHANLEN)) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set", s_SecureServ);
+			return;
+		}
+		SetConf((void *)av[3], CFGSTR, "ChanKey");
+		strncpy(SecureServ.ChanKey, av[3], CHANLEN);
+		chanalert(s_SecureServ, "%s changed the Channel Flood Protection key to %s", u->nick, SecureServ.ChanKey);
+		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Key has been updated to %s", SecureServ.ChanKey);
+		return;
 	} else if (!strcasecmp(av[2], "VERSION")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -384,6 +395,27 @@ void do_set(User *u, char **av, int ac) {
 			chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
 			SetConf((void *)0, CFGINT, "DoVersionScan");
 			SecureServ.doscan = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "FLOODPROT")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection is now enabled");
+			chanalert(s_SecureServ, "%s has enabled Channel Flood Protection", u->nick);
+			SetConf((void *)1, CFGINT, "DoFloodProt");
+			SecureServ.FloodProt = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Channel Flood Protection", u->nick);
+			SetConf((void *)0, CFGINT, "DoFloodProt");
+			SecureServ.FloodProt = 0;
 			return;
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -488,6 +520,22 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Akill Time is set to %d Seconds", i);
 		chanalert(s_SecureServ, "%s Set Akill Time to %d Seconds", u->nick, i);
 		SetConf((void *)i, CFGINT, "AkillTime");
+		return;
+	} else if (!strcasecmp(av[2], "CHANLOCKTIME")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 600)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.closechantime = i;
+		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection will be active for %d seconds", i);
+		chanalert(s_SecureServ, "%s Set Channel Flood Protection time to %d seconds", u->nick, i);
+		SetConf((void *)i, CFGINT, "ChanLockTime");
 		return;
 	} else if (!strcasecmp(av[2], "NFCOUNT")) {
 		if (ac < 4) {
@@ -678,6 +726,12 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "SplitTime: %d", SecureServ.timedif);
 		prefmsg(u->nick, s_SecureServ, "Version Checking: %s", SecureServ.doscan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Multi Checking: %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection: %s", SecureServ.FloodProt ? "Enabled" : "Disabled");
+		if (SecureServ.FloodProt) {
+			prefmsg(u->nick, s_SecureServ, "Sample Threshold: %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
+			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Active For %d seconds", SecureServ.closechantime);
+			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Key: %s", SecureServ.ChanKey);
+		}
 		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Check Private Channels?: %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
@@ -687,10 +741,10 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
 		prefmsg(u->nick, s_SecureServ, "Update Username and Passware are: %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
-		if (UserLevel(u) > 185) 
+		if ((UserLevel(u) > 185) & (strlen(SecureServ.updateuname))) {
 			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
+		}
 		prefmsg(u->nick, s_SecureServ, "AutoUpdate: %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Sample Threshold: %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
 		prefmsg(u->nick, s_SecureServ, "Signon Message: %s", SecureServ.signonscanmsg);
 		prefmsg(u->nick, s_SecureServ, "Akill Information Message: %s", SecureServ.akillinfo);
 		prefmsg(u->nick, s_SecureServ, "No Help Available Message: %s", SecureServ.nohelp);
@@ -812,7 +866,7 @@ int Online(char **av, int ac) {
 	/* start cleaning the nickflood list now */
 	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", my_info[0].module_name, 60);
-
+	add_mod_timer("CheckLockChan", "CheckLockedChans", my_info[0].module_name, 10);
 	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 
 	return 1;
@@ -851,6 +905,21 @@ void LoadTSConf() {
 	strcpy(segv_location, "TS:loadTSConf");
 
 	
+	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
+		/* not configured, then enable */
+		SecureServ.FloodProt = 1;
+	} 
+	if(GetConf((void *)&SecureServ.closechantime, CFGINT, "ChanLockTime") <= 0) {
+		/* not configured, default to 30 seconds*/
+		SecureServ.closechantime = 30;
+	} 
+	if (GetConf((void *)&tmp, CFGSTR, "ChanKey") <= 0) {
+		snprintf(SecureServ.ChanKey, CHANLEN, "Eeeek");
+	} else {
+		strncpy(SecureServ.ChanKey, tmp, CHANLEN);
+		free(tmp);
+	}
+
 	if(GetConf((void *)&SecureServ.doscan, CFGINT, "DoVersionScan") <= 0) {
 		/* not configured, don't scan */
 		SecureServ.doscan = 0;

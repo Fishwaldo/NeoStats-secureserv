@@ -2,48 +2,51 @@
 SecureServ Manual
      _________________________________________________________________
 
-   1. [1]Prerequisites and Installation.
+   1. Prerequisites and Installation.
 
-        1.1. [2]Compiling and Installation
+        1.1. Compiling and Installation
 
-   2. [3]Basic Configuration
+   2. Basic Configuration
 
-        2.1. [4]Exclusion Lists
-        2.2. [5]Username and Password for Dat File Updates
-        2.3. [6]System Messages
+        2.1. Exclusion Lists
+        2.2. Username and Password for Dat File Updates
+        2.3. System Messages
 
-   3. [7]Detailed Configuration
+   3. Detailed Configuration
 
-        3.1. [8]SPLILTTIME Setting
-        3.2. [9]VERSION Setting
-        3.3. [10]CHECKFIZZER Setting
-        3.4. [11]DOONJOIN Setting
-        3.5. [12]DOPRIVCHAN Setting
-        3.6. [13]MULTICHECK Setting
-        3.7. [14]AKILL Setting
-        3.8. [15]AKILLTIME Setting
-        3.9. [16]DOJOIN Setting
-        3.10. [17]NFCOUNT Setting
-        3.11. [18]VERBOSE Setting
-        3.12. [19]CYCLETIME Setting
-        3.13. [20]AUTOUPDATE Setting
-        3.14. [21]SAMPLETIME Setting
-        3.15. [22]HELPCHAN Setting
+        3.1. SPLILTTIME Setting
+        3.2. VERSION Setting
+        3.3. CHECKFIZZER Setting
+        3.4. DOONJOIN Setting
+        3.5. DOPRIVCHAN Setting
+        3.6. FLOODPROT
+        3.7. CHANKEY
+        3.8. CHANLOCKTIME
+        3.9. MULTICHECK Setting
+        3.10. AKILL Setting
+        3.11. AKILLTIME Setting
+        3.12. DOJOIN Setting
+        3.13. NFCOUNT Setting
+        3.14. VERBOSE Setting
+        3.15. CYCLETIME Setting
+        3.16. AUTOUPDATE Setting
+        3.17. SAMPLETIME Setting
+        3.18. HELPCHAN Setting
 
-   4. [23]Operational Commands
+   4. Operational Commands
 
-        4.1. [24]list Command
-        4.2. [25]CheckChan Command
-        4.3. [26]cycle Command
-        4.4. [27]status Command
-        4.5. [28]update Command
-        4.6. [29]login Command
-        4.7. [30]logout Command
+        4.1. list Command
+        4.2. CheckChan Command
+        4.3. cycle Command
+        4.4. status Command
+        4.5. update Command
+        4.6. login Command
+        4.7. logout Command
 
-   5. [31]Final Words
+   5. Final Words
 
-        5.1. [32]Dealing with Un-detected Attacks/Trojans/Virus etc
-        5.2. [33]Customizing the Definitions file
+        5.1. Dealing with Un-detected Attacks/Trojans/Virus etc
+        5.2. Customizing the Definitions file
 
    Welcome  to  the  SecureServ  Manual.  This  document  will aid you in
    setting up and running SercureServ on your IRC network.
@@ -90,11 +93,11 @@ Warning
    precautions  and  conducted a extensive QA cycle before the release of
    SecureServ,  its a "Use at your Own Risk" Module. Of Course, if you do
    have   bad   experiences  with  SecureServ,  please  let  us  know  at
-   [34]http://www.neostats.net/boards/
+   http://www.neostats.net/boards/
 
    SecureServ  is  written  and maintained by Justin Hammond. It requires
    the NeoStats software. More information about SecureServ, or NeoStats,
-   can be found at [35]http://www.neostats.net/
+   can be found at http://www.neostats.net/
 
    SecureServ is Copyright, 2003 by Justin Hammond.
 
@@ -114,8 +117,8 @@ Warning
    SecureServ itself requires the following:
      * NeoStats 2.5.3 or Higher correctly installed and Running
      * Libpcre (tested with version 3.9)
-     * A  account  on  [36]http://secure.irc-chat.net  is required if you
-       wish to take advantage of updated definition files
+     * A account on http://secure.irc-chat.net is required if you wish to
+       take advantage of updated definition files
      * The time to read this entire document.
 
 Warning
@@ -125,12 +128,12 @@ Warning
        if  you  didn't  read, and it AKILL's your entire network. This is
        Beta Software, there are BUGS. beware.
 
-   The requirement to have a valid account on
-   [37]http://secure.irc-chat.net  is due to the fact that I want to have
-   some  control  over  who  recieves  the  definition  files.  If  these
-   Definition  files  fall  into the hands of the TrojanWritters or Virus
-   Writers,  its  possible  they  might be able to re-write their bots to
-   avoid detection. Please see the website for more information.
+   The  requirement to have a valid account on http://secure.irc-chat.net
+   is  due to the fact that I want to have some control over who recieves
+   the definition files. If these Definition files fall into the hands of
+   the  TrojanWritters  or Virus Writers, its possible they might be able
+   to  re-write their bots to avoid detection. Please see the website for
+   more information.
 
 1.1. Compiling and Installation
 
@@ -411,6 +414,9 @@ Note
      * CHECKFIZZER
      * DOONJOIN
      * DOPRIVCHAN
+     * FLOODPROT
+     * CHANKEY
+     * CHANLOCKTIME
      * MULTICHECK
      * AKILL
      * AKILLTIME
@@ -500,7 +506,42 @@ Warning
    To Change this Setting, issue the following Command:
 /msg SecureServ set DOPRIVCHAN <ON/OFF>
 
-3.6. MULTICHECK Setting
+3.6. FLOODPROT
+
+   This  setting  enables SecureServ to monitor the Channels for possible
+   FloodBot  attacks, and to temporarly set the channel +ik when a attack
+   occurs.  This  option uses the settings from CHANLOCKTIME, SAMPLETIME,
+   and CHANKEY to be configured to work correctly as well.
+
+   To Change this setting, issue the following command:
+/msg SecureServ set FLOODPROT <ON/OFF>
+
+3.7. CHANKEY
+
+   This settting controls what key will be used when SecureServ "Locks" a
+   channel  during  a attack. (+k key). You should try to change this key
+   regulary  so that attackers can not re-program their floodbots to gain
+   access  to  your channels with a well known key. If you don't set this
+   option,  SecureServ  uses  a  default  Key.  The length of this key is
+   restricted,  and  if  you  try to set a key that is too long, you will
+   recieve a error message.
+
+   To Change this setting, issue the following command:
+/msg SecureServ set CHANKEY <newkey)
+
+3.8. CHANLOCKTIME
+
+   This settting controls how long SecureServ will "Lock" a channel after
+   detecting a attack. During this time, Channel Administrotors/Operators
+   may  remove  the mode set, and SecureServ will not mind. If after this
+   time  period  (+/-  10  seconds)  the channel will have the modes that
+   SecureServ  set  automatically  removed,  so the channel can return to
+   normal operation.
+
+   To Change this setting, issue the following command:
+/msg SecureServ set CHANLOCKTIME <seconds>
+
+3.9. MULTICHECK Setting
 
    By  Default,  when  SecureServ  identifies  a  Positive  Match  for  a
    Trojan/VIrus  etc,  it  takes  action  straight away, and discontinues
@@ -516,7 +557,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set MULTICHECK <ON/OFF>
 
-3.7. AKILL Setting
+3.10. AKILL Setting
 
    If  you  do  not  wish  SecureServ to ever AKILL a user for a positive
    match,  turn this option off. It will then just issue a warning to all
@@ -526,7 +567,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILL <ON/OFF>
 
-3.8. AKILLTIME Setting
+3.11. AKILLTIME Setting
 
    This  setting  changes  the  Timeout value for AKILL's that SecureServ
    sets when it detects a "infection"
@@ -534,7 +575,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILLTIME <SECONDS>
 
-3.9. DOJOIN Setting
+3.12. DOJOIN Setting
 
    IF  SecureServ  detects  a  user  is  infected  with  a  virus, it can
    optionally  join  that  user  to  a  Antivirus  channel. If you do not
@@ -544,7 +585,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set DOJOIN <ON/OFF>
 
-3.10. NFCOUNT Setting
+3.13. NFCOUNT Setting
 
    SecureServ  monitors  the  number of nick changes a user makes in a 10
    second  period. If the user exceeds a threshold, it considers the user
@@ -556,7 +597,7 @@ Warning
    To Change this Setting, issue the following Command:
 /msg SecureServ set NFCOUNT <number>
 
-3.11. VERBOSE Setting
+3.14. VERBOSE Setting
 
    If  you  like to know what SecureServ is doing (and like to be flooded
    in the #services channel, then enable this option.
@@ -568,7 +609,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set VERBOSE <ON/OFF>
 
-3.12. CYCLETIME Setting
+3.15. CYCLETIME Setting
 
    SecureServ automatically creates new "psyedo" users that randomly join
    channels  looking  for OnJoin VIrus's or SPAM. This option changes the
@@ -580,7 +621,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set CYCLETIME <SECONDS>
 
-3.13. AUTOUPDATE Setting
+3.16. AUTOUPDATE Setting
 
    If  SecureServ  has  been  Configured with a username and password (as
    Covered  in  Section  2.2,  you  can  optionally  Setup  SecureServ to
@@ -591,7 +632,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AUTOUPDATE <ON/OFF>
 
-3.14. SAMPLETIME Setting
+3.17. SAMPLETIME Setting
 
    As  previously mentioned, SecureServ monitors the number of joins on a
    particular  channel  over  a  period  of Time. Within SecureServ, this
@@ -605,7 +646,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set SAMPLETIME <SAMPLETIME> <JOINS>
 
-3.15. HELPCHAN Setting
+3.18. HELPCHAN Setting
 
    If  your  network  has  a  AntiVirus Channel setup, HELPCHAN sets that
    channel name. The default is #nohack
@@ -635,7 +676,7 @@ Warning
 
    The  List  command  shows  a  brief  list  of  all the Defintions that
    SecureServ  currently  has  loaded. These are direct from the Dat file
-   that is downloaded from the [38]http://secure.irc-chat.net website.
+   that is downloaded from the http://secure.irc-chat.net website.
 
    The format of the command is as follows:
 /msg SecureServ list
@@ -653,7 +694,7 @@ Warning
 -SecureServ- End of List.
 
    More    detail    about   each   "Virus"   can   be   found   at   the
-   [39]http://secure.irc-chat.net/ site by searching for the Virus Name.
+   http://secure.irc-chat.net/ site by searching for the Virus Name.
 
 4.2. CheckChan Command
 
@@ -715,7 +756,7 @@ Warning
 4.5. update Command
 
    That  command  forces  SecureServ  to  check  the  Dat File version at
-   [40]http://secure.irc-chat.net/  and  download  the  latest version if
+   http://secure.irc-chat.net/   and   download  the  latest  version  if
    required.
 
 Warning
@@ -797,46 +838,3 @@ Warning
    website,  and customize them. Installation of the "Customized" version
    will require a restart, and you will not be able to use the "Automatic
    Update" features.
-
-References
-
-   1. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e50
-   2. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e96
-   3. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e143
-   4. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e160
-   5. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e213
-   6. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e236
-   7. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e268
-   8. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e331
-   9. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e345
-  10. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e356
-  11. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e365
-  12. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e374
-  13. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e383
-  14. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e395
-  15. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e404
-  16. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e413
-  17. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e422
-  18. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e431
-  19. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e443
-  20. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e452
-  21. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e461
-  22. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e472
-  23. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e481
-  24. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e512
-  25. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e529
-  26. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e538
-  27. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e549
-  28. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e558
-  29. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e573
-  30. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e578
-  31. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e583
-  32. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e588
-  33. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e620
-  34. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  35. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  36. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  37. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  38. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  39. file://localhost/home/fish/SecureServ/README.SecureServ.html
-  40. file://localhost/home/fish/SecureServ/README.SecureServ.html

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.5 2003/07/13 12:50:17 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.6 2003/07/30 15:38:41 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -157,6 +157,9 @@ const char *ts_help_set[] = {
 "    \2AKILLTIME <seconds>\2	- Sets the time a AKILL will last for.",
 "    \2DOJOIN <on/off>\2        - This option tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
 "    \2DOPRIVCHAN <on/off>\2	- This option tells SecureServ not to join Private Channels",
+"    \2FLOODPROT <on/off>\2     - Enable Channel Flood Protection Scanning.",
+"    \2CHANKEY <key>\2          - When Flood Protection for a Channel is active, this is the key we will use to lock the channel",
+"    \2CHANLOCKTIME <seconds>   - How long (Aprox) do we lock a Channel for. Time in seconds",
 "    \2UPDATEINFO <username> <password>\2",
 "                               - This Option Sets the Username and Password required for updating the SecureServ",
 "                                 Definitions file. See the Readme file for more info",

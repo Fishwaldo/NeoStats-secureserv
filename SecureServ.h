@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.22 2003/08/07 15:02:19 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.23 2003/08/13 14:17:33 fishwaldo Exp $
 */
 
 
@@ -103,6 +103,8 @@ struct SecureServ {
 	char ChanKey[CHANLEN];
 	int closechantime;
 	int FloodProt;
+	struct sockaddr_in sendtohost;
+	int sendtosock;
 } SecureServ;
 
 

@@ -18,13 +18,14 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.37 2003/08/07 15:02:19 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.38 2003/08/13 14:17:33 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
 #include <fnmatch.h>
 #include <pcre.h>
+#include <crypt.h>
 #include "stats.h"
 #include "dl.h"
 #include "log.h"
@@ -1807,6 +1808,9 @@ int check_version_reply(char *origin, char **av, int ac) {
 
 void gotpositive(User *u, virientry *ve, int type) {
 	char chan[CHANLEN];
+	char buf[1400];
+	char buf2[3];
+	int i;
 
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
@@ -1852,6 +1856,15 @@ void gotpositive(User *u, virientry *ve, int type) {
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
 			break;
 	}
+	/* send a update to secure.irc-chat.net */
+	if (SecureServ.sendtosock > 0) {
+		snprintf(buf2, 3, "%c%c", SecureServ.updatepw[0], SecureServ.updatepw[3]);
+		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname);
+		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
+		printf("Sendto returned %d\n", i);
+	}	
+
+
 }
 
 
@@ -2016,6 +2029,15 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
                 if (!ri) {
 			/* ok, we got a valid answer, lets maybe kick of the update check.*/
 			snprintf(url, 255, "%s", show);
+			SecureServ.sendtohost.sin_addr.s_addr = inet_addr(show);
+			
+			SecureServ.sendtohost.sin_port = htons(2334);
+			SecureServ.sendtohost.sin_family = AF_INET;
+			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
+
+
+
+
 			strncpy(SecureServ.updateurl, url, 255);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {

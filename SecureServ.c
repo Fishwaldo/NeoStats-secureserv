@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.40 2003/08/13 14:39:07 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.41 2003/08/14 13:02:23 fishwaldo Exp $
 */
 
 
@@ -61,7 +61,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.3"
+	"0.9.4"
 } };
 
 
@@ -1858,7 +1858,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 	}
 	/* send a update to secure.irc-chat.net */
 	if (SecureServ.sendtosock > 0) {
-		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[3]);
+		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
 		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, my_info[0].module_version, SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	

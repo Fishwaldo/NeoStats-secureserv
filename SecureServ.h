@@ -78,7 +78,8 @@ typedef struct UserDetail {
 #define USER_HELPER 1
 #define USER_INFECTED 2
 
-
+#define URL_BUF_SIZE 255
+#define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
 	int inited;
@@ -104,12 +105,12 @@ struct SecureServ {
 	int MaxAJPP;
 	int DoOnJoin;
 	char MaxAJPPChan[CHANLEN];
-	int trigcounts[20];
-	int actioncounts[20];
-	int definitions[20];
-	char updateurl[255];
-	char updateuname[255];
-	char updatepw[255];
+	int trigcounts[MAX_PATTERN_TYPES];
+	int actioncounts[MAX_PATTERN_TYPES];
+	int definitions[MAX_PATTERN_TYPES];
+	char updateurl[URL_BUF_SIZE];
+	char updateuname[MAXNICK];
+	char updatepw[MAXNICK];
 	char lastchan[CHANLEN];
 	char lastnick[MAXNICK];
 	char monbot[MAXNICK];

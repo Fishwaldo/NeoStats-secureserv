@@ -58,7 +58,6 @@ static void save_exempts();
 int AutoUpdate();
 int CleanNickFlood();
 
-#define URL_BUF_SIZE 255
 static char url_buf[URL_BUF_SIZE];
 
 ModuleInfo __module_info = {
@@ -574,8 +573,8 @@ void do_set(User *u, char **av, int ac) {
 		}
 		SetConf((void *)av[3], CFGSTR, "UpdateUname");
 		SetConf((void *)av[4], CFGSTR, "UpdatePassword");
-		strncpy(SecureServ.updateuname, av[3], 255);
-		strncpy(SecureServ.updatepw, av[4], 255);
+		strncpy(SecureServ.updateuname, av[3], MAXNICK);
+		strncpy(SecureServ.updatepw, av[4], MAXNICK);
 		chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
 		prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 		return;
@@ -1270,14 +1269,14 @@ void LoadTSConf() {
 		/* disable autoupgrade if its set */
 		SecureServ.autoupgrade = 0;
 	} else {
-		strncpy(SecureServ.updateuname, tmp, 255);
+		strncpy(SecureServ.updateuname, tmp, MAXNICK);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "UpdatePassword") <= 0) {
 		/* disable autoupgrade if its set */
 		SecureServ.autoupgrade = 0;
 	} else {
-		strncpy(SecureServ.updatepw, tmp, 255);
+		strncpy(SecureServ.updatepw, tmp, MAXNICK);
 		free(tmp);
 	}
 	if (GetConf((void *)&SecureServ.dofizzer, CFGINT, "FizzerCheck") <= 0) {
@@ -1476,7 +1475,7 @@ void load_dat() {
 		list_destroy_nodes(viri);
 	}
 	
-	for (rc = 0; rc < 20; rc++) {
+	for (rc = 0; rc < MAX_PATTERN_TYPES; rc++) {
 		SecureServ.definitions[rc] = 0;
 	}	
 
@@ -1930,7 +1929,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 		node = list_first(viri);
 		do {
 			viridetails = lnode_get(node);
-			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > 20)) {
+			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > MAX_PATTERN_TYPES)) {
 				SecureServ.trigcounts[DET_CTCP]++;
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Version %s against %s", buf, viridetails->recvmsg);
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
@@ -2109,7 +2108,7 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.updateurl[0] = 0;
 	SecureServ.updateuname[0] = 0;
 	SecureServ.updatepw[0] = 0;
-	for (i = 0; i > 20; i++) {
+	for (i = 0; i > MAX_PATTERN_TYPES; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;
 	}
@@ -2214,23 +2213,21 @@ void __ModFini() {
 
 
 static void GotHTTPAddress(char *data, adns_answer *a) {
-        char *show;
+        char *url;
         int i, len, ri;
-	char url[255];
 
 	adns_rr_info(a->type, 0, 0, &len, 0, 0);
         for(i = 0; i < a->nrrs;  i++) {
-        	ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &show);
+        	ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &url);
                 if (!ri) {
 			/* ok, we got a valid answer, lets maybe kick of the update check.*/
-			strncpy(url, show, 255);
-			SecureServ.sendtohost.sin_addr.s_addr = inet_addr(show);
+			SecureServ.sendtohost.sin_addr.s_addr = inet_addr(url);
 			
 			SecureServ.sendtohost.sin_port = htons(2334);
 			SecureServ.sendtohost.sin_family = AF_INET;
 			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
 
-			strncpy(SecureServ.updateurl, url, 255);
+			strncpy(SecureServ.updateurl, url, URL_BUF_SIZE);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
 				snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
@@ -2243,7 +2240,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
                 } else {
 	                chanalert(s_SecureServ, "DNS error Checking for Updates: %s", adns_strerror(ri));
 	        }
-	        free(show);
+	        free(url);
 	}
 	if (a->nrrs < 1) {
 	        chanalert(s_SecureServ,  "DNS Error checking for Updates");

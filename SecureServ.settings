@@ -8,6 +8,21 @@ g = {
                 RealName (S) = "Can't Get Enough";
                 User (S) = "Blah";
             }
+            Sven = {
+                Host (S) = "h48n3c1.bredband.skanova.com";
+                RealName (S) = "Sven";
+                User (S) = "Sven";
+            }
+            Scarab = {
+                Host (S) = "dsl-283-923-23-847.arcor-ip.net.jp";
+                RealName (S) = "Mr Qaz";
+                User (S) = "~email";
+            }
+            Cledus = {
+                Host (S) = "ip768-14-131-1924.uh.ix.cox.net";
+                RealName (S) = "fwsgh1";
+                User (S) = "~Fud1";
+            }
             Rubarb = {
                 Host (S) = "dialup-01.kpa.ida.myisp.id";
                 RealName (S) = "Chat to me";

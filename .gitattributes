@@ -2,7 +2,6 @@
 /ChangeLog -text
 /FloodCheck.c -text
 /Helpers.c -text
-/LICENSE -text
 /Makefile.in -text
 /OnJoinBot.c -text
 /README.SecureServ -text
@@ -18,7 +17,6 @@
 /html.css -text
 /http.c -text
 /http.h -text
-/install-sh -text
 /modconfig.h.in -text
 pcre/COPYING -text
 pcre/Makefile.in -text

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.2 2003/08/07 15:02:19 fishwaldo Exp $
+** $Id: Helpers.c,v 1.3 2003/08/14 14:53:14 fishwaldo Exp $
 */
 
 
@@ -140,6 +140,17 @@ int Helpers_chpass(User *u, char **av, int ac) {
 int Helpers_Login(User *u, char **av, int ac) {
 	hnode_t *node;
 	SSHelpers *helper;
+	hscan_t hlps;
+	
+	hash_scan_begin(&hlps, helperhash);
+	while ((node = hash_scan_next(&hlps)) != NULL) {
+		helper = hnode_get(node);
+		if (helper->u == u) {
+			prefmsg(u->nick, s_SecureServ, "You are already logged in account %s", helper->nick);
+			return 1;
+		}			
+	}
+
 	node = hash_lookup(helperhash, av[2]);
 	if (node) {
 		helper = hnode_get(node);
@@ -151,6 +162,15 @@ int Helpers_Login(User *u, char **av, int ac) {
 				ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 			}
 			chanalert(s_SecureServ, "%s Successfully Logged in", u->nick);
+			if ((SecureServ.joinhelpchan == 1) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) != 1)) {
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+			        sjoin_cmd(s_SecureServ, SecureServ.HelpChan, MODE_CHANADMIN);
+#else
+		                sjoin_cmd(s_SecureServ, SecureServ.HelpChan);
+		                schmode_cmd(s_SecureServ, SecureServ.HelpChan, "+oa", NULL);
+#endif
+			}
+				                
 			SecureServ.helpcount++;
 			return 1;
 		}
@@ -162,6 +182,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 	chanalert(s_SecureServ, "%s tried to login with %s but that account does not exist", u->nick, av[2]);
 	return -1;
 }
+
 int Helpers_Logout(User *u) {
 	hscan_t hlps;
 	hnode_t *node;
@@ -172,11 +193,14 @@ int Helpers_Logout(User *u) {
 		helper = hnode_get(node);
 		if (helper->u == u) {
 			prefmsg(u->nick, s_SecureServ, "You have been logged out of %s", helper->nick);
-			chanalert(u->nick, "%s logged out of account %s", u->nick, helper->nick);
+			chanalert(s_SecureServ, "%s logged out of account %s", u->nick, helper->nick);
 			helper->u = NULL;
 			SecureServ.helpcount--;
 			if (SecureServ.helpcount < 0) {
 				SecureServ.helpcount = 0;
+			}
+			if ((SecureServ.helpcount == 0) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) == 1)) {
+				spart_cmd(s_SecureServ, SecureServ.HelpChan);
 			}
 			return 1;
 		}			
@@ -185,3 +209,55 @@ int Helpers_Logout(User *u) {
 	return -1;
 }
 
+int Helpers_signoff(User *u) {
+	hscan_t hlps;
+	hnode_t *node;
+	SSHelpers *helper;
+	
+	hash_scan_begin(&hlps, helperhash);
+	while ((node = hash_scan_next(&hlps)) != NULL) {
+		helper = hnode_get(node);
+		if (helper->u == u) {
+			chanalert(s_SecureServ, "%s logged out of account %s after he quit", u->nick, helper->nick);
+			helper->u = NULL;
+			SecureServ.helpcount--;
+			if (SecureServ.helpcount < 0) {
+				SecureServ.helpcount = 0;
+			}
+			if ((SecureServ.helpcount == 0) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) == 1)) {
+				spart_cmd(s_SecureServ, SecureServ.HelpChan);
+			}
+			return 1;
+		}			
+	}
+	return -1;
+}
+
+int Helpers_away(char **av, int ac) {
+	hscan_t hlps;
+	hnode_t *node;
+	SSHelpers *helper;
+	User *u;
+	if (SecureServ.signoutaway != 1) {
+		return 1;
+	}
+	u = finduser(av[0]);
+	hash_scan_begin(&hlps, helperhash);
+	while ((node = hash_scan_next(&hlps)) != NULL) {
+		helper = hnode_get(node);
+		if ((helper->u == u) && (u->is_away == 1)) {
+			chanalert(s_SecureServ, "%s logged out of account %s after set away", u->nick, helper->nick);
+			prefmsg(u->nick, s_SecureServ, "You have been logged out of SecureServ");
+			helper->u = NULL;
+			SecureServ.helpcount--;
+			if (SecureServ.helpcount < 0) {
+				SecureServ.helpcount = 0;
+			}
+			if ((SecureServ.helpcount == 0) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) == 1)) {
+				spart_cmd(s_SecureServ, SecureServ.HelpChan);
+			}
+			return 1;
+		}			
+	}
+	return -1;
+}

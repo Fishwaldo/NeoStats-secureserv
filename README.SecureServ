@@ -9,8 +9,9 @@ SecureServ Manual
    2. Basic Configuration
 
         2.1. Exclusion Lists
-        2.2. Username and Password for Dat File Updates
-        2.3. System Messages
+        2.2. Helper Lists
+        2.3. Username and Password for Dat File Updates
+        2.4. System Messages
 
    3. Detailed Configuration
 
@@ -24,15 +25,18 @@ SecureServ Manual
         3.8. CHANLOCKTIME
         3.9. MULTICHECK Setting
         3.10. MONBOT Setting
-        3.11. AKILL Setting
-        3.12. AKILLTIME Setting
-        3.13. DOJOIN Setting
-        3.14. NFCOUNT Setting
-        3.15. VERBOSE Setting
-        3.16. CYCLETIME Setting
-        3.17. AUTOUPDATE Setting
-        3.18. SAMPLETIME Setting
-        3.19. HELPCHAN Setting
+        3.11. REPORT Setting
+        3.12. AUTOSIGNOUT Setting
+        3.13. JOINHELPCHAN Setting
+        3.14. AKILL Setting
+        3.15. AKILLTIME Setting
+        3.16. DOJOIN Setting
+        3.17. NFCOUNT Setting
+        3.18. VERBOSE Setting
+        3.19. CYCLETIME Setting
+        3.20. AUTOUPDATE Setting
+        3.21. SAMPLETIME Setting
+        3.22. HELPCHAN Setting
 
    4. Operational Commands
 
@@ -322,7 +326,69 @@ Caution
 >secureserv< exclude del 1
 -SecureServ- Deleted #chan Channel out of exception list
 
-2.2. Username and Password for Dat File Updates
+2.2. Helper Lists
+
+   Helper  lists  let  you  grant  non-privledged  users  the  ability to
+   maintain your Virus help channel and help users that are infected with
+   virus's  that  could be removed with simple instructions (such as Spam
+   Virus's  that  infect  Mirc).  These  users are granted the ability to
+   "release"  a  infected user from SecureServ or kill un-cooperative, or
+   unresponsive users that SecureServ has identified as being infected.
+
+Caution
+
+   Although  SecureServ  limits  who  a  "Helper" may kill (only infected
+   users  joined  to  the  Help  Channel)  you should only give out login
+   accounts to trusted users.
+
+   Adding a Entry
+
+   To add a entry to the Helper list, use the following format:
+/msg SecureServ helpers add <login> <pass>
+
+   Where:
+
+   <login>  = The login name to use to gain access. Does not have to be a
+   nickname.
+
+   <pass> = The password to use to login
+
+   The output is as follows:
+>secureserv< helpers add myhelper mypass
+-SecureServ- Successfully added Helper myhelper with Password mypass to Helpers
+ List
+
+   Listing an Entry
+
+   To list the helpers simple type:
+/msg SecureServ helpers list
+
+   And  all  the  helpers  are  listed.  Additionally,  if  a nickname is
+   provided  after the login name, it means that this nick is logged into
+   this particular helper account.
+
+   The output is as follows:
+>secureserv< helpers list
+-SecureServ- Helpers List (2):
+-SecureServ- fish (Fish)
+-SecureServ- myhelper (Not Logged In)
+-SecureServ- End of List.
+
+   Deleting an Entry
+
+   To delete a entry, you must provide the login name you wish to delete.
+   The format of the command is as follows:
+/msg SecureServ helpers del <login>
+
+   Where:
+
+   <login> is the login account you wish to delete.
+
+   The output of the command is as follows:
+>secureserv< helpers del myhelper
+-SecureServ- Deleted myhelper from Helpers List
+
+2.3. Username and Password for Dat File Updates
 
    In  order to update SecureServ's Detection, you need to register for a
    account  at  http://secure.irc-chat.net/  Once  you have recieved your
@@ -357,7 +423,7 @@ uccess/Failure
    message  about DatFile being downloaded and installed, or will recieve
    a message detailing the problem.
 
-2.3. System Messages
+2.4. System Messages
 
    SecureServ  sends  different  messages  to  users  depending  on whats
    happening. Examples of the messages its send is a "Warning message" to
@@ -422,6 +488,9 @@ Note
      * CHANLOCKTIME
      * MULTICHECK
      * MONBOT
+     * REPORT
+     * AUTOSIGNOUT
+     * JOINHELPCHAN
      * AKILL
      * AKILLTIME
      * DOJOIN
@@ -572,7 +641,41 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set MONBOT <botF>
 
-3.11. AKILL Setting
+3.11. REPORT Setting
+
+   SecureServ   has   the   option   to   report  postive  infections  to
+   secure.irc-chat.net  site  for  both  statistically  and  in  future a
+   blacklist type setup. Enabling this option means that statistics about
+   infections  can  be reported to you on the secure.irc-chat.net site as
+   well   as   providing  Summarized  data  to  the  public  (No  Private
+   information,  such  as  infected hostnames, or your networks infection
+   rate  is  reported  to the public though - See the secure.irc-chat.net
+   site for more infomation.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set REPORT <botF>
+
+3.12. AUTOSIGNOUT Setting
+
+   SecureServ  has  the  ability to automatically logout helpers that set
+   away  while being logged in. This ensures that infected users are only
+   joined to the help channel if a helper is available to help them.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set AUTOSIGNOUT <botF>
+
+3.13. JOINHELPCHAN Setting
+
+   SecureServ  can optionally join the help channel with the first helper
+   logs  in, and leave the help channel when the last helper logs out. No
+   additional   functionality  is  provided  when  SecureServ  joins  the
+   channel,  its  only  for the "look" and "feel" of having SecureServ in
+   your antivirus channel.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set JOINHELPCHAN <botF>
+
+3.14. AKILL Setting
 
    If  you  do  not  wish  SecureServ to ever AKILL a user for a positive
    match,  turn this option off. It will then just issue a warning to all
@@ -582,7 +685,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILL <ON/OFF>
 
-3.12. AKILLTIME Setting
+3.15. AKILLTIME Setting
 
    This  setting  changes  the  Timeout value for AKILL's that SecureServ
    sets when it detects a "infection"
@@ -590,7 +693,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILLTIME <SECONDS>
 
-3.13. DOJOIN Setting
+3.16. DOJOIN Setting
 
    IF  SecureServ  detects  a  user  is  infected  with  a  virus, it can
    optionally  join  that  user  to  a  Antivirus  channel. If you do not
@@ -600,7 +703,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set DOJOIN <ON/OFF>
 
-3.14. NFCOUNT Setting
+3.17. NFCOUNT Setting
 
    SecureServ  monitors  the  number of nick changes a user makes in a 10
    second  period. If the user exceeds a threshold, it considers the user
@@ -612,7 +715,7 @@ Warning
    To Change this Setting, issue the following Command:
 /msg SecureServ set NFCOUNT <number>
 
-3.15. VERBOSE Setting
+3.18. VERBOSE Setting
 
    If  you  like to know what SecureServ is doing (and like to be flooded
    in the #services channel, then enable this option.
@@ -624,7 +727,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set VERBOSE <ON/OFF>
 
-3.16. CYCLETIME Setting
+3.19. CYCLETIME Setting
 
    SecureServ automatically creates new "psyedo" users that randomly join
    channels  looking  for OnJoin VIrus's or SPAM. This option changes the
@@ -636,7 +739,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set CYCLETIME <SECONDS>
 
-3.17. AUTOUPDATE Setting
+3.20. AUTOUPDATE Setting
 
    If  SecureServ  has  been  Configured with a username and password (as
    Covered  in  Section  2.2,  you  can  optionally  Setup  SecureServ to
@@ -647,7 +750,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AUTOUPDATE <ON/OFF>
 
-3.18. SAMPLETIME Setting
+3.21. SAMPLETIME Setting
 
    As  previously mentioned, SecureServ monitors the number of joins on a
    particular  channel  over  a  period  of Time. Within SecureServ, this
@@ -661,7 +764,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set SAMPLETIME <SAMPLETIME> <JOINS>
 
-3.19. HELPCHAN Setting
+3.22. HELPCHAN Setting
 
    If  your  network  has  a  AntiVirus Channel setup, HELPCHAN sets that
    channel name. The default is #nohack
@@ -787,13 +890,25 @@ Warning
 
 4.6. login Command
 
-   This  command is not implemented in this release. Future Versions will
-   have this option.
+   This  command  allows  a  "helper"  or  trusted  user  that  mans your
+   Antivirus  or  help channel to login to SecureServ to gain additionaly
+   functionality  with  regards  to  handling infected users. The helpers
+   must  have  a  valid  login account and password as set in the helpers
+   command.
+
+   The format of the command is as follows:
+/msg SecureServ login <login> <pass>
 
 4.7. logout Command
 
-   This  command is not implemented in this release. Future Versions will
-   have this option.
+   This  command  allows a logged in helper to logout of SecureServ if he
+   is  going to be away or not paying attention to the help channel for a
+   period  of time. You should encourage your users to logout if they can
+   not  provide timely response to infected users that may be forcejoined
+   to the channel.
+
+   The format of the command is as follows:
+/msg SecureServ logout
 
 4.8. bots Command
 

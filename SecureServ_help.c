@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.8 2003/08/05 12:10:07 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.9 2003/08/14 14:53:15 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -40,7 +40,7 @@ const char *ts_help_oper[] = {
 "OPERTATOR COMMANDS:",
 "     CHECKCHAN STATUS    SET     EXCLUDE",
 "     CYCLE     LIST      UPDATE  BOTS",
-"     MONCHAN",
+"     MONCHAN   HELPERS",
 "",
 NULL
 };
@@ -160,6 +160,22 @@ const char *ts_help_bots[] = {
 NULL
 };
 
+const char *ts_help_helpers[] = {
+"Usage: \2HELPERS <LIST/ADD/DEL>\2",
+"",
+"This command lets you view or manipulate the helpers list.",
+"Helpers can be normal users that maintain your AntiVirus channels and can help users with Virus Infections",
+"Helpers have special privledges that allow them to kill infected users, or release users after the user has been identified as a infected user",
+"The Options are:",
+"    \2LIST\2         - This will list the current helpers and the positions in the list",
+"                       If a nickname is listed after the login name, it means that that nick is logged in",
+"    \2ADD <login> <pass>\2",
+"                     - This option will add a helper entry with the login name and password provided",
+"    \2DEL <login>\2  - This will delete a helper entry with the login name from the helpers list."
+"",
+NULL
+};
+
 
 const char *ts_help_status[] = {
 "Usage: \2STATUS\2",
@@ -199,6 +215,9 @@ const char *ts_help_set[] = {
 "                                 Definitions file. See the Readme file for more info",
 "    \2MONBOT <bot>\2           - Assign <bot> (from /msg %S bot list) to be used for Channel Monitoring",
 "\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
+"    \2REPORT <on/off>\2        - Enable Reporting to Secure.irc-chat.net of infected users.",
+"    \2AUTOSIGNOUT <on/off>\2   - Automatically sign out helpers if they set away.",
+"    \2JOINHELPCHAN <on/off>\2	- Should SecureServ join the help channel when there is at least one helper logged in",
 "    \2MULTICHECK <on/off>\2    - This makes SecureServ check all Patterns when a infected User is found.",
 "                                 Please Read the Readme file for important Performance information",
 "    \2VERBOSE <on/off>\2       - This option Turns on Verbose Mode. Prepare to be flooded!",

@@ -327,6 +327,79 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
     </sect2>
 
     <sect2>
+      <title>Helper Lists</title>
+
+      <para>Helper lists let you grant non-privledged users the ability to
+      maintain your Virus help channel and help users that are infected with
+      virus&#39;s that could be removed with simple instructions (such as Spam
+      Virus&#39;s that infect Mirc). These users are granted the ability to
+      &#34;release&#34; a infected user from SecureServ or kill
+      un-cooperative, or unresponsive users that SecureServ has identified as
+      being infected. </para>
+
+      <caution>
+        <para>Although SecureServ limits who a &#34;Helper&#34; may kill (only
+        infected users joined to the Help Channel) you should only give out
+        login accounts to trusted users. </para>
+      </caution>
+
+      <para><emphasis role="bold">Adding a Entry</emphasis></para>
+
+      <para>To add a entry to the Helper list, use the following format:</para>
+
+      <screen>/msg SecureServ helpers add &#60;login&#62; &#60;pass&#62; </screen>
+
+      <para>Where:</para>
+
+      <para>&#60;login&#62; = The login name to use to gain access. Does not
+      have to be a nickname. </para>
+
+      <para>&#60;pass&#62; = The password to use to login</para>
+
+      <para>The output is as follows:</para>
+
+      <screen>&#62;secureserv&#60; helpers add myhelper mypass
+-SecureServ- Successfully added Helper myhelper with Password mypass to Helpers List
+</screen>
+
+      <para><emphasis role="bold">Listing an Entry</emphasis></para>
+
+      <para>To list the helpers simple type:</para>
+
+      <screen>/msg SecureServ helpers list</screen>
+
+      <para>And all the helpers are listed. Additionally, if a nickname is
+      provided after the login name, it means that this nick is logged into
+      this particular helper account.</para>
+
+      <para> The output is as follows:</para>
+
+      <screen>&#62;secureserv&#60; helpers list
+-SecureServ- Helpers List (2):
+-SecureServ- fish (Fish)
+-SecureServ- myhelper (Not Logged In)
+-SecureServ- End of List.
+</screen>
+
+      <para><emphasis role="bold">Deleting an Entry</emphasis></para>
+
+      <para>To delete a entry, you must provide the login name you wish to
+      delete. The format of the command is as follows:</para>
+
+      <screen>/msg SecureServ helpers del &#60;login&#62;</screen>
+
+      <para>Where:</para>
+
+      <para>&#60;login&#62; is the login account you wish to delete.</para>
+
+      <para>The output of the command is as follows:</para>
+
+      <screen>&#62;secureserv&#60; helpers del myhelper
+-SecureServ- Deleted myhelper from Helpers List
+</screen>
+    </sect2>
+
+    <sect2>
       <title>Username and Password for Dat File Updates</title>
 
       <para>In order to update SecureServ&#39;s Detection, you need to
@@ -481,6 +554,18 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <listitem>
         <para>MONBOT</para>
+      </listitem>
+
+      <listitem>
+        <para>REPORT</para>
+      </listitem>
+
+      <listitem>
+        <para>AUTOSIGNOUT</para>
+      </listitem>
+
+      <listitem>
+        <para>JOINHELPCHAN</para>
       </listitem>
 
       <listitem>
@@ -691,6 +776,50 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>To Change the setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set MONBOT &#60;botF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>REPORT Setting</title>
+
+      <para>SecureServ has the option to report postive infections to
+      secure.irc-chat.net site for both statistically and in future a
+      blacklist type setup. Enabling this option means that statistics about
+      infections can be reported to you on the secure.irc-chat.net site as
+      well as providing Summarized data to the public (No Private information,
+      such as infected hostnames, or your networks infection rate is reported
+      to the public though - See the secure.irc-chat.net site for more
+      infomation. </para>
+
+      <para>To Change the setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set REPORT &#60;botF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>AUTOSIGNOUT Setting</title>
+
+      <para>SecureServ has the ability to automatically logout helpers that
+      set away while being logged in. This ensures that infected users are
+      only joined to the help channel if a helper is available to help them.
+      </para>
+
+      <para>To Change the setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set AUTOSIGNOUT &#60;botF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>JOINHELPCHAN Setting</title>
+
+      <para>SecureServ can optionally join the help channel with the first
+      helper logs in, and leave the help channel when the last helper logs
+      out. No additional functionality is provided when SecureServ joins the
+      channel, its only for the &#34;look&#34; and &#34;feel&#34; of having
+      SecureServ in your antivirus channel. </para>
+
+      <para>To Change the setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set JOINHELPCHAN &#60;botF&#62; </screen>
     </sect2>
 
     <sect2>
@@ -988,15 +1117,29 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
     <sect2>
       <title>login Command</title>
 
-      <para>This command is not implemented in this release. Future Versions
-      will have this option.</para>
+      <para>This command allows a &#34;helper&#34; or trusted user that mans
+      your Antivirus or help channel to login to SecureServ to gain
+      additionaly functionality with regards to handling infected users. The
+      helpers must have a valid login account and password as set in the
+      helpers command. </para>
+
+      <para>The format of the command is as follows:</para>
+
+      <screen>/msg SecureServ login &#60;login&#62; &#60;pass&#62;</screen>
     </sect2>
 
     <sect2>
       <title>logout Command</title>
 
-      <para>This command is not implemented in this release. Future Versions
-      will have this option.</para>
+      <para>This command allows a logged in helper to logout of SecureServ if
+      he is going to be away or not paying attention to the help channel for a
+      period of time. You should encourage your users to logout if they can
+      not provide timely response to infected users that may be forcejoined to
+      the channel. </para>
+
+      <para>The format of the command is as follows:</para>
+
+      <screen>/msg SecureServ logout</screen>
     </sect2>
 
     <sect2>
@@ -1008,18 +1151,18 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <screen>/msg SecureServ bots list</screen>
 
-      <para>This option lists all available bots. </para>
+      <para>This option lists all available bots.</para>
 
       <screen>/msg SecureServ bots add &#60;nick&#62; &#60;ident&#62; &#60;host&#62; &#60;realname&#62;</screen>
 
       <para>This option adds a bot with the nickname, ident, host and realname
       as specified in the command to the list of bots that will be used to
-      randomly join a channel. </para>
+      randomly join a channel.</para>
 
       <screen>/msg SecureServ bots del &#60;num&#62;</screen>
 
       <para>This option lists will delete a bot from the available bots if its
-      not currently in use. </para>
+      not currently in use.</para>
     </sect2>
 
     <sect2>
@@ -1028,22 +1171,21 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>This option allows you to manipulate the list of channels that
       will be monitored all the time by SecureServ for Private Messate type
       virus&#39;s. The bot that joins these channels is specified in the
-      monbot section of the set command. </para>
+      monbot section of the set command.</para>
 
       <screen>/msg SecureServ monchan list</screen>
 
       <para>This option lists all the channels that will be monitored. If the
       channels do not exist when SecureServ is started, they will
-      automatically be deleted from this list. </para>
+      automatically be deleted from this list.</para>
 
       <screen>/msg SecureServ bots add &#60;chan&#62;</screen>
 
-      <para>This option adds a channel to be monitored. </para>
+      <para>This option adds a channel to be monitored.</para>
 
       <screen>/msg SecureServ bots del &#60;chan&#62;</screen>
 
-      <para>This option lists will delete a channel from the monitored list.
-      </para>
+      <para>This option lists will delete a channel from the monitored list.</para>
     </sect2>
   </sect1>
 

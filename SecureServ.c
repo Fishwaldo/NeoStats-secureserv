@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.41 2003/08/14 13:02:23 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.42 2003/08/14 14:53:15 fishwaldo Exp $
 */
 
 
@@ -61,7 +61,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.4"
+	"0.9.3"
 } };
 
 
@@ -570,6 +570,69 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return;
 		}
+	} else if (!strcasecmp(av[2], "AUTOSIGNOUT")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Helper Away Auto logout is now enabled");
+			chanalert(s_SecureServ, "%s has enabled Helper Away Auto Logout", u->nick);
+			SetConf((void *)1, CFGINT, "DoAwaySignOut");
+			SecureServ.signoutaway = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Helper Away Auto logout is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Helper Away Auto logout", u->nick);
+			SetConf((void *)0, CFGINT, "DoAwaySignOut");
+			SecureServ.signoutaway = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "JOINHELPCHAN")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "SecureServ will join the Help Channel");
+			chanalert(s_SecureServ, "%s has enabled SecureServ to join the HelpChannel", u->nick);
+			SetConf((void *)1, CFGINT, "DoJoinHelpChan");
+			SecureServ.joinhelpchan = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "SecureServ will not join the Help Channel");
+			chanalert(s_SecureServ, "%s has disabled SecureServ joining the Help Channel", u->nick);
+			SetConf((void *)0, CFGINT, "DoJoinHelpChan");
+			SecureServ.joinhelpchan = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "REPORT")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Reporting is now enabled");
+			chanalert(s_SecureServ, "%s has enabled Reporting", u->nick);
+			SetConf((void *)1, CFGINT, "DoReport");
+			SecureServ.report = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Reporting is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Reporting", u->nick);
+			SetConf((void *)0, CFGINT, "DoReport");
+			SecureServ.report = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
 	} else if (!strcasecmp(av[2], "FLOODPROT")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -941,6 +1004,9 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		}
 		prefmsg(u->nick, s_SecureServ, "AutoUpdate: %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Reporting: %s", SecureServ.report ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Logout Helpers if they set away: %s", SecureServ.signoutaway ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "SecureServ will join the Help Channel: %s", SecureServ.joinhelpchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Signon Message: %s", SecureServ.signonscanmsg);
 		prefmsg(u->nick, s_SecureServ, "Akill Information Message: %s", SecureServ.akillinfo);
 		prefmsg(u->nick, s_SecureServ, "No Help Available Message: %s", SecureServ.nohelp);
@@ -1131,6 +1197,18 @@ void LoadTSConf() {
 		/* use Default */
 		SecureServ.timedif = 300;
 	}
+        if (GetConf((void *)&SecureServ.signoutaway, CFGINT, "DoAwaySignOut") <= 0) {
+        	/* yes */
+        	SecureServ.signoutaway = 1;
+        }
+        if (GetConf((void *)&SecureServ.report, CFGINT, "DoReport") <= 0) {
+        	/* yes */
+        	SecureServ.report = 1;
+        }
+        if (GetConf((void *)&SecureServ.joinhelpchan, CFGINT, "DoJoinHelpChan") <= 0) {
+        	/* yes */
+        	SecureServ.joinhelpchan = 1;
+        }
 	if (GetConf((void *)&SecureServ.verbose, CFGINT, "Verbose") <= 0){
 		/* yes */
 		SecureServ.verbose = 1;
@@ -1431,6 +1509,7 @@ EventFnList my_event_list[] = {
 	{ "DELCHAN",	ss_del_chan},
 	{ "NICK_CHANGE", CheckNick},
 	{ "KICK",	ss_kick_chan},
+	{ "AWAY", 	Helpers_away},
 	{ NULL, 	NULL}
 };
 
@@ -1515,6 +1594,7 @@ static int DelNick(char **av, int ac) {
        		hnode_destroy(nfnode);
 		free(nick);
 	}
+	Helpers_signoff(finduser(av[0]));
 	return 1;
 }
 
@@ -1857,7 +1937,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 			break;
 	}
 	/* send a update to secure.irc-chat.net */
-	if (SecureServ.sendtosock > 0) {
+	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
 		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
 		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, my_info[0].module_version, SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));

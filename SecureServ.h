@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.23 2003/08/13 14:17:33 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.24 2003/08/14 14:53:15 fishwaldo Exp $
 */
 
 
@@ -105,6 +105,9 @@ struct SecureServ {
 	int FloodProt;
 	struct sockaddr_in sendtohost;
 	int sendtosock;
+	int signoutaway;
+	int report;
+	int joinhelpchan;
 } SecureServ;
 
 
@@ -201,6 +204,8 @@ int Helpers_list(User *);
 int Helpers_chpass(User *, char **, int);
 int Helpers_Login(User *, char **, int);
 int Helpers_Logout(User *);
+int Helpers_signoff(User *);
+int Helpers_away(char **, int);
 
 /* SecureServ_help.c */
 extern const char *ts_help[];

@@ -36,7 +36,6 @@
 #include "log.h"
 #include "conf.h"
 #include "SecureServ.h"
-#include "http.h"
 
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100

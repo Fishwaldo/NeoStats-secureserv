@@ -126,10 +126,12 @@ void load_dat() {
 			if(i)
 			{
 				/* We do not really care if the custom file is not present so don't report it except in debug */
-				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found. %s is disabled", s_SecureServ);
+				/* as the comment says, we don't care about custom.dat, so don't fool users into thinking SecureSer is disabled by telling them it is! */
+				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found.", s_SecureServ);
 			}
 			else
 			{
+				/* we *HAVE* to have a viri.dat file. Otherwise, no go */
 				nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
 				chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
 			}

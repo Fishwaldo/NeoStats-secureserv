@@ -8,12 +8,12 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY=@DIRINST@/dl/
 INCLUDES=-I@DIRINST@/include/ -I.
 
-SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c scan.c exempts.c update.c
-OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o scan.o exempts.o update.o
+SOURCES= SecureServ.c SecureServ_help.c OnJoinBot.c FloodCheck.c Helpers.c scan.c exempts.c update.c
+OBJECTS= SecureServ.o SecureServ_help.o OnJoinBot.o FloodCheck.o Helpers.o scan.o exempts.o update.o
 TARGET= secureserv.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
 DATA=viri.dat customviri.dat
-DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h RelNotes.txt
+DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in SecureServ.h RelNotes.txt
 distdir = @PACKAGE@-@VERSION@
 
 all:	 module

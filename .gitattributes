@@ -17,8 +17,6 @@
 /configure.in -text
 /exempts.c -text
 /html.css -text
-/http.c eol=lf
-/http.h eol=lf
 /install-sh -text
 /modconfig.h.in -text
 /scan.c -text

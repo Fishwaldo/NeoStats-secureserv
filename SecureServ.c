@@ -35,7 +35,6 @@
 #include "log.h"
 #include "conf.h"
 #include "SecureServ.h"
-#include "http.h"
 
 static int ScanNick(char **av, int ac);
 void LoadConfig(void);
@@ -801,7 +800,7 @@ static int Online(char **av, int ac)
 	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
 	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 10);
-	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
+	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.inited = 1;
 	LoadMonChans();
 

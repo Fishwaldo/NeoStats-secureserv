@@ -29,35 +29,38 @@
 #else
 #include <unistd.h>
 #endif
-
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+                     
 #include "stats.h"
 #include "dl.h"
 #include "log.h"
 #include "conf.h"
 #include "SecureServ.h"
-#include "http.h"
 
-void datver(HTTP_Response *response);
-void datdownload(HTTP_Response *response);
+void datver(void *data, int status, char *ver, int versize);
+void datdownload(void *data, int status, char *ver, int versize);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
+void DownLoadDat();
 
 static char ss_buf[SS_BUF_SIZE];
 
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
 ** whats local, and if website is higher, either prompts for an upgrade, or does an automatic one :)
-**
-** NOTE: we can't call http_request from this function as its NOT recursive 
+** It just compares version numbers of the dat file, and if they are different, starts a new download. 
 */
 
-void datver(HTTP_Response *response) 
+void datver(void *data, int status, char *ver, int versize) 
 {
 	int myversion;
 
 	SET_SEGV_LOCATION();
+	SET_SEGV_INMODULE("SecureServ");
 	/* check there was no error */
-	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
-		myversion = atoi(response->pData);
+	if (status == NS_SUCCESS) {
+		myversion = atoi(ver);
 		if (myversion <= 0) {
 			nlog(LOG_NORMAL, LOG_MOD, "When Trying to Check Dat File Version, we got Permission Denied: %d", myversion);
 			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version: %d", myversion);
@@ -67,31 +70,41 @@ void datver(HTTP_Response *response)
 		if (myversion > SecureServ.viriversion) {
 			if (SecureServ.autoupgrade > 0) {
 				SecureServ.doUpdate = 1;
-				add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 1);
+				DownLoadDat();
 			 } else
 				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
 		}
 	} else {
-		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", response->szHCode);
+		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", ver);
+		chanalert(s_SecureServ, "Virus Definition Check failed: %s", ver);
 		return;
 	}
+	CLEAR_SEGV_INMODULE();
 }
 void DownLoadDat() 
 {
+	char *tmpname;
+
 	SET_SEGV_LOCATION();
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
 		SecureServ.doUpdate = 2;
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
+		bzero(ss_buf, SS_BUF_SIZE);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
+		tmpname = tempnam(NULL, NULL);
+		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
+			nlog(LOG_WARNING, LOG_MOD, "Definition download failed.");
+			chanalert(s_SecureServ, "Definition Download failed. Check log files");
+		}	
+
 	} 
 	return;
 }
 
 /* @brief this downloads a dat file and loads the new version into memory if required 
 */
-void datdownload(HTTP_Response *response) 
+void datdownload(void *unuseddata, int status, char *data, int datasize) 
 {
 	char tmpname[32];
 	char *tmp, *tmp1;
@@ -103,11 +116,11 @@ void datdownload(HTTP_Response *response)
 		/* clear this flag */
 		SecureServ.doUpdate = 0;
 	}
-	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
+	if (status == NS_SUCCESS) {
 
 		/* check response code */
-		tmp = malloc(response->lSize);
-		strlcpy(tmp, response->pData, response->lSize);
+		tmp = malloc(datasize);
+		strlcpy(tmp, data, datasize);
 		tmp1 = tmp;
 		i = atoi(strtok(tmp, "\n"));
 		free(tmp1);	
@@ -121,7 +134,7 @@ void datdownload(HTTP_Response *response)
 		/* make a temp file and write the contents to it */
 		strlcpy(tmpname, "viriXXXXXX", 32);
 		i = mkstemp(tmpname);
-		write(i, response->pData, response->lSize);
+		write(i, data, datasize);
 		close(i);
 		/* rename the file to the datfile */
 		rename(tmpname, VIRI_DAT_NAME);
@@ -130,8 +143,8 @@ void datdownload(HTTP_Response *response)
 		nlog(LOG_NOTICE, LOG_MOD, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);
 		chanalert(s_SecureServ, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
 	} else {
-		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition Download Failed. %s", response->szHCode);
-		chanalert(s_SecureServ, "Virus Definition Download Failed. %s", response->szHCode);
+		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition Download Failed. %s", data);
+		chanalert(s_SecureServ, "Virus Definition Download Failed. %s", data);
 		return;
 	}
 	
@@ -155,14 +168,9 @@ void GotHTTPAddress(char *data, adns_answer *a)
 			strlcpy(SecureServ.updateurl, url, SS_BUF_SIZE);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
-				ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-				http_request(ss_buf, 2, HFLAG_NONE, datver); 
-				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
-				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
+				AutoUpdate();
 			} else {
-				if (SecureServ.verbose) {
-					chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
-				}
+				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
 			}
 		} else {
 			chanalert(s_SecureServ, "DNS error Checking for Updates: %s", adns_strerror(ri));
@@ -178,8 +186,12 @@ int AutoUpdate(void)
 {
 	SET_SEGV_LOCATION();
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(ss_buf, 2, HFLAG_NONE, datver); 
+		bzero(ss_buf, SS_BUF_SIZE);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
+		if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver) != NS_SUCCESS) {
+			nlog(LOG_WARNING, LOG_MOD, "Definition version check failed.");
+			chanalert(s_SecureServ, "Definition version check failed. Check log files");
+		}	
 	}
 	return 0;
 }	
@@ -192,8 +204,14 @@ int do_update(User *u, char **av, int ac)
 		chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
 		return -1;
 	}
-	ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
-	http_request(ss_buf, 2, HFLAG_NONE, datdownload);
+	bzero(ss_buf, SS_BUF_SIZE);
+	ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
+	if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver) != NS_SUCCESS) {
+		prefmsg(u->nick, s_SecureServ, "Definition Download Failed. Check Log Files");
+		nlog(LOG_WARNING, LOG_MOD, "Definition Download failed.");
+		chanalert(s_SecureServ, "Definition Download failed. Check log files");
+		return NS_FAILURE;
+	}	
 	prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 	chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	return 1;

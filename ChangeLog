@@ -2,3 +2,4 @@ TrojanServ Module for NeoStats Changelog.
 ==============================================================================
 0.9.1 - Fish - 25 May, 2003
  - Onjoin bot wasn't checking the last Onjoin Definition. Fixed. 
+ - Fixed a problem with Matched channels in new_chan code. Re-Arranged Join_Chan code instead.

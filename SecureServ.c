@@ -1193,6 +1193,7 @@ int Online(char **av, int ac) {
 		s_SecureServ = strcat(s_SecureServ, "_");
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name);
 	}
+	LoadTSConf();
 	LoadMonChans();
 	Helpers_init();
 	if (SecureServ.verbose) chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
@@ -2132,7 +2133,6 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.MaxAJPPChan[0] = 0;
 	SecureServ.modnum = modnum;
 
-	LoadTSConf();
 	return 1;
 }
 

@@ -115,19 +115,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	if (!strcasecmp(argv[1], "help")) {
 		if (argc == 2) {
 			privmsg_list(u->nick, s_SecureServ, ts_help);
-			if ((UserLevel(u) < 40) && (u->moddata[SecureServ.modnum] != NULL)) {
+			if ((UserLevel(u) < NS_ULEVEL_OPER) && (u->moddata[SecureServ.modnum] != NULL)) {
 				ud = (UserDetail *)u->moddata[SecureServ.modnum];
 				if (ud->type == USER_HELPER) {
 					privmsg_list(u->nick, s_SecureServ, ts_help_helper);
 				}
 			}
-			if (UserLevel(u) >= 40) {
+			if (UserLevel(u) >= NS_ULEVEL_OPER) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_helper);
 				privmsg_list(u->nick, s_SecureServ, ts_help_oper);
 			}
 			privmsg_list(u->nick, s_SecureServ, ts_help_on_help);			
 		} else if (argc == 3) {
-			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= 185)) {
+			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= NS_ULEVEL_ADMIN)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_set);
 			} else if (!strcasecmp(argv[2], "assist")) {
 				if (u->moddata[SecureServ.modnum] != NULL) {
@@ -137,7 +137,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						return 1;
 					}
 				}
-				if (UserLevel(u) > 40) {
+				if (UserLevel(u) > NS_ULEVEL_OPER) {
 					privmsg_list(u->nick, s_SecureServ, ts_help_assist);
 					return 1;
 				}
@@ -145,25 +145,25 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_login);
 			} else if (!strcasecmp(argv[2], "logout")) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_logout);
-			} else if ((!strcasecmp(argv[2], "helpers")) && (UserLevel(u) >= 40)) {
+			} else if ((!strcasecmp(argv[2], "helpers")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_helpers);
-			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= 40)) {
+			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_list);
 			} else if ((!strcasecmp(argv[2], "exclude")) && (UserLevel(u) >= 50)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_exclude);
-			} else if ((!strcasecmp(argv[2], "checkchan")) && (UserLevel(u) >= 40)) {
+			} else if ((!strcasecmp(argv[2], "checkchan")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_checkchan);
-			} else if ((!strcasecmp(argv[2], "cycle")) && (UserLevel(u) >= 40)) {
+			} else if ((!strcasecmp(argv[2], "cycle")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_cycle);
-			} else if ((!strcasecmp(argv[2], "update")) && (UserLevel(u) >= 185)) {
+			} else if ((!strcasecmp(argv[2], "update")) && (UserLevel(u) >= NS_ULEVEL_ADMIN)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_update);
-			} else if ((!strcasecmp(argv[2], "status")) && (UserLevel(u) >= 40)) {
+			} else if ((!strcasecmp(argv[2], "status")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_status);
 			} else if ((!strcasecmp(argv[2], "bots")) && (UserLevel(u) >= 100)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_bots);
-			} else if ((!strcasecmp(argv[2], "MONCHAN")) && (UserLevel(u) > 40)) {
+			} else if ((!strcasecmp(argv[2], "MONCHAN")) && (UserLevel(u) > NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_monchan);
-			} else if ((!strcasecmp(argv[2], "RELOAD")) && (UserLevel(u) > 40)) {
+			} else if ((!strcasecmp(argv[2], "RELOAD")) && (UserLevel(u) > NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_reload);
 			} else {				
 				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
@@ -183,7 +183,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		Helpers_Logout(u);
  		return 1;
 	} else if (!strcasecmp(argv[1], "helpers")) {
-		if (UserLevel(u) < 185) {
+		if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to use Helpers, but Permission was denied", u->nick);
 			return -1;
@@ -212,7 +212,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		}
 
 	} else if (!strcasecmp(argv[1], "list")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to list, but Permission was denied", u->nick);
 			return -1;
@@ -458,7 +458,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			return 0;
 		}
 	} else if (!strcasecmp(argv[1], "checkchan")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to checkchan, but Permission was denied", u->nick);
 			return -1;
@@ -470,7 +470,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		CheckChan(u, argv[2]);
 		return 1;
 	} else if (!strcasecmp(argv[1], "monchan")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to monchan, but Permission was denied", u->nick);
 			return -1;
@@ -498,7 +498,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		}
 		return 1;
 	} else if (!strcasecmp(argv[1], "cycle")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
 			return -1;
@@ -506,7 +506,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		JoinNewChan();
 		return 1;
 	} else if (!strcasecmp(argv[1], "set")) {
-		if (UserLevel(u) < 185) {
+		if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 			prefmsg(u->nick, s_SecureServ, "Permission is denied", u->nick);
 			chanalert(s_SecureServ, "%s tried to use SET, but Permission was denied", u->nick);
 			return -1;
@@ -514,7 +514,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		do_set(u, argv, argc);
 		return 1;		
 	} else if (!strcasecmp(argv[1], "status")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to list status, but Permission was denied", u->nick);
 			return -1;
@@ -523,7 +523,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		return 1;
 	
 	} else if (!strcasecmp(argv[1], "update")) {
-		if (UserLevel(u) < 185) {
+		if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
 			return -1;
@@ -533,7 +533,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 		chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	} else if (!strcasecmp(argv[1], "reload")) {
-		if (UserLevel(u) < 40) {
+		if (UserLevel(u) < NS_ULEVEL_OPER) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
 			chanalert(s_SecureServ, "%s tried to reload, but Permission was denied", u->nick);
 			return -1;
@@ -1071,7 +1071,7 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "VERBOSE:      %s", SecureServ.verbose ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "CYCLETIME:    %d", SecureServ.stayinchantime);
 		prefmsg(u->nick, s_SecureServ, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
-		if ((UserLevel(u) > 185) & (strlen(SecureServ.updateuname))) {
+		if ((UserLevel(u) > NS_ULEVEL_ADMIN) & (strlen(SecureServ.updateuname))) {
 			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		}
 		prefmsg(u->nick, s_SecureServ, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");

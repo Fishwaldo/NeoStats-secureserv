@@ -767,6 +767,10 @@ static int event_cprivate(char **av, int ac)
 	if (!u) { 
 		return -1; 
 	} 
+	if (SS_IsUserExempt(u) > 0) {
+		nlog(LOG_DEBUG1, LOG_MOD, "User %s is exempt from Message Checking", u->nick);
+		return -1;
+	}
 
 	/* otherwise, just pass it to the ScanMsg function */
 	ScanMsg(u, av[2], 1);
@@ -787,6 +791,10 @@ static int event_cnotice(char **av, int ac)
 	u = finduser(av[0]); 
 	if(!u) {
 		return -1; 
+	}
+	if (SS_IsUserExempt(u) > 0) {
+		nlog(LOG_DEBUG1, LOG_MOD, "User %s is exempt from Message Checking", u->nick);
+		return -1;
 	}
 
 	/* otherwise, just pass it to the ScanMsg function */

@@ -1,4 +1,3 @@
-#SecureServ Makefile!
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS= @LDFLAGS@
@@ -8,17 +7,21 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY = @DIRINST@/modules/
 INCLUDES = -I@DIRINST@/include/ -I.
 
-SRCS= SecureServ.c SecureServ_help.c OnJoinBot.c Helpers.c scan.c update.c
-OBJS= ${SRCS:.c=.o}
-TARGET= secureserv.so 
-DOCS=README.SecureServ README.SecureServ.html html.css 
-DATA=viri.dat
+SRCS = SecureServ.c SecureServ_help.c OnJoinBot.c Helpers.c scan.c update.c
+OBJS = ${SRCS:.c=.o}
+TARGET = secureserv.so 
+DOCS = README.SecureServ README.SecureServ.html html.css 
+DATA = viri.dat
+SCRIPTS = 
 DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in SecureServ.h RelNotes.txt
 DISTDIR = @PACKAGE@-@VERSION@
 
-all:	 module
+all:	module
+		@echo "Compilation complete."
+		@echo "Run 'make install' (or 'gmake install' on some systems) to install."
+		@echo "If you require support, see the README file."
 
-# include dependency info 
+# include dependency info
 @MAKEDEPENDENCIES@
 
 .c.o:	
@@ -35,9 +38,11 @@ install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
 	 @if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
+	@echo "Installation complete."
+	@echo "See the README file for instructions on loading this module."
 
 dist:	
-	@echo -n "Creating Directories"
+	@echo -n "Creating directories"
 	@-rm -rf $(DISTDIR)
 	@mkdir $(DISTDIR)
 	@echo "Done"

@@ -20,9 +20,6 @@ SecureServ Manual
         3.3. CHECKFIZZER Setting
         3.4. DOONJOIN Setting
         3.5. DOPRIVCHAN Setting
-        3.6. FLOODPROT
-        3.7. CHANKEY
-        3.8. CHANLOCKTIME
         3.9. MULTICHECK Setting
         3.10. MONBOT Setting
         3.11. MONCHANCYCLE Setting
@@ -33,11 +30,9 @@ SecureServ Manual
         3.16. AKILL Setting
         3.17. AKILLTIME Setting
         3.18. DOJOIN Setting
-        3.19. NFCOUNT Setting
         3.20. VERBOSE Setting
         3.21. CYCLETIME Setting
         3.22. AUTOUPDATE Setting
-        3.23. SAMPLETIME Setting
         3.24. HELPCHAN Setting
         3.25. BOTECHO Setting
         3.26. TREATCHANMSGASPM
@@ -495,9 +490,6 @@ Note
      * CHECKFIZZER
      * DOONJOIN
      * DOPRIVCHAN
-     * FLOODPROT
-     * CHANKEY
-     * CHANLOCKTIME
      * MULTICHECK
      * MONBOT
      * MONCHANCYCLE
@@ -508,11 +500,9 @@ Note
      * AKILL
      * AKILLTIME
      * DOJOIN
-     * NFCOUNT
      * VERBOSE
      * CYCLETIME
      * AUTOUPDATE
-     * SAMPLETIME
      * HELPCHAN
      * BOTECHO
      * TREATCHANMSGASPM
@@ -594,41 +584,6 @@ Warning
 
    To Change this Setting, issue the following Command:
 /msg SecureServ set DOPRIVCHAN <ON/OFF>
-
-3.6. FLOODPROT
-
-   This  setting  enables SecureServ to monitor the Channels for possible
-   FloodBot attacks, and to temporarily set the channel +ik when a attack
-   occurs.  This  option uses the settings from CHANLOCKTIME, SAMPLETIME,
-   and CHANKEY to be configured to work correctly as well.
-
-   To Change this setting, issue the following command:
-/msg SecureServ set FLOODPROT <ON/OFF>
-
-3.7. CHANKEY
-
-   This  setting controls what key will be used when SecureServ "Locks" a
-   channel  during  a attack. (+k key). You should try to change this key
-   regularly so that attackers can not re-program their floodbots to gain
-   access  to  your channels with a well known key. If you don't set this
-   option,  SecureServ  uses  a  default  Key.  The length of this key is
-   restricted,  and  if  you  try to set a key that is too long, you will
-   receive a error message.
-
-   To Change this setting, issue the following command:
-/msg SecureServ set CHANKEY <newkey)
-
-3.8. CHANLOCKTIME
-
-   This  setting controls how long SecureServ will "Lock" a channel after
-   detecting a attack. During this time, Channel Administrotors/Operators
-   may  remove  the mode set, and SecureServ will not mind. If after this
-   time  period  (+/-  10  seconds)  the channel will have the modes that
-   SecureServ  set  automatically  removed,  so the channel can return to
-   normal operation.
-
-   To Change this setting, issue the following command:
-/msg SecureServ set CHANLOCKTIME <seconds>
 
 3.9. MULTICHECK Setting
 
@@ -741,18 +696,6 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set DOJOIN <ON/OFF>
 
-3.19. NFCOUNT Setting
-
-   SecureServ  monitors  the  number of nick changes a user makes in a 10
-   second  period. If the user exceeds a threshold, it considers the user
-   to  be  performing  a  "nickflood"  and  will  akill the user from the
-   network.  This  Setting  Control  how many nick changes in a 10 second
-   period  the  user performs. The default is 5, which should be suitable
-   for most users.
-
-   To Change this Setting, issue the following Command:
-/msg SecureServ set NFCOUNT <number>
-
 3.20. VERBOSE Setting
 
    If  you  like to know what SecureServ is doing (and like to be flooded
@@ -787,20 +730,6 @@ Warning
 
    To Change the setting, issue the following Command:
 /msg SecureServ set AUTOUPDATE <ON/OFF>
-
-3.23. SAMPLETIME Setting
-
-   As  previously mentioned, SecureServ monitors the number of joins on a
-   particular  channel  over  a  period  of Time. Within SecureServ, this
-   measurement  is known as "Average Joins Per Period" or AJPP for short.
-   If this AJPP value is exceeded, SecureServ assumes that the Channel is
-   under a floodbot attack, and will "close" the channel.
-
-   This  setting  controls  the  AJPP  threshold.  Only experienced users
-   should need to modify this setting.
-
-   To Change the setting, issue the following Command:
-/msg SecureServ set SAMPLETIME <SAMPLETIME> <JOINS>
 
 3.24. HELPCHAN Setting
 
@@ -943,7 +872,6 @@ Warning
 -SecureServ- Built-In Checks Acted on: 0
 -SecureServ- Built-In Functions: 1
 -SecureServ- AV Channel Helpers Logged in: 0
--SecureServ- Current Top AJPP: 28 (in 5 Seconds): #w4f
 -SecureServ- End of List.
 
 4.5. update Command

@@ -26,9 +26,6 @@
 #else
 #include "modconfig.h"
 #endif
-#ifdef HAVE_CRYPT_H
-#include <crypt.h>
-#endif
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif

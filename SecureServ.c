@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.30 2003/07/17 13:41:33 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.31 2003/07/18 06:48:57 fishwaldo Exp $
 */
 
 
@@ -479,7 +479,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}			
 		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 100000)) {
+		if (i <= 0) {
 			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
 			return;
 		}
@@ -1450,11 +1450,14 @@ static int ScanNick(char **av, int ac) {
 	} while ((node = list_next(viri, node)) != NULL);
 
 
+	if (SecureServ.doscan == 0) 
+		return -1;
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning", av[0]);
 		return -1;
 	}
+	
 	prefmsg(u->nick, s_SecureServ, SecureServ.signonscanmsg);
 	privmsg(u->nick, s_SecureServ, "\1VERSION\1");
 	return 1;

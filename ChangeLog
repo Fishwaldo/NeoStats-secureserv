@@ -3,6 +3,7 @@ TrojanServ Module for NeoStats Changelog.
 0.9.3 - Fish - 07 June, 2003
  - Found a few bugs with nickflood detection thanks to the logs from -=OrPhEuS=-
  - added ident and host to akill message in #services chan.
+ - Forgot to put in /help set akilltime
 
 0.9.2 - Fish - 03 June, 2003
  - Fixed the hash_insert problem that was crashing NeoStats. Was happening with NickChanges

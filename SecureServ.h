@@ -99,6 +99,9 @@ typedef struct ChannelDetail {
 #define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
+	char user[MAXUSER]; 
+	char host[MAXHOST]; 
+	char rname[MAXREALNAME]; 
 	int inited;
 	int timedif;
 	int doscan;

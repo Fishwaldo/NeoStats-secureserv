@@ -888,10 +888,10 @@ static int Online(char **av, int ac)
 	hscan_t hs;
 	
 	SET_SEGV_LOCATION();
-	if (init_bot(s_SecureServ,"TS",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
+	if (init_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.rname, services_bot_modes, __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		strlcat(s_SecureServ, "_", MAXNICK);
-		init_bot(s_SecureServ,"TS",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
+		init_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.rname, services_bot_modes, __module_info.module_name);
 	}
 	HelpersInit();
 	if (SecureServ.verbose) {
@@ -940,6 +940,30 @@ static int LoadConfig(void)
 
 	SET_SEGV_LOCATION();
 
+	if (GetConf((void *) &tmp, CFGSTR, "Nick") < 0) {
+		strlcpy(s_SecureServ, "SecureServ", MAXNICK);
+	} else {
+		strlcpy(s_SecureServ, tmp, MAXNICK);
+		free(tmp);
+	}
+	if (GetConf((void *) &tmp, CFGSTR, "User") < 0) {
+		strlcpy(SecureServ.user, "TS", MAXUSER);
+	} else {
+		strlcpy(SecureServ.user, tmp, MAXUSER);
+		free(tmp);
+	}
+	if (GetConf((void *) &tmp, CFGSTR, "Host") < 0) {
+		strlcpy(SecureServ.host, me.name, MAXHOST);
+	} else {
+		strlcpy(SecureServ.host, tmp, MAXHOST);
+		free(tmp);
+	}
+	if (GetConf((void *) &tmp, CFGSTR, "Rname") < 0) {
+		ircsnprintf(SecureServ.rname, MAXREALNAME, "Trojan Scanning Bot");
+	} else {
+		strlcpy(SecureServ.rname, tmp, MAXREALNAME);
+		free(tmp);
+	}
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
 		/* not configured, then enable */
 		SecureServ.FloodProt = 1;

@@ -445,21 +445,14 @@ int ss_user_away(CmdParams *cmdparams)
 static int event_private(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	/* Check it is intended for an onjoin bot */
-	if(strcasecmp(SecureServ.monbot, cmdparams->source->name) == 0 || strcasecmp(SecureServ.lastnick, cmdparams->source->name) == 0) {
-		OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
-		return NS_SUCCESS;
-	}
+	OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
 	return NS_SUCCESS;
 }
 
 static int event_notice(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	/* Check it is intended for an onjoin bot */
-	if(strcasecmp(SecureServ.monbot, cmdparams->source->name) == 0 || strcasecmp(SecureServ.lastnick, cmdparams->source->name) == 0) {
-		OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
-	}		
+	OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
 	return NS_SUCCESS;
 }
 

@@ -556,7 +556,7 @@ static int MonChan(Client *u, char *requestchan)
 		}
 	}
 	/* append it to the list */
-	buf = ns_malloc (MAXCHANLEN);
+	buf = ns_calloc (MAXCHANLEN);
 	strlcpy(buf, requestchan, MAXCHANLEN);
 	rnn = lnode_create(buf);
 	list_append(monchans, rnn);
@@ -662,7 +662,7 @@ int OnJoinBotConf(void)
 	if (GetDir("RandomNicks", &data) > 0) {
 		/* try */
 		for (i = 0; data[i] != NULL; i++) {
-			rnicks = ns_malloc (sizeof(BotInfo));
+			rnicks = ns_calloc (sizeof(BotInfo));
 			strlcpy(rnicks->nick, data[i], MAXNICK);
 	
 			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/User", data[i]);
@@ -777,7 +777,7 @@ int do_bots(CmdParams *cmdparams)
 			irc_prefmsg (ss_bot, cmdparams->source, "Error, Bot list is full");
 			return 0;
 		}
-		buf = ns_malloc (CONFBUFSIZE);
+		buf = ns_calloc (CONFBUFSIZE);
 		ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/User", cmdparams->av[1]);
 		SetConf((void *)cmdparams->av[2], CFGSTR, buf);
 		ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/Host", cmdparams->av[1]);
@@ -786,7 +786,7 @@ int do_bots(CmdParams *cmdparams)
 		buf2 = joinbuf(cmdparams->av, cmdparams->ac, 4);			
 		SetConf((void *)buf2, CFGSTR, buf);
 		ns_free (buf);
-		bots = ns_malloc (sizeof(BotInfo));
+		bots = ns_calloc (sizeof(BotInfo));
 		strlcpy(bots->nick, cmdparams->av[1], MAXNICK);
 		strlcpy(bots->user, cmdparams->av[2], MAXUSER);
 		strlcpy(bots->host, cmdparams->av[3], MAXHOST);
@@ -820,7 +820,7 @@ int do_bots(CmdParams *cmdparams)
 						return -1;
 					}
 					list_delete(nicks, node);
-					buf = ns_malloc (CONFBUFSIZE);
+					buf = ns_calloc (CONFBUFSIZE);
 					ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s", bots->nick);
 					DelConf(buf);
 					ns_free (buf);

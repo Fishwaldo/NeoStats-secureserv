@@ -278,7 +278,7 @@ int NickFloodSignOff(char * n)
 	nicktrack *nick;
 
 	SET_SEGV_LOCATION();
-	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s\n", n);
+	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s", n);
 	nfnode = hash_lookup(nickflood, n);
 	if (nfnode) {
 		nick = hnode_get(nfnode);

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.6 2003/05/14 13:53:17 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.7 2003/05/14 14:17:58 fishwaldo Exp $
 */
 
 
@@ -129,7 +129,7 @@ restartnicks:
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
 #ifdef ULTIMATE3
-	sjoin_cmd(nickname->nick, c->name, "");
+	sjoin_cmd(nickname->nick, c->name, 0);
 #else
 	sjoin_cmd(nickname->nick, c->name);
 #endif

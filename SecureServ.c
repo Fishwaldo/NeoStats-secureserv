@@ -1843,7 +1843,7 @@ static int ScanNick(char **av, int ac) {
 	/* fizzer requires realname info, which we don't store yet. */
 	if (SecureServ.dofizzer == 1) {
 		user = malloc(MAXREALNAME);
-		strlcpy(user, u->realname, MAXREALNAME);
+		strlcpy(user, u->realname, MAXREALNAME-1); 
 		s1 = strtok(user, " ");
 		s2 = strtok(NULL, "");
 		ircsnprintf(username, 11, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);

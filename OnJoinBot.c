@@ -598,9 +598,10 @@ int ss_cmd_monchan_list( CmdParams *cmdparams )
 	return 1;
 }
 
-void LoadMonChan(void *data) 
+int LoadMonChan(void *data) 
 {
 	MonChan(NULL, (char *)data);
+	return NS_FALSE;
 }
 
 int LoadMonChans() 
@@ -626,7 +627,7 @@ int SaveMonChans()
 	return 1;
 }
 
-void LoadRandomNick (void *data)
+int LoadRandomNick (void *data)
 {
 	BotInfo *rnicks;
 
@@ -634,6 +635,7 @@ void LoadRandomNick (void *data)
 	os_memcpy (rnicks, data, sizeof(BotInfo));
 	dlog (DEBUG2, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
 	lnode_create_append(nicks, rnicks);
+	return NS_FALSE;
 }
 
 void LoadDefaultNicks ()

@@ -101,7 +101,7 @@ static Chans * GetNewChan ()
 			nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
 
 			/* if channel is private and setting is enabled, don't join */
-			if ((SecureServ.doprivchan == 0) && (is_pub_chan(c))) {
+			if ((SecureServ.doprivchan == 0) && (is_priv_chan(c))) {
 				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as its a private channel", c->name);
 				continue;
 			}

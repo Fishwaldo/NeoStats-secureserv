@@ -32,6 +32,7 @@ SecureServ Module for NeoStats Changelog.
  - Change onjoinbot/monbot quit message so it does not display "Module unloaded" (M)
  - Make bot quit message configurable (M)
  - Fix for bug 101 (onjoin bot crash when only one bot defined) (M)
+ - Change misnamed is_pub_chan check to is_priv_chan (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

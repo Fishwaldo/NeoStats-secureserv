@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.27 2003/06/06 17:02:21 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.28 2003/06/25 14:15:39 fishwaldo Exp $
 */
 
 
@@ -1527,7 +1527,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
-					chanalert(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
 					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
 					break;
@@ -1536,7 +1536,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 		case ACT_AKILL:
 			if (SecureServ.doakill > 0) {
 				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
-				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
+				chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 				sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
 				break;
 			}

@@ -1,6 +1,11 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
-3.0prealpha1 - Mark (M)
+3.0prealpha3 - Mark (M)
+ - Change virus storage to multiple lists to optimise scanning process. (M)
+ - Add error checks for det and act types in load. (M)
+ - Change status command to report in tabular format. (M)
+
+3.0prealpha2 - Mark (M)
  - Removed splittime setting which is now handled by core. (M)
  - Move GetRandomChan function to core. (M)
  - Move hrand function to core. (M)
@@ -32,7 +37,6 @@ SecureServ Module for NeoStats Changelog.
    easily (M)
  - Change the MonChanCycle so all channels are cycled at the same time (F)
  - CheckLockChan timer changed to 60 seconds from 10 to reduce load a little (M)
- - Fix finduser call with NULL when lastnick is NULL (M)
  - Fix finduser call with NULL when lastnick is NULL (M)
 
 1.1 - Fish (F) and Mark (M) - 2 Dec, 2003

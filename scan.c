@@ -34,61 +34,83 @@
 
 #define MAX_VIRI	-1
 
-static void gotpositive(Client *u, virientry *ve, int type);
-
-/* this is the list of viri */
-static list_t *viri;
-
-void InitScanner(void)
+static const char* dettypes[] =
 {
-	SET_SEGV_LOCATION();
-	/* init the virus lists */
-	viri = list_create(MAX_VIRI);
-	load_dat();
-}
+	"Version",
+	"Privmsg",
+	"Nick",
+	"Ident",
+	"RealName",
+	"Chan",
+	"Channel Message",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Built-In",
+};
 
-void ScanStatus (CmdParams *cmdparams)
+static const char* acttypes[] =
 {
-	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns Loaded: %d", ViriCount());
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Definitions: %d", SecureServ.definitions[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Received: %d", SecureServ.trigcounts[DET_MSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Acted on: %d", SecureServ.actioncounts[DET_MSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Private Message Definitions: %d", SecureServ.definitions[DET_MSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "NickNames Checked: %d", SecureServ.trigcounts[DET_NICK]);
-	irc_prefmsg (ss_bot, cmdparams->source, "NickName Acted on: %d", SecureServ.actioncounts[DET_NICK]);
-	irc_prefmsg (ss_bot, cmdparams->source, "NickName Definitions: %d", SecureServ.definitions[DET_NICK]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Idents Checked: %d", SecureServ.trigcounts[DET_IDENT]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Idents Acted on: %d", SecureServ.actioncounts[DET_IDENT]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Ident Definitions: %d", SecureServ.definitions[DET_IDENT]);
-	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Checked: %d", SecureServ.trigcounts[DET_REALNAME]);
-	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Acted on: %d", SecureServ.actioncounts[DET_REALNAME]);
-	irc_prefmsg (ss_bot, cmdparams->source, "RealName Definitions: %d", SecureServ.definitions[DET_REALNAME]);
-	irc_prefmsg (ss_bot, cmdparams->source, "ChannelNames Checked: %d", SecureServ.trigcounts[DET_CHAN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "ChannelNames Acted on: %d", SecureServ.actioncounts[DET_CHAN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "ChannelName Definitions: %d", SecureServ.definitions[DET_CHAN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Checked: %d", SecureServ.trigcounts[DET_CHANMSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Acted on: %d", SecureServ.actioncounts[DET_CHANMSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Definitions: %d", SecureServ.definitions[DET_CHANMSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Checks Run: %d", SecureServ.actioncounts[DET_BUILTIN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Checks Acted on: %d", SecureServ.actioncounts[DET_BUILTIN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);
-}
+	"SVSjoin",
+	"Akill",
+	"Warn",
+	"Nothing",
+	"Kill",
+};
 
-int ViriCount(void)
+static virientry builtin_fizzer =
 {
-	return(list_count(viri));
-}
+	"FizzerBot",
+	DET_BUILTIN,
+	0,
+	0,
+	"",
+	"User name is real name reversed",
+	NULL,
+	NULL,
+	"You're infected with the fizzer virus",
+	ACT_AKILL,
+	0,
+	0
+};
 
 /* List of local dat files that we will load and process
 */
-
 const char* DatFiles[NUM_DAT_FILES]=
 {
 	VIRI_DAT_NAME,
 	CUSTOM_DAT_NAME,
 };
+
+/* this is the list of viri */
+static list_t *viri[DET_MAX+1];
+
+static void gotpositive(Client *u, virientry *ve, int type);
+
+void InitScanner(void)
+{
+	int i;
+
+	SET_SEGV_LOCATION();
+	/* init the virus lists */
+	for(i = 0; i <= DET_MAX; i++)
+		viri[i] = list_create(MAX_VIRI);
+	load_dat();
+}
+
+void ScanStatus (CmdParams *cmdparams)
+{
+	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns: %d", SecureServ.defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Type:            Scanned  Acted On  Definitions", SecureServ.trigcounts[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Versions  %9d %9d   %9d", SecureServ.trigcounts[DET_CTCP], SecureServ.actioncounts[DET_CTCP], SecureServ.definitions[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Privmsg        %9d %9d   %9d", SecureServ.trigcounts[DET_MSG], SecureServ.actioncounts[DET_MSG], SecureServ.definitions[DET_MSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Nicks          %9d %9d   %9d", SecureServ.trigcounts[DET_NICK], SecureServ.actioncounts[DET_NICK], SecureServ.definitions[DET_NICK]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Idents         %9d %9d   %9d", SecureServ.trigcounts[DET_IDENT], SecureServ.actioncounts[DET_IDENT], SecureServ.definitions[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Real names     %9d %9d   %9d", SecureServ.trigcounts[DET_REALNAME], SecureServ.actioncounts[DET_REALNAME], SecureServ.definitions[DET_REALNAME]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Channel names  %9d %9d   %9d", SecureServ.trigcounts[DET_CHAN], SecureServ.actioncounts[DET_CHAN], SecureServ.definitions[DET_CHAN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Chanmsg        %9d %9d   %9d", SecureServ.trigcounts[DET_CHANMSG], SecureServ.actioncounts[DET_CHANMSG], SecureServ.definitions[DET_CHANMSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Builtin        %9d %9d   %9d", SecureServ.trigcounts[DET_BUILTIN], SecureServ.actioncounts[DET_BUILTIN], SecureServ.definitions[DET_BUILTIN]);
+}
 
 /* This function will load viri.dat then try to load custom.dat 
    For custom entries, the lack of file is of no importance and a flag is set
@@ -98,9 +120,9 @@ const char* DatFiles[NUM_DAT_FILES]=
 
 void load_dat(void) 
 {
+	static char buf[BUFSIZE];
 	int i;
 	FILE *fp;
-	char buf[BUFSIZE];
 	virientry *viridet;
 	lnode_t *node;
 	const char *error;
@@ -112,48 +134,42 @@ void load_dat(void)
 
 	SET_SEGV_LOCATION();
 	/* if the list isn't empty, make it empty */
-	if (!list_isempty(viri)) {
-		node = list_first(viri);
-		while (node) {
-			viridet = lnode_get(node);
-			if(viridet) {
-				dlog (DEBUG1, "Deleting %s out of List", viridet->name);
-				if (viridet->pattern) {
-					ns_free (viridet->pattern);
+	for(i = 0; i <= DET_MAX; i++) {
+		if (!list_isempty(viri[i])) {
+			node = list_first(viri[i]);
+			while (node) {
+				viridet = lnode_get(node);
+				if(viridet) {
+					dlog (DEBUG1, "Deleting %s out of List", viridet->name);
+					if (viridet->pattern) {
+						ns_free (viridet->pattern);
+					}
+					if (viridet->patternextra) {
+						ns_free (viridet->patternextra);
+					}
+					ns_free (viridet);
 				}
-				if (viridet->patternextra) {
-					ns_free (viridet->patternextra);
-				}
-				ns_free (viridet);
-			}
-			node = list_next(viri, node);
-		} 
-		list_destroy_nodes(viri);
+				node = list_next(viri[i], node);
+			} 
+			list_destroy_nodes(viri[i]);
+		}
 	}
-	
+	SecureServ.defcount = 0;	
 	for (rc = 0; rc < MAX_PATTERN_TYPES; rc++) {
 		SecureServ.definitions[rc] = 0;
 	}	
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
-	viridet = ns_malloc (sizeof(virientry));
-	strlcpy(viridet->name, "FizzerBot", MAXVIRNAME);
-	viridet->dettype = DET_BUILTIN;
-	viridet->var1 = 0;
-	viridet->var2 = 0;
-	viridet->pattern = NULL;
-	viridet->patternextra = NULL;
-	strlcpy(viridet->recvmsg, "UserName is RealName Reversed", BUFSIZE);
-	strlcpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", BUFSIZE);
-	viridet->action = ACT_AKILL;
-	viridet->nofound = 0;
+	viridet = ns_calloc (sizeof(virientry));
+	memcpy (viridet, &builtin_fizzer, sizeof(virientry));
 	SecureServ.definitions[DET_BUILTIN]++;
-	lnode_create_prepend(viri, viridet);
+	lnode_create_prepend(viri[DET_BUILTIN], viridet);
+	SecureServ.defcount ++;	
 	dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 	
 	for(i = 0; i < NUM_DAT_FILES; i++)
 	{
-		fp = fopen(DatFiles[i], "r");
+		fp = os_fopen(DatFiles[i], "r");
 		if (!fp) {
 			if(i)
 			{
@@ -177,34 +193,40 @@ void load_dat(void)
 			if(i==0) 
 			{
 				/* first fgets always returns the version number */
-				fgets(buf, BUFSIZE, fp);
-				SecureServ.ss_cmd_viriversion = atoi(buf);
+				os_fgets(buf, BUFSIZE, fp);
+				SecureServ.datfileversion = atoi(buf);
 			}
-			while (fgets(buf, BUFSIZE, fp)) {
-				if (list_isfull(viri))
-					break;
-				viridet = ns_malloc (sizeof(virientry));
+			while (os_fgets(buf, BUFSIZE, fp)) {
 				rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
 				if (rc <= 0) {
 					nlog (LOG_WARNING, "PCRE_EXEC didn't have enough space! %d", rc);
 					nlog (LOG_WARNING, "Load Was: %s", buf);
-					ns_free (viridet);
 					continue;
 				} else if (rc != 8) {
 					nlog (LOG_WARNING, "Didn't get required number of Subs (%d)", rc);
-					ns_free (viridet);
 					continue;
 				}
-				
+				viridet = ns_calloc (sizeof(virientry));
 				pcre_get_substring_list(buf, ovector, rc, &subs);		
 				strlcpy(viridet->name, subs[1], MAXVIRNAME);
 				viridet->dettype = atoi(subs[2]);
+				if (viridet->dettype < 0 || viridet->dettype > DET_MAX) {
+					nlog (LOG_WARNING, "Unknown dettype %d for %s", viridet->dettype, viridet->name);
+					ns_free (subs);
+					ns_free (viridet);
+					continue;
+				}
 				viridet->var1 = atoi(subs[3]);
 				viridet->var2 = atoi(subs[4]);
 				strlcpy(viridet->recvmsg, subs[5], BUFSIZE);
 				strlcpy(viridet->sendmsg, subs[6], BUFSIZE);
 				viridet->action = atoi(subs[7]);
-				viridet->nofound = 0;
+				if (viridet->action < 0 || viridet->action > ACT_MAX) {
+					nlog (LOG_WARNING, "Unknown acttype %d for %s", viridet->action, viridet->name);
+					ns_free (subs);
+					ns_free (viridet);
+					continue;
+				}
 				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
 				if (viridet->pattern == NULL) {
 					/* it failed for some reason */
@@ -220,12 +242,13 @@ void load_dat(void)
 					/* don't exit */
 				}
 				SecureServ.definitions[viridet->dettype]++;
-				lnode_create_prepend(viri, viridet);
+				lnode_create_prepend(viri[viridet->dettype], viridet);
+				SecureServ.defcount ++;	
 				dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 				ns_free (subs);
 			}
 			ns_free (re);
-			fclose(fp);
+			os_fclose(fp);
 		}
 	}	
 }
@@ -236,96 +259,53 @@ int ss_cmd_reload(CmdParams *cmdparams)
 	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
    	irc_chanalert (ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
 	load_dat();
-	return 1;
+	return NS_SUCCESS;
 }
 
 int ss_cmd_list(CmdParams *cmdparams) 
 {
 	lnode_t *node;
 	virientry *ve;
-	char type[LOCALBUFSIZE];
-	char action[LOCALBUFSIZE];
-	int i;
+	int i, count = 0;
+	int fout = 0;
 
 	SET_SEGV_LOCATION();
-
-	i = 0;
-	node = list_first(viri);
-	if (node) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Virus List:");
-		irc_prefmsg (ss_bot, cmdparams->source, "===========");
-		do {
-			ve = lnode_get(node);
-			i++;
-			switch (ve->dettype) {
-				case DET_CTCP:
-					strlcpy(type, "Version", LOCALBUFSIZE);
-					break;
-				case DET_MSG:
-					strlcpy(type, "PM", LOCALBUFSIZE);
-					break;
-				case DET_NICK:
-					strlcpy(type, "Nick", LOCALBUFSIZE);
-					break;
-				case DET_IDENT:
-					strlcpy(type, "Ident", LOCALBUFSIZE);
-					break;
-				case DET_REALNAME:
-					strlcpy(type, "RealName", LOCALBUFSIZE);
-					break;
-				case DET_CHAN:
-					strlcpy(type, "Chan", LOCALBUFSIZE);
-					break;
-				case DET_BUILTIN:
-					strlcpy(type, "Built-In", LOCALBUFSIZE);
-					break;
-				case DET_CHANMSG:
-					strlcpy(type, "Channel Message", LOCALBUFSIZE);
-					break;
-				default:
-					ircsnprintf(type, LOCALBUFSIZE, "Unknown(%d)", ve->dettype);
-			}
-			switch (ve->action) {
-				case ACT_SVSJOIN:
-					strlcpy(action, "SVSjoin", LOCALBUFSIZE);
-					break;
-				case ACT_AKILL:
-					strlcpy(action, "Akill", LOCALBUFSIZE);
-					break;
-				case ACT_KILL:
-					strlcpy(action, "Kill", LOCALBUFSIZE);
-					break;
-				case ACT_WARN:
-					strlcpy(action, "OpersWarn", LOCALBUFSIZE);
-					break;
-				default:
-					strlcpy(action, "ClientWarn", LOCALBUFSIZE);
-			}
-			irc_prefmsg (ss_bot, cmdparams->source, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
-		} while ((node = list_next(viri, node)) != NULL);
+	irc_prefmsg (ss_bot, cmdparams->source, "Virus List:");
+	irc_prefmsg (ss_bot, cmdparams->source, "===========");
+	for(i = 0; i <= DET_MAX; i++) {
+		node = list_first(viri[i]);
+		if (node) {
+			fout = 1;
+			irc_prefmsg (ss_bot, cmdparams->source, "Type %s", dettypes[i]);
+			while (node) {
+				ve = lnode_get(node);
+				count++;
+				irc_prefmsg (ss_bot, cmdparams->source, "%d) Virus: %s. Action: %s Hits: %d", count, ve->name, acttypes[ve->action], ve->nofound);
+				node = list_next(viri[i], node);
+			};
+		}
+	}
+	if (fout) {
 		irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
 	} else {
 		irc_prefmsg (ss_bot, cmdparams->source, "No definitions found.");
 	}
-	return 1;
+	return NS_SUCCESS;
 }
 
 int ScanFizzer(Client *u) 
 {
+	static char user[MAXREALNAME];
+	static char username[10];
 	lnode_t *node;
 	virientry *viridetails;
-	char username[10];
-	char *s1, *s2, *user;
+	char *s1, *s2;
 
 	SET_SEGV_LOCATION();
-							
-	/* fizzer requires realname info, which we don't store yet. */
-	user = ns_malloc (MAXREALNAME);
 	strlcpy(user, u->info, MAXREALNAME); 
 	s1 = strtok(user, " ");
 	s2 = strtok(NULL, "");
 	ircsnprintf(username, 10, "%s%s%s", u->user->username[0] == '~' ? "~" : "",  s2, s1);
-	ns_free (user);
 #ifdef DEBUG
 	dlog (DEBUG2, "Fizzer RealName Check %s -> %s", username, u->user->username);
 #endif
@@ -333,7 +313,7 @@ int ScanFizzer(Client *u)
 	if (!strcmp(username, u->user->username)) {
 		nlog (LOG_NOTICE, "Fizzer Bot Detected: %s (%s -> %s)", u->name, u->user->username, u->info);
 		/* do kill */
-		node = list_first(viri);
+		node = list_first(viri[DET_BUILTIN]);
 		if (node) {
 			do {
 				viridetails = lnode_get(node);
@@ -341,14 +321,14 @@ int ScanFizzer(Client *u)
 					gotpositive(u, viridetails, DET_BUILTIN);
 					return 1;
 				}
-			} while ((node = list_next(viri, node)) != NULL);
+			} while ((node = list_next(viri[DET_BUILTIN], node)) != NULL);
 		}
 		return 1;
 	}
 	return 0;
 }
 
-int ScanUser(Client *u, unsigned flags) 
+static int Scan(int type, Client *u, char* buf) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -356,173 +336,75 @@ int ScanUser(Client *u, unsigned flags)
 	int rc;
 
 	SET_SEGV_LOCATION();
-
-	node = list_first(viri);
+	node = list_first(viri[type]);
 	if (node) {
 		do {
 			viridetails = lnode_get(node);
-			if ((flags & SCAN_NICK) && (viridetails->dettype == DET_NICK)) {
-				SecureServ.trigcounts[DET_NICK]++;
+			SecureServ.trigcounts[type]++;
 #ifdef DEBUG
-				dlog (DEBUG1, "Checking Nick %s against %s", u->name, viridetails->recvmsg);
+			dlog (DEBUG1, "Checking %s %s against %s", dettypes[type], buf, viridetails->recvmsg);
 #endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->name, strlen(u->name), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch Nick Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					nlog (LOG_NOTICE, "Got positive nick %s for %s against %s", u->name, viridetails->name, viridetails->recvmsg);
-					gotpositive(u, viridetails, DET_NICK);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
-				}
-			} else if ((flags & SCAN_IDENT) && (viridetails->dettype == DET_IDENT)) {
-				SecureServ.trigcounts[DET_IDENT]++;
-#ifdef DEBUG
-				dlog (DEBUG1, "Checking ident %s against %s", u->user->username, viridetails->recvmsg);
-#endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->user->username, strlen(u->user->username), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch UserName Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					nlog (LOG_NOTICE, "Got positive ident %s for %s against %s", u->user->username, viridetails->name, viridetails->recvmsg);
-					gotpositive(u, viridetails, DET_IDENT);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
-				}
-			} else if ((flags & SCAN_REALNAME) && (viridetails->dettype == DET_REALNAME)) {
-				SecureServ.trigcounts[DET_REALNAME]++;
-#ifdef DEBUG
-				dlog (DEBUG1, "Checking Realname %s against %s", u->info, viridetails->recvmsg);
-#endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->info, strlen(u->info), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch RealName Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					nlog (LOG_NOTICE, "Got positive realname %s for %s against %s", u->info, viridetails->name, viridetails->recvmsg);
-					gotpositive(u, viridetails, DET_REALNAME);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog (LOG_WARNING, "PatternMatch %s Failed: (%d)", dettypes[type], rc);
+			} else if (rc > -1) {					
+				nlog (LOG_NOTICE, "Got positive %s %s for %s against %s", dettypes[type], buf, viridetails->name, viridetails->recvmsg);
+				gotpositive(u, viridetails, type);
+				positive++;
+				if (SecureServ.breakorcont != 0) {
+					return 1;
 				}
 			}
-		} while ((node = list_next(viri, node)) != NULL);
+		} while ((node = list_next(viri[type], node)) != NULL);
+	}
+	return positive;
+}
+
+
+int ScanUser(Client *u, unsigned flags) 
+{
+	int positive = 0;
+
+	SET_SEGV_LOCATION();
+	if ((flags & SCAN_NICK)) {
+		positive += Scan(DET_NICK, u, u->name);
+		if (positive && SecureServ.breakorcont != 0) {
+			return 1;
+		}
+	}
+	if ((flags & SCAN_IDENT)) {
+		positive += Scan(DET_IDENT, u, u->user->username);
+		if (positive && SecureServ.breakorcont != 0) {
+			return 1;
+		}
+	}
+	if ((flags & SCAN_REALNAME)) {
+		positive += Scan(DET_REALNAME, u, u->info);
+		if (positive && SecureServ.breakorcont != 0) {
+			return 1;
+		}
 	}
 	return positive;
 }
 
 int ScanCTCPVersion(Client *u, char* buf) 
 {
-	int positive = 0;
-	lnode_t *node;
-	virientry *viridetails;
-	int rc;
-
-	SET_SEGV_LOCATION();
-	node = list_first(viri);
-	if (node) {
-		do {
-			viridetails = lnode_get(node);
-			if (((viridetails->dettype == DET_CTCP) || (viridetails->dettype > MAX_PATTERN_TYPES))) {
-				SecureServ.trigcounts[DET_CTCP]++;
-#ifdef DEBUG
-				dlog (DEBUG1, "Checking Version %s against %s", buf, viridetails->recvmsg);
-#endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch CTCP Version Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					nlog (LOG_NOTICE, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
-					gotpositive(u, viridetails, DET_CTCP);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
-				}
-			}
-		} while ((node = list_next(viri, node)) != NULL);
-	}
-	return positive;
+	return Scan(DET_CTCP, u, buf);
 }
 
-int ScanMsg(Client *u, char* buf, int chanmsg) 
+int ScanMsg(Client *u, char* buf) 
 {
-	int positive = 0;
-	lnode_t *node;
-	virientry *viridetails;
-	int rc;
-	int doscan;
+	return Scan(DET_MSG, u, buf);
+}
 
-	SET_SEGV_LOCATION();
-	node = list_first(viri);
-	if (node) {
-		do {
-			doscan = 0;
-			viridetails = lnode_get(node);
-			rc = -1;
-			if (viridetails->dettype == DET_MSG) {
-				if ((chanmsg == 0) || (SecureServ.treatchanmsgaspm == 1)) {
-					SecureServ.trigcounts[DET_MSG]++;
-					doscan = 1;
-				}
-			} else if ((viridetails->dettype == DET_CHANMSG) && (chanmsg == 1)) {
-				SecureServ.trigcounts[DET_CHANMSG]++;
-				doscan = 1;
-			}			
-			
-			if (doscan == 1) {
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch PrivateMessage Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					gotpositive(u, viridetails, chanmsg ? DET_CHANMSG : DET_MSG);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
-				}
-			}	
-		} while ((node = list_next(viri, node)) != NULL);
-	}
-	return positive;
+int ScanChanMsg(Client *u, char* buf) 
+{
+	return Scan(DET_CHANMSG, u, buf);
 }
 
 int ScanChan(Client* u, Channel *c) 
 {
-	int positive = 0;
-	lnode_t *node;
-	virientry *viridetails;
-	int rc;
-
-	SET_SEGV_LOCATION();
-
-	node = list_first(viri);
-	if (node) {
-		do {
-			viridetails = lnode_get(node);
-			if (viridetails->dettype == DET_CHAN) {
-				SecureServ.trigcounts[DET_CHAN]++;
-#ifdef DEBUG
-				dlog (DEBUG1, "Checking Chan %s against %s", c->name, viridetails->recvmsg);
-#endif
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog (LOG_WARNING, "PatternMatch Chan Failed: (%d)", rc);
-				} else if (rc > -1) {
-					gotpositive(u, viridetails, DET_CHAN);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return positive;
-					}
-				}
-			}
-		} while ((node = list_next(viri, node)) != NULL);
-	}
-	return positive;
+	return Scan(DET_CHAN, u, c->name);
 }
 
 #ifndef WIN32
@@ -535,7 +417,7 @@ static void report_positive (Client *u, virientry *ve)
 	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
 		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->user->hostname, "TODO", SecureServ.ss_cmd_viriversion);
+		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->user->hostname, "TODO", SecureServ.datfileversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
 }

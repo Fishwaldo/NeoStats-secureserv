@@ -401,7 +401,7 @@ int ss_event_message (CmdParams *cmdparams)
 	if (SecureServ.verbose||SecureServ.BotEcho) {
 		irc_chanalert (ss_bot, "OnJoin Bot %s Received Private Message from %s: %s", cmdparams->bot->name, cmdparams->source->name, cmdparams->param);
 	}
-	ScanMsg(cmdparams->source, cmdparams->param, 0);
+	ScanMsg(cmdparams->source, cmdparams->param);
 	return NS_SUCCESS;
 }				
 

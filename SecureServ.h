@@ -48,7 +48,6 @@ typedef struct virientry {
 	char sendmsg[BUFSIZE];
 	int action;
 	int nofound;
-	int noopen;
 	int iscustom;
 } virientry;
 
@@ -61,6 +60,7 @@ typedef struct virientry {
 #define DET_CHAN 5
 #define DET_CHANMSG 6
 #define DET_BUILTIN 10
+#define DET_MAX		DET_BUILTIN
 
 /* Action List */
 #define ACT_SVSJOIN 0
@@ -68,6 +68,7 @@ typedef struct virientry {
 #define ACT_WARN 2
 #define ACT_NOTHING 3
 #define ACT_KILL 4
+#define ACT_MAX ACT_KILL
 
 /* Scanner flags for User scanning */
 #define SCAN_NICK		0x00000001
@@ -100,7 +101,7 @@ typedef struct ChannelDetail {
 struct SecureServ {
 	int timedif;
 	int doscan;
-	int ss_cmd_viriversion;
+	int datfileversion;
 	char akillinfo[BUFSIZE];
 	char nohelp[BUFSIZE];
 	char HelpChan[MAXCHANLEN];
@@ -118,6 +119,7 @@ struct SecureServ {
 	int DoOnJoin;
 	int BotEcho;
 	int helpers;
+	int defcount;
 	int trigcounts[MAX_PATTERN_TYPES];
 	int actioncounts[MAX_PATTERN_TYPES];
 	int definitions[MAX_PATTERN_TYPES];
@@ -174,7 +176,8 @@ void ScanStatus (CmdParams *cmdparams);
 int ScanFizzer(Client *u);
 int ScanChan(Client* u, Channel *c);
 int ScanUser(Client *u, unsigned flags);
-int ScanMsg(Client *u, char* buf, int chanmsg);
+int ScanMsg(Client *u, char* buf);
+int ScanChanMsg(Client *u, char* buf);
 int ScanCTCPVersion(Client *u, char* buf);
 int ss_cmd_list(CmdParams *cmdparams);
 int ss_cmd_reload(CmdParams *cmdparams);

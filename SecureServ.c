@@ -46,6 +46,11 @@ static int ss_cmd_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason)
 static int ss_cmd_set_monchancycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 static int ss_cmd_set_cycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 
+#ifdef WIN32
+void *(*old_malloc)(size_t);
+void (*old_free) (void *);
+#endif
+
 Bot *ss_bot;
 
 /** about info */
@@ -192,7 +197,7 @@ static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 
 static int ss_cmd_viriversion(CmdParams *cmdparams)
 {
-	irc_prefmsg (ss_bot, cmdparams->source, "%d", SecureServ.ss_cmd_viriversion);
+	irc_prefmsg (ss_bot, cmdparams->source, "%d", SecureServ.datfileversion);
 	return NS_SUCCESS;
 }
 
@@ -278,7 +283,10 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 		return -1;
 	}
 	/* otherwise, just pass it to the ScanMsg function */
-	ScanMsg(cmdparams->source, cmdparams->param, 1);
+	ScanChanMsg(cmdparams->source, cmdparams->param);
+	if (SecureServ.treatchanmsgaspm == 1) {
+		ScanMsg(cmdparams->source, cmdparams->param);
+	}
 	return NS_SUCCESS;
 }
 
@@ -295,9 +303,9 @@ static int ss_event_botkill(CmdParams *cmdparams)
 
 ModuleEvent module_events[] = {
 	{ EVENT_SIGNON, 		ss_event_signon},
-	{ EVENT_QUIT, 			ss_event_quit},
+	{ EVENT_QUIT, 			ss_event_quit,		EVENT_FLAG_EXCLUDE_MODME},
 	{ EVENT_KILL, 			ss_event_quit},
-	{ EVENT_JOIN, 			ss_event_joinchan},
+	{ EVENT_JOIN, 			ss_event_joinchan,	EVENT_FLAG_EXCLUDE_MODME},
 	{ EVENT_DELCHAN,		ss_event_delchan},
 	{ EVENT_NICK,			ss_event_nick},
 	{ EVENT_EMPTYCHAN,		ss_event_emptychan},	
@@ -376,9 +384,16 @@ static int ss_event_versionreply(CmdParams *cmdparams)
 
 /** Init module
  */
+
 int ModInit (Module *mod_ptr)
 {
 	SET_SEGV_LOCATION();
+#ifdef WIN32
+	old_malloc = pcre_malloc;
+	old_free = pcre_free;
+	pcre_malloc = os_malloc;
+	pcre_free = os_free;
+#endif
 	os_memset (&SecureServ, 0, sizeof (SecureServ));
 	ModuleConfig (ss_settings);
 	SSInitExempts();
@@ -430,7 +445,7 @@ int ModSynch (void)
 	}
 	InitHelpers();
 	if (SecureServ.verbose) {
-		irc_chanalert (ss_bot, "%d Trojans Patterns loaded", ViriCount());
+		irc_chanalert (ss_bot, "%d Trojans Patterns loaded", SecureServ.defcount);
 	}
 	srand(hash_count(GetChannelHash()));
 	/* kick of the autojoin timer */
@@ -454,6 +469,10 @@ void ModFini()
 	SET_SEGV_LOCATION();
 	FiniHelpers();
 	FiniOnJoinBots();
+#ifdef WIN32
+	pcre_malloc = old_malloc;
+	pcre_free = old_free;
+#endif
 }
 
 int ModAuthUser (Client *u)

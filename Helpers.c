@@ -84,15 +84,17 @@ void FiniHelpers(void)
 
 	SET_SEGV_LOCATION();
 	
-	hash_scan_begin(&hlps, helperhash);
-	while ((node = hash_scan_next(&hlps)) != NULL) {
-		helper = hnode_get(node);
-		ClearUserModValue (helper->u);
-		hash_delete (helperhash, node);
-		hnode_destroy (node);
-		ns_free (helper);
+	if (helperhash) {
+		hash_scan_begin(&hlps, helperhash);
+		while ((node = hash_scan_next(&hlps)) != NULL) {
+			helper = hnode_get(node);
+			ClearUserModValue (helper->u);
+			hash_delete (helperhash, node);
+			hnode_destroy (node);
+			ns_free (helper);
+		}
+		hash_destroy(helperhash);
 	}
-	hash_destroy(helperhash);
 }
 
 static int HelperLogout (CmdParams *cmdparams)

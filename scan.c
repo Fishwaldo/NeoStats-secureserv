@@ -34,19 +34,27 @@
 
 #define MAX_VIRI	-1
 
+typedef struct virustype {
+	int trigcount;
+	int actcount;
+	int defcount;
+} virustype;
+
+virustype virustypes[MAX_PATTERN_TYPES];
+
 static const char* dettypes[] =
 {
-	"Version",
-	"Privmsg",
-	"Nick",
-	"Ident",
-	"RealName",
-	"Chan",
-	"Channel Message",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Built-In",
+	"ctcp version",
+	"privmsg",
+	"nick",
+	"ident",
+	"real name",
+	"channel name",
+	"channel message",
+	"away message",
+	"quit message",
+	"reserved",
+	"built-in",
 };
 
 static const char* acttypes[] =
@@ -101,15 +109,15 @@ void InitScanner(void)
 void ScanStatus (CmdParams *cmdparams)
 {
 	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns: %d", SecureServ.defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Type:            Scanned  Acted On  Definitions", SecureServ.trigcounts[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Versions  %9d %9d   %9d", SecureServ.trigcounts[DET_CTCP], SecureServ.actioncounts[DET_CTCP], SecureServ.definitions[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Privmsg        %9d %9d   %9d", SecureServ.trigcounts[DET_MSG], SecureServ.actioncounts[DET_MSG], SecureServ.definitions[DET_MSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Nicks          %9d %9d   %9d", SecureServ.trigcounts[DET_NICK], SecureServ.actioncounts[DET_NICK], SecureServ.definitions[DET_NICK]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Idents         %9d %9d   %9d", SecureServ.trigcounts[DET_IDENT], SecureServ.actioncounts[DET_IDENT], SecureServ.definitions[DET_IDENT]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Real names     %9d %9d   %9d", SecureServ.trigcounts[DET_REALNAME], SecureServ.actioncounts[DET_REALNAME], SecureServ.definitions[DET_REALNAME]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Channel names  %9d %9d   %9d", SecureServ.trigcounts[DET_CHAN], SecureServ.actioncounts[DET_CHAN], SecureServ.definitions[DET_CHAN]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Chanmsg        %9d %9d   %9d", SecureServ.trigcounts[DET_CHANMSG], SecureServ.actioncounts[DET_CHANMSG], SecureServ.definitions[DET_CHANMSG]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Builtin        %9d %9d   %9d", SecureServ.trigcounts[DET_BUILTIN], SecureServ.actioncounts[DET_BUILTIN], SecureServ.definitions[DET_BUILTIN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Type:            Scanned  Acted On  Definitions", virustypes[DET_CTCP].trigcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Versions  %9d %9d   %9d", virustypes[DET_CTCP].trigcount, virustypes[DET_CTCP].actcount, virustypes[DET_CTCP].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Privmsg        %9d %9d   %9d", virustypes[DET_MSG].trigcount, virustypes[DET_MSG].actcount, virustypes[DET_MSG].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Nicks          %9d %9d   %9d", virustypes[DET_NICK].trigcount, virustypes[DET_NICK].actcount, virustypes[DET_NICK].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Idents         %9d %9d   %9d", virustypes[DET_IDENT].trigcount, virustypes[DET_IDENT].actcount, virustypes[DET_IDENT].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Real names     %9d %9d   %9d", virustypes[DET_REALNAME].trigcount, virustypes[DET_REALNAME].actcount, virustypes[DET_REALNAME].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Channel names  %9d %9d   %9d", virustypes[DET_CHAN].trigcount, virustypes[DET_CHAN].actcount, virustypes[DET_CHAN].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Chanmsg        %9d %9d   %9d", virustypes[DET_CHANMSG].trigcount, virustypes[DET_CHANMSG].actcount, virustypes[DET_CHANMSG].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Builtin        %9d %9d   %9d", virustypes[DET_BUILTIN].trigcount, virustypes[DET_BUILTIN].actcount, virustypes[DET_BUILTIN].defcount);
 }
 
 /* This function will load viri.dat then try to load custom.dat 
@@ -156,13 +164,13 @@ void load_dat(void)
 	}
 	SecureServ.defcount = 0;	
 	for (rc = 0; rc < MAX_PATTERN_TYPES; rc++) {
-		SecureServ.definitions[rc] = 0;
+		virustypes[rc].defcount = 0;
 	}	
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = ns_calloc (sizeof(virientry));
 	memcpy (viridet, &builtin_fizzer, sizeof(virientry));
-	SecureServ.definitions[DET_BUILTIN]++;
+	virustypes[DET_BUILTIN].defcount++;
 	lnode_create_prepend(viri[DET_BUILTIN], viridet);
 	SecureServ.defcount ++;	
 	dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
@@ -241,7 +249,7 @@ void load_dat(void)
 					nlog (LOG_WARNING, "Regular Expression Study for %s failed: %s", viridet->name, error);
 					/* don't exit */
 				}
-				SecureServ.definitions[viridet->dettype]++;
+				virustypes[viridet->dettype].defcount++;
 				lnode_create_prepend(viri[viridet->dettype], viridet);
 				SecureServ.defcount ++;	
 				dlog (DEBUG1, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
@@ -309,7 +317,7 @@ int ScanFizzer(Client *u)
 #ifdef DEBUG
 	dlog (DEBUG2, "Fizzer RealName Check %s -> %s", username, u->user->username);
 #endif
-	SecureServ.trigcounts[DET_BUILTIN]++;
+	virustypes[DET_BUILTIN].trigcount++;
 	if (!strcmp(username, u->user->username)) {
 		nlog (LOG_NOTICE, "Fizzer Bot Detected: %s (%s -> %s)", u->name, u->user->username, u->info);
 		/* do kill */
@@ -340,7 +348,7 @@ static int Scan(int type, Client *u, char* buf)
 	if (node) {
 		do {
 			viridetails = lnode_get(node);
-			SecureServ.trigcounts[type]++;
+			virustypes[type].trigcount++;
 #ifdef DEBUG
 			dlog (DEBUG1, "Checking %s %s against %s", dettypes[type], buf, viridetails->recvmsg);
 #endif
@@ -360,31 +368,19 @@ static int Scan(int type, Client *u, char* buf)
 	return positive;
 }
 
-
-int ScanUser(Client *u, unsigned flags) 
+int ScanNick(Client *u)
 {
-	int positive = 0;
+	return Scan(DET_NICK, u, u->name);
+}
 
-	SET_SEGV_LOCATION();
-	if ((flags & SCAN_NICK)) {
-		positive += Scan(DET_NICK, u, u->name);
-		if (positive && SecureServ.breakorcont != 0) {
-			return 1;
-		}
-	}
-	if ((flags & SCAN_IDENT)) {
-		positive += Scan(DET_IDENT, u, u->user->username);
-		if (positive && SecureServ.breakorcont != 0) {
-			return 1;
-		}
-	}
-	if ((flags & SCAN_REALNAME)) {
-		positive += Scan(DET_REALNAME, u, u->info);
-		if (positive && SecureServ.breakorcont != 0) {
-			return 1;
-		}
-	}
-	return positive;
+int ScanIdent(Client *u)
+{
+	return Scan(DET_IDENT, u, u->user->username);
+}
+
+int ScanRealname(Client *u)
+{
+	return Scan(DET_REALNAME, u, u->info);
 }
 
 int ScanCTCPVersion(Client *u, char* buf) 
@@ -392,7 +388,7 @@ int ScanCTCPVersion(Client *u, char* buf)
 	return Scan(DET_CTCP, u, buf);
 }
 
-int ScanMsg(Client *u, char* buf) 
+int ScanPrivmsg(Client *u, char* buf) 
 {
 	return Scan(DET_MSG, u, buf);
 }
@@ -402,7 +398,7 @@ int ScanChanMsg(Client *u, char* buf)
 	return Scan(DET_CHANMSG, u, buf);
 }
 
-int ScanChan(Client* u, Channel *c) 
+int ScanChannelName(Client* u, Channel *c) 
 {
 	return Scan(DET_CHAN, u, c->name);
 }
@@ -453,7 +449,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 	if(!ve->iscustom)
 		irc_prefmsg (ss_bot, u, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
 	ve->nofound++;
-	SecureServ.actioncounts[type]++;
+	virustypes[type].actcount++;
 	switch (ve->action) {
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {

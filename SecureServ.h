@@ -59,6 +59,8 @@ typedef struct virientry {
 #define DET_REALNAME 4
 #define DET_CHAN 5
 #define DET_CHANMSG 6
+#define DET_AWAYMSG 7
+#define DET_QUITMSG 8
 #define DET_BUILTIN 10
 #define DET_MAX		DET_BUILTIN
 
@@ -69,11 +71,6 @@ typedef struct virientry {
 #define ACT_NOTHING 3
 #define ACT_KILL 4
 #define ACT_MAX ACT_KILL
-
-/* Scanner flags for User scanning */
-#define SCAN_NICK		0x00000001
-#define SCAN_IDENT		0x00000002
-#define SCAN_REALNAME	0x00000004
 
 extern Bot *ss_bot;
 
@@ -99,7 +96,6 @@ typedef struct ChannelDetail {
 #define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
-	int timedif;
 	int doscan;
 	int datfileversion;
 	char akillinfo[BUFSIZE];
@@ -120,14 +116,9 @@ struct SecureServ {
 	int BotEcho;
 	int helpers;
 	int defcount;
-	int trigcounts[MAX_PATTERN_TYPES];
-	int actioncounts[MAX_PATTERN_TYPES];
-	int definitions[MAX_PATTERN_TYPES];
 	char updateurl[SS_BUF_SIZE];
 	char updateuname[MAXNICK];
 	char updatepw[MAXNICK];
-	char lastchan[MAXCHANLEN];
-	char lastnick[MAXNICK];
 	char monbot[MAXNICK];
 	char botquitmsg[BUFSIZE];
 	int doprivchan;
@@ -174,9 +165,11 @@ int MonBotCycle(void);
 /* scan.c */
 void ScanStatus (CmdParams *cmdparams);
 int ScanFizzer(Client *u);
-int ScanChan(Client* u, Channel *c);
-int ScanUser(Client *u, unsigned flags);
-int ScanMsg(Client *u, char* buf);
+int ScanChannelName(Client* u, Channel *c);
+int ScanNick(Client *u);
+int ScanIdent(Client *u);
+int ScanRealname(Client *u);
+int ScanPrivmsg(Client *u, char* buf);
 int ScanChanMsg(Client *u, char* buf);
 int ScanCTCPVersion(Client *u, char* buf);
 int ss_cmd_list(CmdParams *cmdparams);

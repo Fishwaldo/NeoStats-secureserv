@@ -245,7 +245,7 @@ int ss_event_joinchan(CmdParams *cmdparams)
 		/* Only set the channel to scanned if it is a clean channel 
 		 * otherwise we may miss scans
 		 */
-		if(ScanChan(cmdparams->source, cmdparams->channel) == 0) {
+		if(ScanChannelName(cmdparams->source, cmdparams->channel) == 0) {
 			cd->scanned = 1;
 		}
 	}
@@ -282,10 +282,9 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
 		return -1;
 	}
-	/* otherwise, just pass it to the ScanMsg function */
 	ScanChanMsg(cmdparams->source, cmdparams->param);
 	if (SecureServ.treatchanmsgaspm == 1) {
-		ScanMsg(cmdparams->source, cmdparams->param);
+		ScanPrivmsg(cmdparams->source, cmdparams->param);
 	}
 	return NS_SUCCESS;
 }
@@ -335,7 +334,7 @@ static int ss_event_nick(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	if (SSIsUserExempt(cmdparams->source) == NS_FALSE) {
 		/* check the nickname */
-		ScanUser(cmdparams->source, SCAN_NICK);
+		ScanNick(cmdparams->source);
 	}
 	return NS_SUCCESS;
 }
@@ -354,13 +353,17 @@ static int ss_event_signon(CmdParams *cmdparams)
 		return -1;
 	}
 	/* fizzer scan */
-	if (SecureServ.dofizzer) {
-		if(ScanFizzer(cmdparams->source)) {
-			return NS_SUCCESS;
-		}
+	if (SecureServ.dofizzer && ScanFizzer(cmdparams->source)) {
+		return NS_SUCCESS;
 	}
 	/* check the nickname, ident, realname */
-	if(ScanUser(cmdparams->source, SCAN_NICK|SCAN_IDENT|SCAN_REALNAME)) {
+	if (ScanNick(cmdparams->source) && SecureServ.breakorcont != 0) {
+		return NS_SUCCESS;
+	}
+	if (ScanIdent(cmdparams->source) && SecureServ.breakorcont != 0) {
+		return NS_SUCCESS;
+	}
+	if (ScanRealname(cmdparams->source) && SecureServ.breakorcont != 0) {
 		return NS_SUCCESS;
 	}
 	return NS_SUCCESS;
@@ -412,7 +415,7 @@ int ScanMember (Channel *c, ChannelMember *m, void *v)
 			cd = ns_calloc(sizeof(ChannelDetail));
 			SetChannelModValue (c, (void *)cd);
 		}	
-		if (ScanChan(m->u, c) == 0) {
+		if (ScanChannelName(m->u, c) == 0) {
 			cd->scanned = 1;
 			/* Channel is OK so stop abort list handling */
 			return NS_TRUE;

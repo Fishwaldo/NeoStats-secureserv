@@ -27,6 +27,9 @@
 #define MAX_NICKS	100
 #define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
 
+char lastchan[MAXCHANLEN];
+char lastnick[MAXNICK];
+
 BotInfo defaultbots[]= 
 {
 	{
@@ -131,8 +134,8 @@ static Bot *ojbotptr;
 
 void OnJoinBotStatus (CmdParams *cmdparams)
 {
-	if (SecureServ.lastchan[0]) 
-		irc_prefmsg (ss_bot, cmdparams->source, "Currently checking %s with %s", SecureServ.lastchan, SecureServ.lastnick);
+	if (lastchan[0]) 
+		irc_prefmsg (ss_bot, cmdparams->source, "Currently checking %s with %s", lastchan, lastnick);
 }
 
 static int chkmonchan (const void *key1, const void *key2) 
@@ -159,7 +162,7 @@ static Channel *GetNewChan ()
 			dlog (DEBUG1, "Not Scanning %s, as its a private channel", c->name);
 			continue;
 		}
-		if (!strcasecmp(SecureServ.lastchan, c->name)) {
+		if (!strcasecmp(lastchan, c->name)) {
 			/* this was the last channel we joined, don't join it again */
 			dlog (DEBUG1, "Not Scanning %s, as we just did it", c->name);
 			continue;
@@ -177,8 +180,8 @@ static Channel *GetNewChan ()
 	}
 	/* give up after 5 attempts */
 	dlog (DEBUG1, "Couldn't find a fresh Channel, Giving up");
-	SecureServ.lastchan[0] = 0;
-	SecureServ.lastnick[0] = 0;
+	lastchan[0] = 0;
+	lastnick[0] = 0;
 	return NULL;
 }
 
@@ -218,7 +221,7 @@ static BotInfo *GetNewBot(int resetflag)
 		while (rnn != NULL) {
 			if (curno == randno) {
 				nickname = lnode_get(rnn);
-				if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
+				if (!strcasecmp(nickname->nick, lastnick)) {
 					/* its the same as last time, nope */
 					dlog (DEBUG1, "%s was used last time. Retring", nickname->nick);
 					break;
@@ -238,8 +241,8 @@ static BotInfo *GetNewBot(int resetflag)
 	/* give up if we try five times */
 	dlog (DEBUG1, "Couldn't find a free nickname, giving up");
 	if(resetflag) {
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+		lastchan[0] = 0;
+		lastnick[0] = 0;
 	}
 	return NULL;
 }
@@ -282,14 +285,14 @@ int JoinNewChan()
 
 	SET_SEGV_LOCATION();  
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (SecureServ.lastnick[0] != 0) {
-		if (find_user(SecureServ.lastnick)) {
-			if (SecureServ.lastchan[0] != 0) {
-				irc_part (ojbotptr, SecureServ.lastchan);
+	if (lastnick[0] != 0) {
+		if (find_user(lastnick)) {
+			if (lastchan[0] != 0) {
+				irc_part (ojbotptr, lastchan);
 			}
 			irc_quit (ojbotptr, "Finished Scanning");
-			SecureServ.lastchan[0] = 0;
-			SecureServ.lastnick[0] = 0;
+			lastchan[0] = 0;
+			lastnick[0] = 0;
 		}
 	}
 	/* if we don't do OnJoin Checking, Don't go any further */
@@ -304,17 +307,17 @@ int JoinNewChan()
 	if (c == NULL) {
 		return NS_SUCCESS;
 	}
-	strlcpy(SecureServ.lastchan, c->name, MAXCHANLEN);
+	strlcpy(lastchan, c->name, MAXCHANLEN);
 	nickname = GetNewBot(1);
 	if(nickname == NULL) {
 		return NS_SUCCESS;
 	}
-	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
+	strlcpy(lastnick, nickname->nick, MAXNICK);
 	/* ok, init the new bot. */
 	ojbotptr = AddBot(nickname);
 	if (!ojbotptr) {
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+		lastchan[0] = 0;
+		lastnick[0] = 0;
 		nlog (LOG_WARNING, "init_bot reported nick was in use. How? Dunno");
 		return NS_SUCCESS;
 	}
@@ -346,7 +349,7 @@ static int CheckChan(Client *u, char *requestchan)
 	lnode = list_first(c->members);
 	while (lnode) {
 		cm = find_user(lnode_get(lnode));
-		if (cm && ScanChan(cm, c) == 0) {
+		if (cm && ScanChannelName(cm, c) == 0) {
 			/* if its 0, means its ok, no need to scan other members */
 			break;
 		}
@@ -359,18 +362,18 @@ static int CheckChan(Client *u, char *requestchan)
 		return -1;
 	}
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (SecureServ.lastchan[0] != 0) {
-		irc_part ( ojbotptr, SecureServ.lastchan);
+	if (lastchan[0] != 0) {
+		irc_part ( ojbotptr, lastchan);
 		irc_quit (ojbotptr, "Finished Scanning");
 	}
-	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
-	strlcpy(SecureServ.lastchan, c->name, MAXCHANLEN);
+	strlcpy(lastnick, nickname->nick, MAXNICK);
+	strlcpy(lastchan, c->name, MAXCHANLEN);
 
 	/* ok, init the new bot. */
 	ojbotptr = AddBot(nickname);
 	if (!ojbotptr) {
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+		lastchan[0] = 0;
+		lastnick[0] = 0;
 		return 1;
 	}
 	irc_cloakhost (ojbotptr);
@@ -401,7 +404,7 @@ int ss_event_message (CmdParams *cmdparams)
 	if (SecureServ.verbose||SecureServ.BotEcho) {
 		irc_chanalert (ss_bot, "OnJoin Bot %s Received Private Message from %s: %s", cmdparams->bot->name, cmdparams->source->name, cmdparams->param);
 	}
-	ScanMsg(cmdparams->source, cmdparams->param);
+	ScanPrivmsg(cmdparams->source, cmdparams->param);
 	return NS_SUCCESS;
 }				
 
@@ -411,9 +414,9 @@ int ss_event_kickbot(CmdParams *cmdparams)
 	
 	SET_SEGV_LOCATION();
 	/* check its one of our nicks */
-	if (!strcasecmp(SecureServ.lastnick, cmdparams->target->name) && (!strcasecmp(SecureServ.lastchan, cmdparams->channel->name))) {
+	if (!strcasecmp(lastnick, cmdparams->target->name) && (!strcasecmp(lastchan, cmdparams->channel->name))) {
 		nlog (LOG_NOTICE, "Our Bot %s was kicked from %s", cmdparams->target->name, cmdparams->channel->name);
-		SecureServ.lastchan[0] = 0;
+		lastchan[0] = 0;
 		return NS_SUCCESS;
 	}
 	if (SecureServ.monbot[0] == 0) {
@@ -688,13 +691,13 @@ void FiniOnJoinBots(void)
 {
 	SET_SEGV_LOCATION();
 	if (ojbotptr) {
-		irc_chanalert (ss_bot, "SecureServ is unloading, OnJoinBot %s leaving", SecureServ.lastnick);
-		if (SecureServ.lastchan[0] != 0) {
-			irc_part (ojbotptr, SecureServ.lastchan);
+		irc_chanalert (ss_bot, "SecureServ is unloading, OnJoinBot %s leaving", lastnick);
+		if (lastchan[0] != 0) {
+			irc_part (ojbotptr, lastchan);
 		}
 		irc_quit (ojbotptr, SecureServ.botquitmsg);
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+		lastchan[0] = 0;
+		lastnick[0] = 0;
 	}
 	if (SecureServ.monbot[0] != 0) {
 		irc_chanalert (ss_bot, "SecureServ is unloading, monitor bot %s leaving", SecureServ.monbot);
@@ -913,8 +916,8 @@ int ss_event_emptychan(CmdParams *cmdparams)
 	else if (ojbotptr && cmdparams->bot == ojbotptr)
 	{
 		irc_quit (ojbotptr, "Leaving");
-		SecureServ.lastchan[0] = 0;
-		SecureServ.lastnick[0] = 0;
+		lastchan[0] = 0;
+		lastnick[0] = 0;
 	}
 	return NS_SUCCESS;
 }

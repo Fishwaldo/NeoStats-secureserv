@@ -1458,6 +1458,12 @@ int __ModInit(int modnum, int apiversion)
 	int i;
 	
 	SET_SEGV_LOCATION();
+#ifdef NS_ERR_VERSION /* Forward port version checks */
+	/* Check that our compiled version if compatible with the calling version of NeoStats */
+	if(	ircstrncasecmp (me.version, NEOSTATS_VERSION, VERSIONSIZE) !=0) {
+		return NS_ERR_VERSION;
+	}
+#endif 
 	if (apiversion < REQUIREDAPIVER) {
 		nlog(LOG_CRITICAL, LOG_MOD, "Can't Load SecureServ. API Version MisMatch");
 		return -1;

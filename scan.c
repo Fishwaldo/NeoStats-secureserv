@@ -69,7 +69,8 @@ const char* DatFiles[NUM_DAT_FILES]=
    by SecureServ.
 */
 
-void load_dat() {
+void load_dat(void) 
+{
 	int i;
 	FILE *fp;
 	char buf[BUFSIZE];
@@ -86,17 +87,20 @@ void load_dat() {
 	/* if the list isn't empty, make it empty */
 	if (!list_isempty(viri)) {
 		node = list_first(viri);
-		do {
+		while (node) {
 			viridet = lnode_get(node);
-			nlog(LOG_DEBUG1, LOG_MOD, "Deleting %s out of List", viridet->name);
-#if 0
-			list_delete(viri, node);
-			lnode_destroy(node);
-#endif
-			if (viridet->pattern) free(viridet->pattern);
-			if (viridet->patternextra) free(viridet->patternextra);
-			free(viridet);
-		} while ((node = list_next(viri, node)) != NULL);
+			if(viridet) {
+				nlog(LOG_DEBUG1, LOG_MOD, "Deleting %s out of List", viridet->name);
+				if (viridet->pattern) {
+					free(viridet->pattern);
+				}
+				if (viridet->patternextra) {
+					free(viridet->patternextra);
+				}
+				free(viridet);
+			}
+			node = list_next(viri, node));
+		} 
 		list_destroy_nodes(viri);
 	}
 	
@@ -110,6 +114,8 @@ void load_dat() {
 	viridet->dettype = DET_BUILTIN;
 	viridet->var1 = 0;
 	viridet->var2 = 0;
+	viridet->pattern = NULL;
+	viridet->patternextra = NULL;
 	strlcpy(viridet->recvmsg, "UserName is RealName Reversed", BUFSIZE);
 	strlcpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", BUFSIZE);
 	viridet->action = ACT_AKILL;

@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.9 2003/05/16 16:53:34 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.10 2003/05/23 18:26:03 fishwaldo Exp $
 */
 
 
@@ -77,6 +77,11 @@ struct SecureServ {
 	int trigcounts[20];
 	int actioncounts[20];
 	int definitions[20];
+	char updateurl[255];
+	char updateuname[255];
+	char updatepw[255];
+	char lastchan[CHANLEN];
+	char lastnick[MAXNICK];
 } SecureServ;
 
 
@@ -116,11 +121,12 @@ list_t *nicks;
 #define MAX_NICKS	100
 /* SecureServ.c */
 void gotpositive(User *u, virientry *ve, int type);
-
+int Chan_Exempt(Chans *c);
 
 /* OnJoin.c */
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
+int CheckChan(User *u, char *requestchan);
 
 /* FloodCheck.c */
 void ss_init_chan_hash();

@@ -596,7 +596,7 @@ extern int http_write(int socknum, char *sockname) {
         }
     }
 
-
+    nlog(LOG_DEBUG2, LOG_MOD, "HTTP Request: %s", hd->pRequest);
     i = write( socknum, hd->pRequest, strlen( hd->pRequest) );
     if (i < 0) {
     	nlog(LOG_NOTICE, LOG_MOD, "HTTP_Get: Write Error: %s", strerror(errno));

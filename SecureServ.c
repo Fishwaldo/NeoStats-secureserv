@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.13 2003/05/20 08:50:07 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.14 2003/05/23 18:26:03 fishwaldo Exp $
 */
 
 
@@ -51,6 +51,10 @@ void datdownload(HTTP_Response *response);
 void load_dat();
 int is_exempt(User *u);
 static int CheckNick(char **av, int ac);
+static void GotHTTPAddress(char *data, adns_answer *a);
+static void save_exempts();
+
+
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
@@ -80,6 +84,11 @@ Functions my_fn_list[] = {
 int __Bot_Message(char *origin, char **argv, int argc)
 {
 	User *u;
+	char url[255];
+	lnode_t *node;
+	exemptinfo *exempts = NULL;
+	int i;
+	char *buf;
 
 	strcpy(segv_location, "TS:Bot_Message");
 	u = finduser(origin); 
@@ -102,6 +111,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 		}
 		return 1;
+	} else if ((!strcasecmp(argv[1], "login")) || (!strcasecmp(argv[1], "logout"))) {
+		prefmsg(u->nick, s_SecureServ, "Hey, this is a Beta version, you dont expect everything to work do you?");
+		return 1;		
 	} else if (!strcasecmp(argv[1], "list")) {
 		if (UserLevel(u) < 40) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
@@ -109,6 +121,148 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			return -1;
 		}			
 		do_list(u);
+		return 1;
+	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
+		if (UserLevel(u) < 50) {
+			prefmsg(u->nick, s_SecureServ, "Access Denied");
+			chanalert(s_SecureServ, "%s tried to use exclude, but is not a operator", u->nick);
+			return 1;
+		}
+		if (argc < 3) {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+			return 0;
+		}
+		if (!strcasecmp(argv[2], "LIST")) {
+			node = list_first(exempt);
+			i = 1;
+			prefmsg(u->nick, s_SecureServ, "Exception List:");
+			while (node) {
+				exempts = lnode_get(node);
+				switch (exempts->server) {
+					case 0:
+						strncpy(url, "HostName", 255);
+						break;
+					case 1:
+						strncpy(url, "Server", 255);
+						break;
+					case 2:
+						strncpy(url, "Channel", 255);
+						break;
+					default:
+						strncpy(url, "Unknown", 255);
+						break;
+				}
+				prefmsg(u->nick, s_SecureServ, "%d) %s (%s) Added by %s for %s", i, exempts->host, url, exempts->who, exempts->reason);
+				++i;
+				node = list_next(exempt, node);
+			}
+			prefmsg(u->nick, s_SecureServ, "End of List.");
+			chanalert(s_SecureServ, "%s requested Exception List", u->nick);
+		} else if (!strcasecmp(argv[2], "ADD")) {
+			if (argc < 6) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+				return 0;
+			}
+			if (list_isfull(exempt)) {
+				prefmsg(u->nick, s_SecureServ, "Error, Exception list is full", s_SecureServ);
+				return 0;
+			}
+			if (atoi(argv[4]) != 2) {
+				if (!index(argv[3], '.')) {
+					prefmsg(u->nick, s_SecureServ, "Host field does not contain a vaild host"); 
+					return 0;
+				}
+			} else {
+				if (!index(argv[3], '#')) {
+					prefmsg(u->nick, s_SecureServ, "Channel Field is not valid");
+					return 0;
+				}
+			}
+			exempts = malloc(sizeof(exemptinfo));
+			snprintf(exempts->host, MAXHOST, "%s", argv[3]);
+			exempts->server = atoi(argv[4]);
+			snprintf(exempts->who, MAXNICK, "%s", u->nick);
+			buf = joinbuf(argv, argc, 5);
+			snprintf(exempts->reason, MAXHOST, "%s", buf);
+			free(buf);
+			node = lnode_create(exempts);
+			list_append(exempt, node);
+			switch (exempts->server) {
+				case 0:
+					strncpy(url, "HostName", 255);
+					break;
+				case 1:
+					strncpy(url, "Server", 255);
+					break;
+				case 2:
+					strncpy(url, "Channel", 255);
+					break;
+				default:
+					strncpy(url, "Unknown", 255);
+					break;
+			}
+			prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, url);
+			chanalert(s_SecureServ, "%s added %s (%s) exception to list", u->nick, exempts->host, url);
+			save_exempts();
+			return 1;
+		} else if (!strcasecmp(argv[2], "DEL")) {
+			if (argc < 3) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+				return 0;
+			}
+			if (atoi(argv[3]) != 0) {
+				node = list_first(exempt);
+				i = 1;
+				while (node) {
+					if (i == atoi(argv[3])) {
+						/* delete the entry */
+						exempts = lnode_get(node);
+						list_delete(exempt, node);
+						switch (exempts->server) {
+							case 0:
+								strncpy(url, "HostName", 255);
+								break;
+							case 1:
+								strncpy(url, "Server", 255);
+								break;
+							case 2:
+								strncpy(url, "Channel", 255);
+								break;
+							default:
+								strncpy(url, "Unknown", 255);
+								break;
+						}
+						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, url);
+						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, url);
+						free(exempts);
+						save_exempts();
+						return 1;
+					}
+					++i;
+					node = list_next(exempt, node);
+				}		
+				/* if we get here, then we can't find the entry */
+				prefmsg(u->nick, s_SecureServ, "Error, Can't find entry %d. /msg %s exclude list", atoi(argv[3]), s_SecureServ);
+				return 0;
+			} else {
+				prefmsg(u->nick, s_SecureServ, "Error, Out of Range");
+				return 0;
+			}
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+			return 0;
+		}
+	} else if (!strcasecmp(argv[1], "checkchan")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
+			return -1;
+		}			
+		if (argc < 3) {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help checkchan", s_SecureServ);
+			return -1;
+		}
+		CheckChan(u, argv[2]);
 		return 1;
 	} else if (!strcasecmp(argv[1], "cycle")) {
 		if (UserLevel(u) < 40) {
@@ -135,11 +289,24 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		do_status(u);
 		return 1;
 	
+	} else if (!strcasecmp(argv[1], "update")) {
+		if (UserLevel(u) < 185) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
+			return -1;
+		}
+		snprintf(url, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(url, 2, HFLAG_NONE, datdownload);
+		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
+		chanalert(s_SecureServ, "%s requested a update to the Dat file", u->nick);
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
 	return 1;
 }
+
+
+
 void do_set(User *u, char **av, int ac) {
 	int i, j;
 	char *buf;
@@ -162,6 +329,18 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Signon Split Time is set to %d", i);
 		chanalert(s_SecureServ, "%s Set Signon Split Time to %d", u->nick, i);
 		SetConf((void *)i, CFGINT, "SplitTime");
+		return;
+	} else if (!strcasecmp(av[2], "UPDATEINFO")) {
+		if (ac < 5) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set", s_SecureServ);
+			return;
+		}
+		SetConf((void *)av[3], CFGSTR, "UpdateUname");
+		SetConf((void *)av[4], CFGSTR, "UpdatePassword");
+		strncpy(SecureServ.updateuname, av[3], 255);
+		strncpy(SecureServ.updatepw, av[4], 255);
+		chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
+		prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 		return;
 	} else if (!strcasecmp(av[2], "VERSION")) {
 		if (ac < 4) {
@@ -324,11 +503,16 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}			
 		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
-			chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
-			SetConf((void *)1, CFGINT, "AutoUpdate");
-			SecureServ.autoupgrade = 1;
-			return;
+			if ((strlen(SecureServ.updateuname) > 0) && (strlen(SecureServ.updatepw) > 0)) {
+				prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
+				chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
+				SetConf((void *)1, CFGINT, "AutoUpdate");
+				SecureServ.autoupgrade = 1;
+				return;
+			} else {
+				prefmsg(u->nick, s_SecureServ, "You can not enable AutoUpdate, as you have not set a username and password");
+				return;
+			}
 		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
 			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now disabled");
 			chanalert(s_SecureServ, "%s disabled AutoUpdate Mode", u->nick);
@@ -392,7 +576,7 @@ void do_set(User *u, char **av, int ac) {
 		chanalert(s_SecureServ, "%s set the No Help Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "NoHelpMsg");
 		free(buf);
-	} else if (!strcasecmp(av[2], "NOHELPMSG")) {
+	} else if (!strcasecmp(av[2], "HELPCHAN")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return;
@@ -415,6 +599,9 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
+		prefmsg(u->nick, s_SecureServ, "Update Username and Passware are: %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
+		if (UserLevel(u) > 185) 
+			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		prefmsg(u->nick, s_SecureServ, "AutoUpdate: %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Sample Threshold: %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
 		prefmsg(u->nick, s_SecureServ, "Signon Message: %s", SecureServ.signonscanmsg);
@@ -458,6 +645,8 @@ void do_status(User *u) {
 	prefmsg(u->nick, s_SecureServ, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);
 	prefmsg(u->nick, s_SecureServ, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
 	prefmsg(u->nick, s_SecureServ, "Current Top AJPP: %d (in %d Seconds): %s", SecureServ.MaxAJPP, SecureServ.sampletime, SecureServ.MaxAJPPChan);
+	if (strlen(SecureServ.lastchan) > 0) 
+		prefmsg(u->nick, s_SecureServ, "Currently Checking %s with %s", SecureServ.lastchan, SecureServ.lastnick);
 	prefmsg(u->nick, s_SecureServ, "End of List.");
 	
 }
@@ -534,10 +723,32 @@ int Online(char **av, int ac) {
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
 
-	http_request(DATFILEVER, 2, HFLAG_NONE, datver);
+
+	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 
 	return 1;
 };
+void save_exempts() {
+	lnode_t *node;
+	exemptinfo *exempts = NULL;
+	char path[255];
+	int i;
+
+	node = list_first(exempt);
+	i = 1;
+	while (node) {
+		exempts = lnode_get(node);
+		nlog(LOG_DEBUG1, LOG_MOD, "Saving Exempt List %s", exempts->host);
+		snprintf(path, 255, "Exempt/%s/Who", exempts->host);
+		SetConf((void *)exempts->who, CFGSTR, path);
+		snprintf(path, 255, "Exempt/%s/Reason", exempts->host);
+		SetConf((void *)exempts->reason, CFGSTR, path);
+		snprintf(path, 255, "Exempt/%s/Server", exempts->host);
+		SetConf((void *)exempts->server, CFGINT, path);
+		node = list_next(exempt, node);
+	}
+}
+
 
 
 void LoadTSConf() {
@@ -570,6 +781,20 @@ void LoadTSConf() {
 	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
 		/* disable autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
+	}
+	if (GetConf((void *)&tmp, CFGSTR, "UpdateUname") <= 0) {
+		/* disable autoupgrade if its set */
+		SecureServ.autoupgrade = 0;
+	} else {
+		strncpy(SecureServ.updateuname, tmp, 255);
+		free(tmp);
+	}
+	if (GetConf((void *)&tmp, CFGSTR, "UpdatePassword") <= 0) {
+		/* disable autoupgrade if its set */
+		SecureServ.autoupgrade = 0;
+	} else {
+		strncpy(SecureServ.updatepw, tmp, 255);
+		free(tmp);
 	}
 	if (GetConf((void *)&SecureServ.dofizzer, CFGINT, "FizzerCheck") <= 0) {
 		/* scan for fizzer is the default */
@@ -635,7 +860,7 @@ void LoadTSConf() {
 				free(tmp);
 			}
 			snprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
-			if (GetConf((void *)&exempts->server, CFGBOOL, datapath) <= 0) {
+			if (GetConf((void *)&exempts->server, CFGINT, datapath) <= 0) {
 				free(exempts);
 				continue;
 			}			
@@ -698,17 +923,21 @@ void load_dat() {
 	int rc;
 	int ovector[24];
 	const char **subs;
-
 	/* if the list isn't empty, make it empty */
 	if (!list_isempty(viri)) {
 		node = list_first(viri);
 		do {
 			viridet = lnode_get(node);
+			nlog(LOG_DEBUG1, LOG_MOD, "Deleting %s out of List", viridet->name);
+#if 0
 			list_delete(viri, node);
 			lnode_destroy(node);
+#endif
 			free(viridet);
 		} while ((node = list_next(viri, node)) != NULL);
+		list_destroy_nodes(viri);
 	}
+	
 	for (rc = 0; rc > 20; rc++) {
 		SecureServ.definitions[rc] = 0;
 	}	
@@ -834,7 +1063,7 @@ int is_exempt(User *u) {
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: User %s exempt. Matched server entry %s in Exemptions", u->nick, exempts->host);
 				return 1;
 			}
-		} else {
+		} else if (exempts->server == 0) {
 			/* match a hostname */
 			if (fnmatch(exempts->host, u->hostname, 0) == 0) {
 				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: User %s is exempt. Matched Host Entry %s in Exceptions", u->nick, exempts->host);
@@ -845,7 +1074,32 @@ int is_exempt(User *u) {
 	}
 	return -1;
 }
+int Chan_Exempt(Chans *c) {
 
+	lnode_t *node;
+	exemptinfo *exempts;
+
+	
+	if (!strcasecmp(c->name, me.chan)) {
+		nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Channel %s Exempt. its Mine!", c->name);
+		return 1;
+	}
+
+	/* don't scan users from a server that is excluded */
+	node = list_first(exempt);
+	while (node) {
+		exempts = lnode_get(node);
+		if (exempts->server == 2) {
+			/* match a channel */
+			if (fnmatch(exempts->host, c->name, 0) == 0) {
+				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Channel %s exempt. Matched Channel entry %s in Exemptions", c->name, exempts->host);
+				return 1;
+			}
+		}				
+		node = list_next(exempt, node);
+	}
+	return -1;
+}
 /* scan nickname changes */
 static int CheckNick(char **av, int ac) {
 	User *u;
@@ -1123,6 +1377,9 @@ void _init() {
 	SecureServ.doUpdate = 0;
 	SecureServ.dofizzer = 1;
 	SecureServ.MaxAJPP = 0;
+	strncpy(SecureServ.updateurl, "", 255);
+	strncpy(SecureServ.updateuname, "", 255);
+	strncpy(SecureServ.updatepw, "", 255);
 	for (i = 0; i > 20; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;
@@ -1141,6 +1398,11 @@ void datver(HTTP_Response *response) {
 	/* check there was no error */
 	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
 		myversion = atoi(response->pData);
+		if (myversion <= 0) {
+			nlog(LOG_NORMAL, LOG_MOD, "When Trying to Check Dat File Version, we got Permission Denied: %d", myversion);
+			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version:", myversion);
+			return;
+		}			
 		nlog(LOG_DEBUG1, LOG_MOD, "LocalDat Version %d, WebSite %d", SecureServ.viriversion, myversion);
 		if (myversion > SecureServ.viriversion) {
 			if (SecureServ.autoupgrade > 0) {
@@ -1150,16 +1412,18 @@ void datver(HTTP_Response *response) {
 				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
 		}
 	} else {
-		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", response->pError);
+		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", response->szHCode);
 		return;
 	}
 }
 void DownLoadDat() {
+	char url[255];
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
 		SecureServ.doUpdate = 2;
-		http_request(DATFILE, 2, HFLAG_NONE, datdownload);
+		snprintf(url, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(url, 2, HFLAG_NONE, datdownload);
 	} 
 	return;
 }
@@ -1170,6 +1434,7 @@ void DownLoadDat() {
 
 void datdownload(HTTP_Response *response) {
 	char tmpname[255];
+	char *tmp, *tmp1;
 	int i;
 	
 	/* if this is a automatic download, KILL the timer */
@@ -1177,20 +1442,71 @@ void datdownload(HTTP_Response *response) {
 		/* clear this flag */
 		SecureServ.doUpdate = 0;
 	}
-	/* make a temp file and write the contents to it */
-	snprintf(tmpname, 255, "viriXXXXXX");
-	i = mkstemp(tmpname);
-	write(i, response->pData, response->lSize);
-	close(i);
-	/* rename the file to the datfile */
-	rename(tmpname, "data/viri.dat");
-	/* reload the dat file */
-	load_dat();
-	nlog(LOG_NOTICE, LOG_MOD, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);
-	chanalert(s_SecureServ, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
+	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
+
+		/* check response code */
+		tmp = malloc(response->lSize);
+		strncpy(tmp, response->pData, response->lSize);
+		tmp1 = tmp;
+		i = atoi(strtok(tmp, "\n"));
+		free(tmp1);	
+		if (i <= 0) {
+			nlog(LOG_NORMAL, LOG_MOD, "When Trying to Download Dat File, we got Permission Denied: %d", i);
+			chanalert(s_SecureServ, "Permission Denied when trying to Download Dat File : %d", i);
+			return;
+		}			
+		
+	
+		/* make a temp file and write the contents to it */
+		snprintf(tmpname, 255, "viriXXXXXX");
+		i = mkstemp(tmpname);
+		write(i, response->pData, response->lSize);
+		close(i);
+		/* rename the file to the datfile */
+		rename(tmpname, "data/viri.dat");
+		/* reload the dat file */
+		load_dat();
+		nlog(LOG_NOTICE, LOG_MOD, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);
+		chanalert(s_SecureServ, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
+	} else {
+		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition Download Failed. %s", response->szHCode);
+		return;
+	}
+	
 }
 	
 		
 void _fini() {
 
 };
+
+
+static void GotHTTPAddress(char *data, adns_answer *a) {
+        char *show;
+        int i, len, ri;
+	char url[255];
+	char url2[255];                
+
+	adns_rr_info(a->type, 0, 0, &len, 0, 0);
+        for(i = 0; i < a->nrrs;  i++) {
+        	ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &show);
+                if (!ri) {
+			/* ok, we got a valid answer, lets maybe kick of the update check.*/
+			snprintf(url, 255, "%s", show);
+			strncpy(SecureServ.updateurl, url, 255);
+			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
+			if ((strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {
+				snprintf(url2, 255, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+				http_request(url2, 2, HFLAG_NONE, datver); 
+			} else {
+				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
+			}
+                } else {
+	                chanalert(s_SecureServ, "DNS error Checking for Updates: %s", adns_strerror(ri));
+	        }
+	        free(show);
+	}
+	if (a->nrrs < 1) {
+	        chanalert(s_SecureServ,  "DNS Error checking for Updates");
+	}
+}

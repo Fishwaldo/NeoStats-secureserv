@@ -33,4 +33,4 @@ Botnet15 3 0 0 ".\[DrDos\].*" "Your Ident Matches a Known Trojan/BotNet. Please 
 Botnet16 3 0 0 ".\[XA\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
 Botnet17 3 0 0 ".\].\[-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
 Botnet18 3 0 0 ".\[SYN\]-\[.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
-GondRonkChan 5 0 0 "#Â.*" "This Channel is associated with a Trojan. Don't Join it if you don't want to be killed", 1
+GondRonkChan 5 0 0 "#Â².*" "This Channel is associated with a Trojan. Don't Join it if you don't want to be killed", 1

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.10 2003/05/20 08:50:07 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.11 2003/05/23 18:26:03 fishwaldo Exp $
 */
 
 
@@ -56,17 +56,15 @@ Chans *GetRandomChan() {
 
 void JoinNewChan() {
 	Chans *c;
-	static char lastchan[CHANLEN];
-	static char lastnick[MAXNICK];
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
 	int i, j, trynick, trychan;
 	User *u;
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (strlen(lastchan) > 1) {
-		spart_cmd(lastnick, lastchan);
-		del_bot(lastnick, "Finished Scanning");
+	if (strlen(SecureServ.lastchan) > 1) {
+		spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+		del_bot(SecureServ.lastnick, "Finished Scanning");
 	}
 	/* restore segvinmodules */
 	strcpy(segvinmodule, "SecureServ");
@@ -76,23 +74,27 @@ restartchans:
 	if (trychan > 5) {
 		/* give up after 5 attempts */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a fresh Channel, Giving up");
-		strncpy(lastchan, "\0", CHANLEN);
-		strncpy(lastnick, "\0", MAXNICK);
+		strncpy(SecureServ.lastchan, "\0", CHANLEN);
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		return;
 	}
 
 	c = GetRandomChan();
 	if (c != NULL) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
-		if (!strcasecmp(lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
+		if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
 			/* this was the last channel we joined, don't join it again */
 			goto restartchans;
 		}
-		strncpy(lastchan, c->name, CHANLEN);
+		/* if the channel is exempt, restart */
+		if (Chan_Exempt(c) > 0) {
+			goto restartchans;
+		}
+		strncpy(SecureServ.lastchan, c->name, CHANLEN);
 	} else {
 		/* hu? */
-		strncpy(lastchan, "\0", CHANLEN);
-		strncpy(lastnick, "\0", MAXNICK);
+		strncpy(SecureServ.lastchan, "\0", CHANLEN);
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		return;
 	}
 	trynick = 0;
@@ -101,8 +103,8 @@ restartnicks:
 	if (trynick > 5) {
 		/* give up if we try five times */
 		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
-		strncpy(lastchan, "\0", CHANLEN);
-		strncpy(lastnick, "\0", MAXNICK);
+		strncpy(SecureServ.lastchan, "\0", CHANLEN);
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		return;
 	}
 	j = 1;
@@ -111,7 +113,7 @@ restartnicks:
 	while (rnn != NULL) {
 		if (j == i) {
 			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, lastnick)) {
+			if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
 				/* its the same as last time, nope */
 				goto restartnicks;
 			}
@@ -125,7 +127,7 @@ restartnicks:
 		j++;
 		rnn = list_next(nicks, rnn);
 	}
-	strncpy(lastnick, nickname->nick, MAXNICK);
+	strncpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
@@ -136,10 +138,82 @@ restartnicks:
 	sjoin_cmd(nickname->nick, c->name);
 #endif
 
-	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s for OnJoin Virus's", c->name);
+	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Virus's", c->name, nickname->nick);
 	
 	
 	
+}
+
+int CheckChan(User *u, char *requestchan) {
+	Chans *c;
+	randomnicks *nickname = NULL;
+	lnode_t *rnn;
+	int i, j, trynick, trychan;
+	
+	c = findchan(requestchan);
+
+	if (!c) {
+		prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
+		return -1;
+	}			
+	trynick = 0;
+
+restartnicksondemand:
+	trynick++;
+	if (trynick > 5) {
+		/* give up if we try five times */
+		nlog(LOG_DEBUG1, LOG_MOD, "Couldn't find a free nickname, giving up");
+		prefmsg(u->nick, s_SecureServ, "Couldnt Find a free Nickname to check %s with. Giving up (Try again later)", requestchan);
+#if 0
+		strncpy(SecureServ.lastchan, "\0", CHANLEN);
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+#endif
+		return -1;
+	}
+	j = 1;
+	i = hrand(list_count(nicks)-1, 0 );
+	rnn = list_first(nicks);
+	while (rnn != NULL) {
+		if (j == i) {
+			nickname = lnode_get(rnn);
+			if (!strcasecmp(nickname->nick, SecureServ.lastnick)) {
+				/* its the same as last time, nope */
+				goto restartnicksondemand;
+			}
+			/* make sure no one is online with this nickname */
+			if (finduser(nickname->nick) != NULL) {
+				goto restartnicksondemand;
+			}
+			break;
+		}
+		j++;
+		rnn = list_next(nicks, rnn);
+	}
+	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
+
+	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
+	if (strlen(SecureServ.lastchan) > 1) {
+		spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+		del_bot(SecureServ.lastnick, "Finished Scanning");
+	}
+	/* restore segvinmodules */
+	strcpy(segvinmodule, "SecureServ");
+	trychan = 0;
+
+	strncpy(SecureServ.lastnick, nickname->nick, MAXNICK);
+	strncpy(SecureServ.lastchan, c->name, CHANLEN);
+
+	/* ok, init the new bot. */
+	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
+#ifdef ULTIMATE3
+	sjoin_cmd(nickname->nick, c->name, 0);
+#else
+	sjoin_cmd(nickname->nick, c->name);
+#endif
+
+	chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Virus's by request of %s", c->name, nickname->nick, u->nick);
+	prefmsg(u->nick, s_SecureServ, "Scanning %s with %s", c->name, nickname->nick);
+	return 1;
 }
 
 

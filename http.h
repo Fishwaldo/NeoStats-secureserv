@@ -40,11 +40,11 @@
 
 
 /* this is the DATFILE location */
-#define DATFILE "http://202.181.4.129/viridat.php"
+#define DATFILE "/defs.php"
 /* this is the DATFILE Version Location */
-#define DATFILEVER "http://202.181.4.129/datver.php"
+#define DATFILEVER "/vers.php"
 /* this is the HostName */
-#define HTTPHOST "www.neostats.net"
+#define HTTPHOST "secure.irc-chat.net"
 
 
 /* Compile time options.

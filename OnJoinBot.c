@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.26 2003/08/19 13:20:23 fishwaldo Exp $
+** $Id$
 */
 
 

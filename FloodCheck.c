@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.10 2003/08/07 12:46:02 fishwaldo Exp $
+** $Id$
 */
 
 /* http://sourceforge.net/projects/muhstik/ */

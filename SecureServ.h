@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.26 2003/08/21 23:21:30 fishwaldo Exp $
+** $Id$
 */
 
 

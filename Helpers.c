@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.8 2003/08/21 23:21:30 fishwaldo Exp $
+** $Id$
 */
 
 

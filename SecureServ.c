@@ -215,10 +215,10 @@ int ss_event_joinchan(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	/* is channel exempt? */
 	if( ModIsChannelExcluded( cmdparams->channel ) > 0 )
-		return -1;
+		return NS_SUCCESS;
 	/* is user exempt */
 	if( ModIsUserExcluded( cmdparams->source ) == NS_TRUE )
-		return -1;
+		return NS_SUCCESS;
 	/* is channel already scanned */
 	if( GetChannelModValue( cmdparams->channel ) == 0 ) {
 		/* only set the channel to scanned if clean so defintion remains active */
@@ -255,11 +255,11 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	/* first, if its the services channel, just ignore it */
 	if (IsServicesChannel( cmdparams->channel )) {
-		return -1;
+		return NS_SUCCESS;
 	}
 	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
 		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
-		return -1;
+		return NS_SUCCESS;
 	}
 	ScanChanMsg(cmdparams->source, cmdparams->param);
 	if (SecureServ.treatchanmsgaspm == 1) {
@@ -325,13 +325,13 @@ static int ss_event_signon(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (SecureServ.doscan == 0) 
-		return -1;
+		return NS_SUCCESS;
 	if (IsNetSplit(cmdparams->source)) {
 		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
-		return -1;
+		return NS_SUCCESS;
 	}
 	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
-		return -1;
+		return NS_SUCCESS;
 	}
 	/* fizzer scan */
 	if (SecureServ.dofizzer && ScanFizzer(cmdparams->source)) {
@@ -462,10 +462,3 @@ int ModAuthUser (Client *u)
 	return 0;
 }
 
-#ifdef WIN32 /* temp */
-
-int main (int argc, char **argv)
-{
-	return 0;
-}
-#endif

@@ -1,7 +1,8 @@
 SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
-3.0.a2 - Mark (M)
+3.0.a2-dev - Mark (M)
+ - Update settings table to a2 compatible format. (M)
  - Split SET UPDATEINFO into SET UPDATEUSER and SET UPDATEPASS. (M)
  - Add AUTOUPDATETIME setting so users can choose the interval at which
    SecureServ checks for dat file updates. (D)

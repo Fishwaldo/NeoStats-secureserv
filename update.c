@@ -233,6 +233,8 @@ int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 	switch( reason )
 	{
 		case SET_LOAD:
+			DBAFetchConfigStr ("UpdateUname", SecureServ.updateuname, MAXNICK);
+			DBAFetchConfigStr ("UpdatePassword", SecureServ.updatepw, MAXNICK);
 			break;
 		case SET_LIST:
 			irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", SecureServ.updateuname[0] ? "Set" : "Not Set");
@@ -244,10 +246,10 @@ int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 			if (cmdparams->ac < 3) {
 				return NS_ERR_NEED_MORE_PARAMS;
 			}
-			DBAStoreConfigStr ("UpdateUname", cmdparams->av[1], MAXNICK);
-			DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
 			strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
 			strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
+			DBAStoreConfigStr ("UpdateUname", SecureServ.updateuname, MAXNICK);
+			DBAStoreConfigStr ("UpdatePassword", SecureServ.updatepw, MAXNICK);
 			CommandReport(ss_bot, "%s changed the Update Username and Password", cmdparams->source->name);
 			irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 			break;
@@ -268,7 +270,6 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 				irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate, as you have not set a username and password");
 				SecureServ.autoupgrade = 0;
 				DelTimer ("AutoUpdate");
-				DBAStoreConfigInt ("AutoUpdate", &SecureServ.autoupgrade);
 			}
 		} else {
 			DelTimer ("AutoUpdate");

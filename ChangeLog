@@ -7,8 +7,6 @@ SecureServ Module for NeoStats Changelog.
  - Change virus storage to multiple lists to optimise scanning process. (M)
  - Add error checks for det and act types in load. (M)
  - Change status command to report in tabular format. (M)
-
-3.0prealpha2 - Mark (M)
  - Removed splittime setting which is now handled by core. (M)
  - Move GetRandomChan function to core. (M)
  - Move hrand function to core. (M)

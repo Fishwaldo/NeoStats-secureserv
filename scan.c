@@ -167,7 +167,7 @@ void load_dat(void)
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = ns_calloc (sizeof(virientry));
-	memcpy (viridet, &builtin_fizzer, sizeof(virientry));
+	os_memcpy (viridet, &builtin_fizzer, sizeof(virientry));
 	virustypes[DET_BUILTIN].defcount++;
 	lnode_create_prepend(viri[DET_BUILTIN], viridet);
 	SecureServ.defcount ++;	

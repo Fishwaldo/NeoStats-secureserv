@@ -841,6 +841,7 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	switch( reason )
 	{
 		case SET_LOAD:
+			DBAFetchConfigStr ("MonBot", SecureServ.monbot, MAXNICK);
 			break;
 		case SET_LIST:
 			irc_prefmsg (ss_bot, cmdparams->source, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");

@@ -49,7 +49,7 @@ void do_list(User *u);
 void do_status(User *u);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
-void load_dat();
+static void load_dat();
 int is_exempt(User *u);
 static int CheckNick(char **av, int ac);
 static int DelNick(char **av, int ac);
@@ -1428,7 +1428,23 @@ void LoadTSConf() {
 
 }
 
+/* List of local dat files that we will load and process
+*/
+
+const char* DatFiles[NUM_DAT_FILES]=
+{
+	VIRI_DAT_NAME,
+	CUSTOM_DAT_NAME,
+};
+
+/* This function will not load viri.dat then try to load custom.dat 
+   For custom entries, the lack of file is of no importance and a flag is set
+   in the viri entry to indicate the custom nature of the definition for use
+   by SecureServ.
+*/
+
 void load_dat() {
+	int i;
 	FILE *fp;
 	char buf[512];
 	virientry *viridet;
@@ -1475,69 +1491,83 @@ void load_dat() {
 	list_prepend(viri, node);
 	nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 	
-	
-	fp = fopen("data/viri.dat", "r");
-	if (!fp) {
-		nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
-		chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
-		return;
-	} else {
-		re = pcre_compile("^([a-zA-Z0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) \"(.*)\" \"(.*)\" ([0-9]*).*" , 0, &error, &errofset, NULL);
-		if (re == NULL) {
-			nlog(LOG_CRITICAL, LOG_MOD, "PCRE_COMPILE of dat file format failed bigtime! %s at %d", error, errofset);		
+	for(i = 0; i < NUM_DAT_FILES; i++)
+	{
+		fp = fopen(DatFiles[i], "r");
+		if (!fp) {
+			if(i)
+			{
+				/* We do not really care if the custom file is not present so don't report it except in debug */
+				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found. %s is disabled", s_SecureServ);
+			}
+			else
+			{
+				nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
+				chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
+			}
 			return;
-		}
-		/* first fgets always returns the version number */
-		fgets(buf, 512, fp);
-		SecureServ.viriversion = atoi(buf);
-		while (fgets(buf, 512, fp)) {
-			if (list_isfull(viri))
-				break;
-			viridet = malloc(sizeof(virientry));
-			rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
-			if (rc <= 0) {
-				nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space! %d", rc);
-				nlog(LOG_WARNING, LOG_MOD, "Load Was: %s", buf);
-				free(viridet);
-				continue;
-			} else if (rc != 8) {
-				nlog(LOG_WARNING, LOG_MOD, "Didn't get required number of Subs (%d)", rc);
-				free(viridet);
-				continue;
+		} else {
+			re = pcre_compile("^([a-zA-Z0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) \"(.*)\" \"(.*)\" ([0-9]*).*" , 0, &error, &errofset, NULL);
+			if (re == NULL) {
+				nlog(LOG_CRITICAL, LOG_MOD, "PCRE_COMPILE of dat file format failed bigtime! %s at %d", error, errofset);		
+				return;
 			}
-			
-			pcre_get_substring_list(buf, ovector, rc, &subs);		
-			snprintf(viridet->name, MAXHOST, "%s", subs[1]);
-			viridet->dettype = atoi(subs[2]);
-			viridet->var1 = atoi(subs[3]);
-			viridet->var2 = atoi(subs[4]);
-			snprintf(viridet->recvmsg, MAXHOST, "%s", subs[5]);
-			snprintf(viridet->sendmsg, MAXHOST, "%s", subs[6]);
-			viridet->action = atoi(subs[7]);
-			viridet->nofound = 0;
-			viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
-			if (viridet->pattern == NULL) {
-				/* it failed for some reason */
-				nlog(LOG_WARNING, LOG_MOD, "Regular Expression Compile of %s Failed: %s at %d", viridet->name, error, errofset);
+			/* only set version for first file */
+			if(i==0) 
+			{
+				/* first fgets always returns the version number */
+				fgets(buf, 512, fp);
+				SecureServ.viriversion = atoi(buf);
+			}
+			while (fgets(buf, 512, fp)) {
+				if (list_isfull(viri))
+					break;
+				viridet = malloc(sizeof(virientry));
+				rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
+				if (rc <= 0) {
+					nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space! %d", rc);
+					nlog(LOG_WARNING, LOG_MOD, "Load Was: %s", buf);
+					free(viridet);
+					continue;
+				} else if (rc != 8) {
+					nlog(LOG_WARNING, LOG_MOD, "Didn't get required number of Subs (%d)", rc);
+					free(viridet);
+					continue;
+				}
+				
+				pcre_get_substring_list(buf, ovector, rc, &subs);		
+				snprintf(viridet->name, MAXHOST, "%s", subs[1]);
+				viridet->dettype = atoi(subs[2]);
+				viridet->var1 = atoi(subs[3]);
+				viridet->var2 = atoi(subs[4]);
+				snprintf(viridet->recvmsg, MAXHOST, "%s", subs[5]);
+				snprintf(viridet->sendmsg, MAXHOST, "%s", subs[6]);
+				viridet->action = atoi(subs[7]);
+				viridet->nofound = 0;
+				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
+				if (viridet->pattern == NULL) {
+					/* it failed for some reason */
+					nlog(LOG_WARNING, LOG_MOD, "Regular Expression Compile of %s Failed: %s at %d", viridet->name, error, errofset);
+					free(subs);
+					free(viridet);
+					continue;
+				}	
+				viridet->iscustom=i;
+				viridet->patternextra = pcre_study(viridet->pattern, 0, &error);
+				if (error != NULL) {
+					nlog(LOG_WARNING, LOG_MOD, "Regular Expression Study for %s failed: %s", viridet->name, error);
+					/* don't exit */
+				}
+				SecureServ.definitions[viridet->dettype]++;
+				node = lnode_create(viridet);
+				list_prepend(viri, node);
+				nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 				free(subs);
-				free(viridet);
-				continue;
-			}	
-			viridet->patternextra = pcre_study(viridet->pattern, 0, &error);
-			if (error != NULL) {
-				nlog(LOG_WARNING, LOG_MOD, "Regular Expression Study for %s failed: %s", viridet->name, error);
-				/* don't exit */
 			}
-			SecureServ.definitions[viridet->dettype]++;
-			node = lnode_create(viridet);
-			list_prepend(viri, node);
-			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
-			free(subs);
+			free(re);
+			fclose(fp);
 		}
-		free(re);
-	}
-
-	
+	}	
 }
 
 
@@ -1927,7 +1957,9 @@ void gotpositive(User *u, virientry *ve, int type) {
 		return;
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
-	prefmsg(u->nick, s_SecureServ, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
+	/* Do not generate a URL for local custom definitions since it will not exist*/
+	if(!ve->iscustom)
+		prefmsg(u->nick, s_SecureServ, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
 	ve->nofound++;
 	SecureServ.actioncounts[type]++;
 	switch (ve->action) {
@@ -1939,17 +1971,26 @@ void gotpositive(User *u, virientry *ve, int type) {
 					ud->data = (void *)ve;
 					u->moddata[SecureServ.modnum] = ud;					
 					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
-					globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+					if(ve->iscustom) 
+						globops(s_SecureServ, "SVSJoining %s for Virus %s", u->nick, ve->name);
+					else
+						globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					}
 					snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
-					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+					if(ve->iscustom) 
+						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
+					else
+						prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
 					chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
-					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
+					if(ve->iscustom) 
+						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					else
+						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
 					break;
 				}
@@ -1958,15 +1999,24 @@ void gotpositive(User *u, virientry *ve, int type) {
 			if (SecureServ.doakill > 0) {
 				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
 				chanalert(s_SecureServ, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
-				sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+				if(ve->iscustom) 
+					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s ", ve->name);
+				else
+					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
 				break;
 			}
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
-			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
+			if(ve->iscustom) 
+				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
+			else
+				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
 			if (SecureServ.helpcount > 0) {
 				snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
-				prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+				if(ve->iscustom) 
+					prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
+				else
+					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
 			}
 			break;
 		case ACT_NOTHING:
@@ -2120,7 +2170,7 @@ void datdownload(HTTP_Response *response) {
 		write(i, response->pData, response->lSize);
 		close(i);
 		/* rename the file to the datfile */
-		rename(tmpname, "data/viri.dat");
+		rename(tmpname, VIRI_DAT_NAME);
 		/* reload the dat file */
 		load_dat();
 		nlog(LOG_NOTICE, LOG_MOD, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);

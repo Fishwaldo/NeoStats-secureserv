@@ -13,7 +13,9 @@ SecureServ Module for NeoStats Changelog.
  - Renamed output module to secureserv to fix load/unload issues (M)
  - Don't do onjoin checks for channels monitored via a monbot (F)
  - Don't lock a channel when its already locked (BugID: 45) (F)
-
+ - Fixed missing fclose call in load_dat (M)
+ - Added support for customviri.dat to allow local defintions that are not affected by viri.dat updates (M)
+ 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)
  - fixed bots del command crashing neo when not enough args supplied (BugID: 39)

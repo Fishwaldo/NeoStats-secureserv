@@ -361,8 +361,14 @@ int Helpers_Assist(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Roger. Killing %s as they are infected with %s", tu->nick, ve->name);	
 		chanalert(s_SecureServ, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
 		nlog(LOG_NORMAL, LOG_CORE, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
-		globops(s_SecureServ, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->nick, u->nick, ve->name, ve->name);
-		sakill_cmd(tu->hostname, tu->username, s_SecureServ, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, u->nick);
+		if(ve->iscustom) {
+			globops(s_SecureServ, "Akilling %s for Virus %s (Helper %s performed Assist Kill)", tu->nick, u->nick, ve->name);
+			sakill_cmd(tu->hostname, tu->username, s_SecureServ, SecureServ.akilltime, "Infected with Virus/Trojan %s. (HelperAssist by %s)", ve->name, u->nick);
+		}
+		else {
+			globops(s_SecureServ, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->nick, u->nick, ve->name, ve->name);
+			sakill_cmd(tu->hostname, tu->username, s_SecureServ, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, u->nick);
+		}
 		return 1;
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);

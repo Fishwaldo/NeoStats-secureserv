@@ -28,6 +28,10 @@
 #include "modconfig.h"
 #include <pcre.h>
 
+#define VIRI_DAT_DIR		"data"
+#define VIRI_DAT_NAME		"data/viri.dat"
+#define CUSTOM_DAT_NAME		"data/customviri.dat"
+#define NUM_DAT_FILES	2
 
 #define REQUIREDAPIVER 1
 
@@ -44,6 +48,7 @@ typedef struct virientry {
 	int action;
 	int nofound;
 	int noopen;
+	int iscustom;
 } virientry;
 
 /* Detection Types */

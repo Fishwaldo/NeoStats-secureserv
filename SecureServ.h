@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.10 2003/05/23 18:26:03 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.11 2003/05/24 06:04:56 fishwaldo Exp $
 */
 
 
@@ -134,6 +134,17 @@ int ss_new_chan(char **av, int ac);
 int ss_join_chan(char **av, int ac);
 int ss_del_chan(char **av, int ac);
 
-
+/* SecureServ_help.c */
+extern const char *ts_help[];
+extern const char *ts_help_oper[];
+extern const char *ts_help_set[];
+extern const char *ts_help_checkchan[];
+extern const char *ts_help_login[];
+extern const char *ts_help_logout[];
+extern const char *ts_help_cycle[];
+extern const char *ts_help_update[];
+extern const char *ts_help_status[];
+extern const char *ts_help_exclude[];
+extern const char *ts_help_list[];
 
 #endif /* TS_H */

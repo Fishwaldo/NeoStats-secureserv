@@ -18,103 +18,158 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.1 2003/04/18 04:38:44 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.2 2003/05/24 06:04:56 fishwaldo Exp $
 */
 
 #include "stats.h"
 
 const char *ts_help[] = {
-"\2Open Proxy Scanning Bot HELP\2",
+"\2SecureServ HELP\2",
 "",
-" This bot scans the network for insecure clients. For more info",
-" \2/msg ts info\2",
+" This is a Network Service that scans the IRC client for",
+" Insecure IRC clients, Trojans, and Virus's. For more Information",
+" Please contact the Network Staff",
 "",
 "COMMANDS:",
-"     LOOKUP    INFO",
+"     LOGIN    LOGOUT",
 "",
 NULL
 };
 
 const char *ts_help_oper[] = {
 "OPERTATOR COMMANDS:",
-"     CHECK    STATUS    SET    EXCLUDE",
+"     CHECKCHAN STATUS    SET    EXCLUDE",
+"     CYCLE     LIST      UPDATE"
 "",
 NULL
 };
 
-const char *ts_help_lookup[] = {
-"Usage: \2LOOKUP <ip or Hostname> <flag>\2",
+const char *ts_help_login[] = {
+"Usage: \2LOGIN <username> <password>\2",
 "",
-"This command allows you to lookup DNS records on the Internet",
-"Different types of Records can be looked up by specifing different flags",
+"This command allows AntiVirus users to Login to SecureServ",
+"By Logging into SecureServ, it allows SecureServ to Notify you",
+"and Direct any user infected with a Virus to the Help Channel",
 "",
-"The Flags are:",
-"    txt - Lookup Text Records",
-"    rp  - Lookup the Responsible Person for this record",
-"    ns  - Lookup the NameServers for this record",
-"    soa - Lookup the SOA for this Record",
+"SecureServ will monitor your availability, and if you set away, quit, or part",
+"the Help Channel, it will automatically log you out"
 "",
-"If you do not specify a flag, it defaults to looking up either the IP address for Hostnames, or", 
-"The Hostname for IP addresses",
+"The UserName and Password will be provided by the Network Administration",
+NULL
+};
+
+const char *ts_help_logout[] = {
+"Usage: \2LOGOUT\2",
+"",
+"This command logs you out of SecureServ's Antivirus Helper System.",
+"You should issue this command if you are logged in, and are unable to",
+"provide any Antivirus help at this time.",
+NULL
+};
+
+const char *ts_help_checkchan[] = {
+"Usage: \2CHECKCHAN <channel>\2",
+"",
+"This option will scan a Channel for Trojans. Use this if you suspect",
+"a channel contains Trojans",
 "",
 NULL
 };
 
-const char *ts_help_info[] = {
-"\2Open Proxy Scanning Bot Information\2",
+const char *ts_help_cycle[] = {
+"Usage: \2CYCLE\2",
 "",
-"This bot is intended to scan clients connecting to this network for insecure proxies",
-"Insecure proxies are often used to attack networks or channel with \2clone\2 bots",
-"This check scans the following ports:", 
-"    3128, 8080, 80 23 and 1080",
-"if you have Firewall, or IDS software, please ignore any errors that this scan may generate",
+"This option will Force SecureServ to part the current channel it is checking",
+"and move onto the next random channel",
 "",
-"If you have any futher questions, please contact network adminstration staff",
 NULL
 };
 
-const char *ts_help_check[] = {
-"Usage: \2CHECK <nickname/IP/hostname>\2",
+const char *ts_help_update[] = {
+"Usage: \2UPDATE\2",
 "",
-"This option will scan either a user connected to your Network",
-"Or a IP address or Hostname for Insecure proxies, and report the status to you",
-"If a Insecure proxy is found, the host will be banned from the network",
+"This option will Force SecureServ to check the Definitions file version and ",
+"automatically update them to the latest version if required"
+"",
+"A valid Username and Password have to be set via the SET interface for this to function",
+NULL
+};
+
+const char *ts_help_list[] = {
+"Usage: \2LIST\2",
+"",
+"View Detailed information about what SecureServ's Defintion Database currently Contains",
 "",
 NULL
 };
+
+
+const char *ts_help_exclude[] = {
+"Usage: \2EXCLUDE <LIST/ADD/DEL>\2",
+"",
+"This command lets you view or manipulate the exception list.",
+"Exception lists are used to exclude users, channels, or servers from scanning",
+"You should at least add a server entry for your services irc name, to stop",
+"SecureServ from scanning Nickserv, Chanserv etc",
+"The Options are:",
+"    \2LIST\2         - This will list the current exceptions and the positions in the list",
+"                       If you wish to remove a entry, you must exaime the list position first",
+"    \2ADD <hostname> <2/1/0> <reason>\2",
+"                     - This option will add a entry of <hostname> to the exception list",
+"                       a Value of 2 after the hostname indicates a Channel Name (eg, #services)",
+"                       a Value of 1 after the hostname indicates a Servername (eg, services.irc-chat.net)",
+"                       a Value of 0 after the hostname indicates a hostname (eg, *.adsl.home.com)",
+"                       The final portion of the string is a description of the exclusion for future reference",
+"                       Wildcards such as * and ? may be used in the hostname portion",
+"    \2DEL <NUM>\2    - This will delete entry numbered <NUM> in the list from the exclusions"
+"",
+NULL
+};
+
 
 const char *ts_help_status[] = {
 "Usage: \2STATUS\2",
 "",
-"View Detailed information about the state of the Open Proxy Scanning Bot",
+"This command will provide you with the Current Status of SecureServ.",
 "",
 NULL
 };
 
+
+
+
+
+
+
+
+
 const char *ts_help_set[] = {
 "Usage: \2SET <OPTIONS> <SETTING>\2",
 "",
-"This command will set various options relating to OPSB.",
+"This command will set various options relating to SecureServ.",
 "You can view the settings by typing \2SET LIST\2",
 "The Settings take effect straight away",
 "The Options are:",
-"    \2TARGETIP\2      - Change the IP address we try to make the proxies connect to",
-"                        This should be set to a IP address of on of your IRC Servers.",
-"    \2TARGETPORT\2    - Change the Port number we try to make proxies connect to",
-"                        This should be a port that runs on your IRCD",
-"    \2CACHETIME\2     - This sets the amount of time (in Seconds) that a entry will be cached",
-"    \2DISABLESCAN\2   - This disables the actual proxy scan, and only does a lookup in the DNS",
-"                        Blacklist to see if this host has been listed as a open proxy",
-"\2Advanced Settings\2 - These settings should not be changed unless you know the effects in full",
-"    \2OPMDOMAIN\2     - Change the Domain we use to Lookup for Blacklists.",
-"    \2MAXBYTES\2      - This is the maximum number of bytes we recieve from a proxy before disconnecting it",
-"    \2TIMEOUT\2       - This is the ammount of time we wait for a proxy to respond to our servers before",
-"                        Disconnecting, and assuming its not a open Proxy",
-"    \2OPENSTRING\2    - This is the string we expect to see if there is a successfull Open Proxy",
-"    \2SPLITTIME\2     - This is used to determine if users connecting to the network are part of a Netjoin",
-"                        (when two servers link together)",
-"    \2SCANMSG\2       - This is the message sent to a user when we scan their hosts",
-"    \2BANTIME\2       - This is how long the user will be banned from the network for",
+"    \2VERSION <on/off>\2       - This option turns CTCP Version Checking on and Off",
+"    \2CHECKFIZZER <on/off>\2   - This turns on and off FizzerChecking. Disable if your network is not affected by Fizzer",
+"    \2AKILL <on/off>\2         - This option tells SecureServ to never issue a Akill on your Network. A warning message is sent to the operators instead",
+"    \2DOJOIN <on/off>\2        - This option tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
+"    \2UPDATEINFO <username> <password>\2",
+"                               - This Option Sets the Username and Password required for updating the SecureServ",
+"                                 Definitions file. See the Readme file for more info",
+"\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
+"    \2MULTICHECK <on/off>\2    - This makes SecureServ check all Patterns when a infected User is found.",
+"                                 Please Read the Readme file for important Performance information",
+"    \2VERBOSE <on/off>\2       - This option Turns on Verbose Mode. Prepare to be flooded!",
+"    \2CYCLETIME <seconds>\2    - How Often Should SecureServ check new channels for infections.",
+"                                 See the Readme file for recomended Settings",
+"    \2AUTOUPDATE <on/off>\2    - Should SecureServ automatically update the Definitions file daily, if required?",
+"    \2SAMPLETIME <seconds> <joins>\2",
+"                               - This Sets the threshold for FloodChecking. Read the Readme File for more information",
+"    \2SIGNONMSG <message>\2    - This changes the message sent to users when they connect if Version Checking is enabled",
+"    \2AKILLMSG <message>\2     - This changes the message sent to users when they are akilled",
+"    \2NOHELPMSG <message>\2    - This changes the message sent to users when their are no helpers logged in",
+"    \2HELPCHAN <channel>\2     - This changes the Channel that Virus's infected users are joined to if there are helpers logged in",
 "",
 NULL
 };

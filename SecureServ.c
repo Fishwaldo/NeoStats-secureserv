@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.14 2003/05/23 18:26:03 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.15 2003/05/24 06:04:56 fishwaldo Exp $
 */
 
 
@@ -107,6 +107,31 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	if (!strcasecmp(argv[1], "help")) {
 		if (argc == 2) {
 			privmsg_list(u->nick, s_SecureServ, ts_help);
+			if (UserLevel(u) >= 40) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_oper);
+			}
+		} else if (argc == 3) {
+			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= 185)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_set);
+			} else if (!strcasecmp(argv[2], "login")) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_login);
+			} else if (!strcasecmp(argv[2], "logout")) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_logout);
+			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_list);
+			} else if ((!strcasecmp(argv[2], "exclude")) && (UserLevel(u) >= 50)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_exclude);
+			} else if ((!strcasecmp(argv[2], "checkchan")) && (UserLevel(u) >= 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_checkchan);
+			} else if ((!strcasecmp(argv[2], "cycle")) && (UserLevel(u) >= 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_cycle);
+			} else if ((!strcasecmp(argv[2], "update")) && (UserLevel(u) >= 185)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_update);
+			} else if ((!strcasecmp(argv[2], "status")) && (UserLevel(u) >= 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_status);
+			} else {
+				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
+			}
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 		}
@@ -586,9 +611,9 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		strncpy(SecureServ.HelpChan, av[3], CHANLEN);
-		prefmsg(u->nick, s_SecureServ, "Help Channel is now set to %s", buf);
-		chanalert(s_SecureServ, "%s set the Help Channel to %s", u->nick, buf);
-		SetConf((void *)buf, CFGSTR, "HelpChan");
+		prefmsg(u->nick, s_SecureServ, "Help Channel is now set to %s", av[3]);
+		chanalert(s_SecureServ, "%s set the Help Channel to %s", u->nick, av[3]);
+		SetConf((void *)av[3], CFGSTR, "HelpChan");
 	} else if (!strcasecmp(av[2], "LIST")) {
 		prefmsg(u->nick, s_SecureServ, "Current SecureServ Settings:");
 		prefmsg(u->nick, s_SecureServ, "SplitTime: %d", SecureServ.timedif);

@@ -1,0 +1,800 @@
+
+SecureServ Manual
+     _________________________________________________________________
+
+   1. [1]Prerequisites and Installation.
+
+        1.1. [2]Compiling and Installation
+
+   2. [3]Basic Configuration
+
+        2.1. [4]Exclusion Lists
+        2.2. [5]Username and Password for Dat File Updates
+        2.3. [6]System Messages
+
+   3. [7]Detailed Configuration
+
+        3.1. [8]SPLILTTIME Setting
+        3.2. [9]VERSION Setting
+        3.3. [10]CHECKFIZZER Setting
+        3.4. [11]MULTICHECK Setting
+        3.5. [12]AKILL Setting
+        3.6. [13]AKILLTIME Setting
+        3.7. [14]DOJOIN Setting
+        3.8. [15]VERBOSE Setting
+        3.9. [16]CYCLETIME Setting
+        3.10. [17]AUTOUPDATE Setting
+        3.11. [18]SAMPLETIME Setting
+        3.12. [19]HELPCHAN Setting
+
+   4. [20]Operational Commands
+
+        4.1. [21]list Command
+        4.2. [22]CheckChan Command
+        4.3. [23]cycle Command
+        4.4. [24]status Command
+        4.5. [25]update Command
+        4.6. [26]login Command
+        4.7. [27]logout Command
+
+   5. [28]Final Words
+
+        5.1. [29]Dealing with Un-detected Attacks/Trojans/Virus etc
+        5.2. [30]Customizing the Definitions file
+
+   Welcome  to  the  SecureServ  Manual.  This  document  will aid you in
+   setting up and running SercureServ on your IRC network.
+
+   SecureServ  is  a  advanced  IRC  Trojan  detector,  much like a Virus
+   Scanner,  but aimed for IRC networks. Using Several different methods,
+   including,  but  not limited to Version checks, Behavior analysis, and
+   general  pattern  matching,  it  aims to detect Trojans and Virus's as
+   well as FloodBots that connect to your IRC network.
+
+   SecureServ's  "brains"  are  based on a "Definition file" or Dat file,
+   that  contain  information on how to detect the trojans. This means to
+   update  SecureServ's detection for new Trojans/Bots only requires that
+   you  download  a new dat file (which can be automated). There are some
+   pre-conditions  to  obtaining new Dat files, and these can be found in
+   the Installation chapter.
+
+   SecureServ  can  detect  Trojan/Virus's  or  "Security  Risks" to your
+   Network a number of ways, including:
+     * CTCP Version Checks
+     * NickName Patterns
+     * UserName (Ident) Patterns
+     * RealName Patterns
+     * Channel MemberShip Patterns
+     * Private/Notice Messages
+     * Channel Utilization
+     * Logic Checks
+
+   While we can detect a vast majority of Trojans, and its easy to extend
+   SecureServ to detect new ones without Recompiling/upgrading, its not a
+   fullproof solution. Additionally, Virus/Trojan/Bot authors are getting
+   more  and  more sophisticated these days, and will always find ways to
+   avoid  detection.  SecureServ  aims  to  reduce  the load on a Network
+   Administration staff in dealing with these Trojans.
+
+Warning
+
+   As  of  writting, this software is BETA quality. Not all functionality
+   has been implemented, and additionally, there might be some "BAD" bugs
+   in  SecureServ that cause it to AKILL your entire network. Our testing
+   and  Development  of SecureServ was run on a 1500 user network, and so
+   far,  has  proved stable, and effective in protecting our network, BUT
+   every   users  enviroment  is  different.  While  we  have  taken  all
+   precautions  and  conducted a extensive QA cycle before the release of
+   SecureServ,  its a "Use at your Own Risk" Module. Of Course, if you do
+   have   bad   experiences  with  SecureServ,  please  let  us  know  at
+   [31]http://www.neostats.net/boards/
+
+   SecureServ  is  written  and maintained by Justin Hammond. It requires
+   the NeoStats software. More information about SecureServ, or NeoStats,
+   can be found at [32]http://www.neostats.net/
+
+   SecureServ is Copyright, 2003 by Justin Hammond.
+
+1. Prerequisites and Installation.
+
+   SecureServ  is  designed  to  run  on  Top  of NeoStats. The Following
+   requirements at the time of writting are required for NeoStats:
+     * A Linux or BSD based Server or Shell.
+     * A  supported  IRCd.  Currently,  Hybrid7,  Unreal,  Ultimate2.x or
+       Ultimate3.x or NeoIRCd
+     * Some basic Unix administration Skill
+     * Of Course, a IRC network to connect it all together.
+
+   Please  refer  to  the  NeoStats  website  for more information on the
+   requirements
+
+   SecureServ itself requires the following:
+     * NeoStats 2.5.3 or Higher correctly installed and Running
+     * Libpcre (tested with version 3.9)
+     * A  account  on  [33]http://secure.irc-chat.net  is required if you
+       wish to take advantage of updated definition files
+     * The time to read this entire document.
+
+Warning
+       SecureServ  has  the potential to Akill/Gline your entire network.
+       Its  strongly  suggested that you read this entire document before
+       even attempting to compile SecureServ, as I'm just going to laugh,
+       if  you  didn't  read, and it AKILL's your entire network. This is
+       Beta Software, there are BUGS. beware.
+
+   The requirement to have a valid account on
+   [34]http://secure.irc-chat.net  is due to the fact that I want to have
+   some  control  over  who  recieves  the  definition  files.  If  these
+   Definition  files  fall  into the hands of the TrojanWritters or Virus
+   Writers,  its  possible  they  might be able to re-write their bots to
+   avoid detection. Please see the website for more information.
+
+1.1. Compiling and Installation
+
+   As  long  as  you  have  successfully setup NeoStats, and installed it
+   correctly,  Compiling  SecureServ is very simple and straight forward.
+   First you must extract the files from the download package. This is as
+   simple as:
+bash$ tar -xzf SecureServ-<ver>.tar.gz
+
+   This  should then create a directory called SecureServ-<version> where
+   <version>  is  the  Version of SecureServ. Then Proceed to Change into
+   the SecureServ directory, and run Configure as follows:
+bash$./configure [--enable-debug | --with-neostats=<dir>]
+
+   --enable-debug  is  only usefull for diagnostics purposes when used in
+   conjuction  with  debugging tools. There should be no need to use this
+   option on a day to day basis
+
+   --with-neostats=<dir> should be used if your neostats directory is not
+   in a standard location (~/NeoStats/). Replace <dir> with the full path
+   to your NeoStats installation directory (NOT SOURCE DIRECTORY)
+
+   Configuring SecureServ will look something like the following screen:
+[Fish@fish-dt]$ ./configure
+checking for gcc... gcc
+checking for C compiler default output... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables...
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ANSI C... none needed
+checking for a BSD-compatible install... /usr/bin/install -c
+checking for pcre_compile in -lpcre... yes
+checking Location of NeoStats...... /home/fish/NeoStats/
+checking for /home/fish/NeoStats//include/dl.h... yes
+checking Version of NeoStats...... Compatible Version
+checking Whether to Enable Debuging...... no
+configure: creating ./config.status
+config.status: creating Makefile
+
+(*----------------------------------------------------------*)
+(| To compile your module, please type 'make'               |)
+(| If make completes without errors, then you               |)
+(| Must 'make install', but please be sure that NeoStats    |)
+(| Is not currently running with a module of the same name  |)
+(| Running, otherwise Make install will not work            |)
+(| !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! |)
+(| If you are running a BSD, make install may produce a     |)
+(| Error, if that is the case, then please manually copy    |)
+(| opsb.so to the NeoStats/dl directory                     |)
+(| !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! |)
+(*----------------------------------------------------------*)
+(| For Support please visit:                                |)
+(|    IRC:                   /server irc.irc-chat.org       |)
+(|                                   #neostats channel      |)
+(|    WWW:   http://www.neostats.net/boards/                |)
+(*----------------------------------------------------------*)
+(|This Module was written by:                               |)
+(|      fish (fish@dynam.ac)                                |)
+(*----------------------------------------------------------*)
+
+   If  the  configuration did not produce a error, you may then move onto
+   Compiling  SecureServ.  Compiling  is  simply  just issuing the "make"
+   command (or "gmake" if you are running BSD):
+[Fish@fish-dt]$ make
+gcc -c -O2 -Wall -I/usr/include/pcre -I/home/fish/NeoStats//include/ -I. Secure
+Serv.c
+gcc -c -O2 -Wall -I/usr/include/pcre -I/home/fish/NeoStats//include/ -I. Secure
+Serv_help.c
+gcc -c -O2 -Wall -I/usr/include/pcre -I/home/fish/NeoStats//include/ -I. http.c
+gcc -c -O2 -Wall -I/usr/include/pcre -I/home/fish/NeoStats//include/ -I. OnJoin
+Bot.c
+gcc -c -O2 -Wall -I/usr/include/pcre -I/home/fish/NeoStats//include/ -I. FloodC
+heck.c
+ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o
+FloodCheck.o -L/usr/lib -lpcre
+
+   Again,  check  for  Error  messages.  As  long  as there are not error
+   messages,  "make  install"  will install SecureServ, this README file,
+   and any auxiluary files needed into your NeoStats directory:
+[Fish@fish-dt]$ make install
+/usr/bin/install -c -m 644 SecureServ.so  /home/fish/NeoStats//dl/
+/usr/bin/install -c -m 644 README.SecureServ SecureServ.settings /home/fish/Neo
+Stats//dl/../doc/
+/usr/bin/install -c -m 644 viri.dat /home/fish/NeoStats//dl/../data/
+
+   If  you  recieve  *ANY*  errors at all during the this process, please
+   post them on our Support boards, at http//www.neostats.net/boards/
+
+   Once  Installation  is  complete, you can either configure NeoStats to
+   load SecureServ when it starts, or load SecureServ via IRC.
+
+   To  Configure NeoStats to automatically load SecureServ when it boots,
+   add  the  following  line  to your "neostats.cfg" file in the NeoStats
+   directory:
+
+   LOAD_MODULE SecureServ
+
+   To  load  SecureServ  via  IRC,  you  must  make  sure  you  have  the
+   appropriate permissions and issue the following command:
+
+   /msg neostats load SecureServ
+
+   Thats it. SecureServ is now loaded and ready for use (in fact, it will
+   already be running now, but read on for futher information.
+
+2. Basic Configuration
+
+   SecureServ  is  completly  configured  online  via IRC. When you first
+   start  up  SecureServ,  it  attempts  some "Sane" defaults for you get
+   started  with,  but you should always review these settings as soon as
+   you install. There are a few important settings you may want to review
+   right away. They are:
+     * Exclusion  Lists  -  You  should setup a Exclude list for your IRC
+       Services server (NickServ etc)
+     * Username and Password for Dat File Updates
+     * System Messages sent to users
+
+   These are outlined below:
+
+2.1. Exclusion Lists
+
+   Exclusion  lists  allow  you to specify certian Hostmasks, Servers, or
+   Channels  that  should be excluded from monitoring by SecureServ. This
+   exclusion list would allow a administrator to say, allow users on that
+   are  matched against trojans, when the administrator has verified that
+   the trojan does not in fact exist on the users host. Additionally,
+
+Caution
+
+   Exclusions   should  be  setup  for  your  Services  Server,  so  that
+   SecureServ  does  not try to scan ChanServ, or NickServ, or any of the
+   bots relating to Nickname protection.
+
+   Adding a Entry
+
+   To add a entry to the Exclusion list, use the following format:
+/msg SecureServ exclude add <host/Server/Channel> <type> <reason>
+
+   Where:
+
+   <host>  =  The  HostName/Server or Channel name. WildCards ? and * are
+   permitted.
+
+   <type>  = The type of exclusion. 0 is for HostNames, 1 is for Servers,
+   and 2 is for channels.
+
+   <reason>  =  a  short  description  of  the  exclusion,  for  operator
+   reference only.
+
+   The output is as follows:
+>secureserv< exclude add #chan 2 Blah is my reason
+-SecureServ- Added #chan (Channel) exception to list
+
+   Listing an Entry
+
+   To list the Exclusions simple type:
+/msg SecureServ exclude list
+
+   And  all  the  current  exclusions are listed. Additionaly, a Position
+   number  is  provided for use with the delete command. The output is as
+   follows:
+>secureserv< exclude list
+-SecureServ- Exception List:
+-SecureServ- 1) *.blah.com (Server) Added by Fish for Blah is my reason
+-SecureServ- 2) is.blah.com (HostName) Added by Fish for can by high
+-SecureServ- 3) #chan (Channel) Added by Fish for Blah is my reason
+-SecureServ- End of List.
+
+   Deleting an Entry
+
+   To  delete  a entry, you should first lookup the Position of the entry
+   that you wish to delete. The format of the command is as follows:
+/msg SecureServ exclude del <num>
+
+   Where:
+
+   <num> is the position of the entry you wish to delete in the list
+
+   The output of the command is as follows:
+>secureserv< exclude del 1
+-SecureServ- Deleted #chan Channel out of exception list
+
+2.2. Username and Password for Dat File Updates
+
+   In  order to update SecureServ's Detection, you need to register for a
+   account  at  http://secure.irc-chat.net/  Once  you have recieved your
+   username  and  password  via  email,  you  can  proceed  to  configure
+   SecureServ  to  update Dat files automatically for you. SecureServ can
+   be  configured to check for updates on a Daily Basis. You can, disable
+   this  automatic  update  if  you  wish,  but  this  is  covered in the
+   "Settings" Section.
+
+   Once you have recieved your username and password, Issue the following
+   command to SecureServ:
+/msg SecureServ set updateinfo <username> <password>
+
+   The output should be as follows:
+>SecureServ< set updateinfo myusername myl33tpassword
+-SecureServ- Update Username and Password has been updated to myusername and my
+l33tpassword
+
+   You  can  then  issue the following command to check that the username
+   and  password are correct and also, update your dat file to the latest
+   version automatically:
+/msg secureserv update
+
+   If all goes well, SecureServ should respond with:
+>SecureServ< update
+-SecureServ- Requesting New Dat File. Please Monitor the Services Channel for S
+uccess/Failure
+<SecureServ>/#services Fish requested a update to the Dat file
+<SecureServ>/#ervices DatFile Version 32 has been downloaded and installed
+
+   If  the  update failed for any reason, you will either not recieve any
+   message  about DatFile being downloaded and installed, or will recieve
+   a message detailing the problem.
+
+2.3. System Messages
+
+   SecureServ  sends  different  messages  to  users  depending  on whats
+   happening. Examples of the messages its send is a "Warning message" to
+   users that they are about to be checked for Virus's, and also messages
+   when  they  AKILL  or  warn a user about a possible "Trojan/Infection"
+   etc.  These  messages  can  be  customized  to  suit  your network, or
+   language  of  choice  easily.  The different messages that you can set
+   are:
+     * "Greeting" messages
+       Greeting Messages are sent to uses when they sign on your Network.
+       They  are  just  to  inform  the user that a CTCP VERSION check is
+       being conducted.
+     * "AKILL" messages
+       AKILL messages are sent to users when they are about to be akilled
+       from your network due to a positive "infection". You could provide
+       email  addresses,  contact  information,  should  the user wish to
+       contact  you.  In  addition to the AKILL message, the user is also
+       given a URL they can view with details about their "infection" and
+       how to fix it.
+     * "No Help Available" messages
+       As  SecureServ  can  also  detect  Virus's,  some network may have
+       channels  devoted  to  helping users remove virus's from their IRC
+       clients.  SecureServ has a "Helper" login function that allows you
+       to  setup  "non-oper"  or "oper" users to be helpers. If no one is
+       logged  into  SecureServ  and  a  virus infected user is detected,
+       instead  of  attempting  to  automatically  join him to the "Help"
+       channel,  he  is akilled from the network. This message is sent to
+       the  user to let them know that they have a virus, and should seek
+       help.
+
+   Setting  these  three  types  of  messages  is  simple. Just issue the
+   following commands:
+/msg SecureServ set signonmsg <message>
+/msg SecureServ set akillmesg <message>
+/msg SecureServ set nohelpmsg <message>
+
+Note
+
+   If you don't customize any of these messages, a Default system message
+   is used automatically.
+
+3. Detailed Configuration
+
+   SecureServ  attempts  to  be  as  configurable as possible in order to
+   cater  for  each individual networks requirements. This in turn though
+   makes  the  configuration  very  complex. There are many many settings
+   with SecureServ that affect how it operates, how it responds and even,
+   how  affects  the  performance  of  NeoStats  Overall. Out of the box,
+   SecureServ  provides sensible defaults for these settings, but you may
+   wish  to  read  this  section  for details on exactly what each option
+   does, and its affect on how SecureServ operates.
+
+   The  following  list  summaries  the  available Options you can set in
+   SecureServ
+     * SPLITTIME
+     * VERSION
+     * CHECKFIZZER
+     * MULTICHECK
+     * AKILL
+     * AKILLTIME
+     * DOJOIN
+     * VERBOSE
+     * CYCLETIME
+     * AUTOUPDATE
+     * SAMPLETIME
+     * HELPCHAN
+
+   To  change  any  of  these  settings,  you  use  the  Set Interface in
+   SecureServ. Eg:
+/msg SecureServ set <option> <params>
+
+   To view the current settings, issue the following command:
+/msg SecureServ set list
+
+   The  following Sections describes the different options, their params,
+   and the effect on SecureServ in detail.
+
+3.1. SPLILTTIME Setting
+
+   SecureServ  Monitors  the  number  of  joins  on a Channel in order to
+   determine  if  the channel is been attacked by FloodBots. In Order for
+   SecureServ to help Determine what is a FloodBot attack, and what might
+   be a simple Net-Join, it exaimes the time the user signed on IRC. This
+   value  determines how long a user must be on IRC before its determined
+   that their channel join is not part of a "FloodBot" attack.
+
+   The  default setting for this option is 300 Seconds (5 Minutes, which,
+   in  most  cases,  is  ideal  for most networks. You should not need to
+   change this value.
+
+Warning
+
+   If  you  set  this  value to high, then during a netjoin (when 2 split
+   servers  rejoin)  SecureServ  may determine that the users coming back
+   from the Split are FloodBots and Close down Channels. Be carefull with
+   modifing this value.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set SPLITTIME <seconds>
+
+3.2. VERSION Setting
+
+   When  users  sign  onto  your  IRC  network, SecureServ issues a "CTCP
+   VERSION"  command  to  the clients, as many Trojans/WarScripts/Virus's
+   have unique replies to CTCP Version requests.
+
+   When SecureServ recieves the reply, it compares it to the Definitions,
+   and if there is a Match, will take action based on the Definition File
+   (Either  AKILL  the  user,  Join  them  to a AV help channel, Warn the
+   Operators, or just issue a warning message to the users)
+
+   If  you  wish to turn off the CTCP VERSION checks, issue the following
+   command
+/msg SecureServ set VERSION <ON/OFF>
+
+3.3. CHECKFIZZER Setting
+
+   SecureServ  can Detect the Fizzer Worm on your IRC network. If you are
+   not  affected  by Fizzer, its advisable to turn this option off, as it
+   affects performance.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set CHECKFIZZER <ON/OFF>
+
+3.4. MULTICHECK Setting
+
+   By  Default,  when  SecureServ  identifies  a  Positive  Match  for  a
+   Trojan/VIrus  etc,  it  takes  action  straight away, and discontinues
+   checking  for  any  other  matches. This option tells SecureServ, that
+   even  if  it does find a Match, to continue checking, so that the user
+   is warned of all matches, and not just the first one found.
+
+Warning
+
+   Enabling  MULTICHECK  on  a  large  network  is  not  advised  due  to
+   performance reasons.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set MULTICHECK <ON/OFF>
+
+3.5. AKILL Setting
+
+   If  you  do  not  wish  SecureServ to ever AKILL a user for a positive
+   match,  turn this option off. It will then just issue a warning to all
+   operators  about  the Client, and Operators are free to do as they see
+   fit.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set AKILL <ON/OFF>
+
+3.6. AKILLTIME Setting
+
+   This  setting  changes  the  Timeout value for AKILL's that SecureServ
+   sets when it detects a "infection"
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set AKILLTIME <SECONDS>
+
+3.7. DOJOIN Setting
+
+   IF  SecureServ  detects  a  user  is  infected  with  a  virus, it can
+   optionally  join  that  user  to  a  Antivirus  channel. If you do not
+   operate  such  a channel on your network, then disable this option. If
+   its is disabled, then the user will be AKILLED instead.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set DOJOIN <ON/OFF>
+
+3.8. VERBOSE Setting
+
+   If  you  like to know what SecureServ is doing (and like to be flooded
+   in the #services channel, then enable this option.
+
+Warning
+
+   Not Recomended on a Large Network. SecureServ can get quiet busy!
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set VERBOSE <ON/OFF>
+
+3.9. CYCLETIME Setting
+
+   SecureServ automatically creates new "psyedo" users that randomly join
+   channels  looking  for OnJoin VIrus's or SPAM. This option changes the
+   interval  that SecureServ will Cycle the random users and channels. On
+   a Large network, you should aim for a smaller value, so it covers more
+   of  your  channels  quicker, but on a smaller network, this may become
+   annoying for your users, so a higher value is recomended.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set CYCLETIME <SECONDS>
+
+3.10. AUTOUPDATE Setting
+
+   If  SecureServ  has  been  Configured with a username and password (as
+   Covered  in  Section  2.2,  you  can  optionally  Setup  SecureServ to
+   automatically check and download new dat files if available on a Daily
+   basis.  If  you  prefer  to  manually  update  the  DAT files via /msg
+   secureserv update, then disable this option
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set AUTOUPDATE <ON/OFF>
+
+3.11. SAMPLETIME Setting
+
+   As  previously mentioned, SecureServ monitors the number of joins on a
+   particular  channel  over  a  period  of Time. Within SecureServ, this
+   messurement  is known as "Average Joins Per Period" or AJPP for short.
+   if this AJPP value is exceeded, SecureServ assumes that the Channel is
+   under a floodbot attack, and will "close" the channel.
+
+   This  setting  controls  the  AJPP  threshhold. Only experienced users
+   should need to modify this setting.
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set SAMPLETIME <SAMPLETIME> <JOINS>
+
+3.12. HELPCHAN Setting
+
+   If  your  network  has  a  AntiVirus Channel setup, HELPCHAN sets that
+   channel name. The default is #nohack
+
+   To Change the setting, issue the following Command:
+/msg SecureServ set HELPCHAN <NAME>
+
+4. Operational Commands
+
+   SecureServ  has a number of commands that you can issue it in order to
+   perform  checks  or operations on your IRC network. These commands aid
+   Administrators in keeping their network secure, and keeping SecureServ
+   upto date.
+
+   The following list summerizes these commands:
+     * List
+     * checkchan
+     * cycle
+     * status
+     * update
+     * login
+     * logout
+
+   The following Sections Describe these commands in detail
+
+4.1. list Command
+
+   The  List  command  shows  a  brief  list  of  all the Defintions that
+   SecureServ  currently  has  loaded. These are direct from the Dat file
+   that is downloaded from the [35]http://secure.irc-chat.net website.
+
+   The format of the command is as follows:
+/msg SecureServ list
+-SecureServ- Virus List:
+-SecureServ- ===========
+-SecureServ- 1) Virus: HTTPSpam. Detection: PM. Action: OpersWarn Hits: 0
+-SecureServ- 2) Virus: IRCSpam. Detection: PM. Action: OpersWarn Hits: 0
+-SecureServ- 3) Virus: Mirc4BUF. Detection: Version. Action: ClientWarn Hits: 0
+-SecureServ- 4) Virus: Mirc5BUF. Detection: Version. Action: ClientWarn Hits: 0
+-SecureServ- 5) Virus: Mirc6DCC00. Detection: Version. Action: SVSjoin Hits: 0
+<....snip.....>
+-SecureServ- 30) Virus: Botnet16. Detection: Ident. Action: Akill Hits: 0
+-SecureServ- 31) Virus: Botnet18. Detection: Ident. Action: Akill Hits: 0
+-SecureServ- 32) Virus: FizzerBot. Detection: Built-In. Action: Akill Hits: 0
+-SecureServ- End of List.
+
+   More    detail    about   each   "Virus"   can   be   found   at   the
+   [36]http://secure.irc-chat.net/ site by searching for the Virus Name.
+
+4.2. CheckChan Command
+
+   If  you  suspect  that  a  user in a Channel is infected with a OnJoin
+   VIrus,  you  can force SecureServ to check the channel on your behalf.
+   If  SecureServ  finds  any  infection in the channel, it will take the
+   normal action associated with that virus.
+
+   The format of the command is as follows:
+/msg SecureServ checkchan <chan>
+
+4.3. cycle Command
+
+   This  command  forces  SecureServ  to  part the existing channel it is
+   checking and join the next random Channel.
+
+   The format of the command is as follows:
+/msg SecureServ cycle
+
+   The  next channel is choosen at random, but is guarnteed not to be the
+   previous channel it checked.
+
+4.4. status Command
+
+   This  command gives the Administrator statistics on the how SecureServ
+   is  performing, how many checks it has conducted, and currently logged
+   in "helper" users.
+
+   The format of the command is as follows:
+/msg SecureServ status
+-SecureServ- SecureServ Status:
+-SecureServ- ==================
+-SecureServ- Virus Patterns Loaded: 17
+-SecureServ- CTCP Version Messages Scanned: 106287
+-SecureServ- CTCP Messages Acted On: 1729
+-SecureServ- CTCP Definitions: 11
+-SecureServ- Private Messages Recieved: 75
+-SecureServ- Private Messages Acted on: 0
+-SecureServ- Private Message Definitions: 3
+-SecureServ- NickNames Checked: 15084
+-SecureServ- NickName Acted on: 0
+-SecureServ- NickName Definitions: 1
+-SecureServ- Ident's Checked: 14287
+-SecureServ- Ident's Acted on: 0
+-SecureServ- Ident Definitions: 1
+-SecureServ- RealNames Checked: 0
+-SecureServ- RealNames Acted on: 0
+-SecureServ- RealName Definitions: 0
+-SecureServ- ChannelNames Checked: 0
+-SecureServ- ChannelNames Acted on: 0
+-SecureServ- ChannelName Definitions: 0
+-SecureServ- Built-In Checks Run: 0
+-SecureServ- Built-In Checks Acted on: 0
+-SecureServ- Built-In Functions: 1
+-SecureServ- AV Channel Helpers Logged in: 0
+-SecureServ- Current Top AJPP: 28 (in 5 Seconds): #w4f
+-SecureServ- End of List.
+
+4.5. update Command
+
+   That  command  forces  SecureServ  to  check  the  Dat File version at
+   [37]http://secure.irc-chat.net/  and  download  the  latest version if
+   required.
+
+Warning
+
+   Repeated  use of this command in a short period of time will result in
+   your  account  at  secure.irc-chat.net  being suspended for abuse. Use
+   with CARE
+
+   The format of the command is as follows:
+/msg SecureServ update
+
+4.6. login Command
+
+   This  command is not implemented in this release. Future Versions will
+   have this option.
+
+4.7. logout Command
+
+   This  command is not implemented in this release. Future Versions will
+   have this option.
+
+5. Final Words
+
+   This  Section  is my "Rant" for SecureServ. Although you don't need to
+   read it to operate SecureServ, it does provide you some tips
+
+5.1. Dealing with Un-detected Attacks/Trojans/Virus etc
+
+   If  you come across a new "Trojan" or Virus or attack on your network,
+   it  might  be possible to update SecureServ to be able to detect these
+   new "Virus's"
+
+   If  you  wish us to consider adding support to SecureServ's Definition
+   files   for  new  "Virus's"  please  provide  us  with  the  following
+   information  via  http://secure.irc-chat.net/  using  the "submit new"
+   link (only available when logged in as a member)
+
+   The following information is required:
+     * the output from /whois <infected user>
+       If  there  are  multiple  Infected  users, please provide multiple
+       /whois outputs. This will aid us in determining a pattern.
+     * The results from a /ctcp <infected user> version command, if any
+     * Logfiles  extracts  of  the  behavior  of  the  bot that makes you
+       suspect it is a new Trojan/Virus
+       we  will  NOT  add detection to SecureServ for anything we can not
+       verify  is in fact a risk to IRC security. If you submit to us the
+       details  of  a  script that a user is using, because you dont like
+       the colors, Tough. Find some other way to deal with that user.
+     * Details of your IRC network
+       So  that we may contact you directly on your network if we require
+       additional information or wish to the the "Virus" in the wild.
+
+   Before  adding new items to the Definitions, we do as much research as
+   possible,  and  also  share this information with other "IRC Security"
+   professionals or teams in order to determine the most effective way to
+   detect this "infection"
+
+   Additionally, we will add "warning" messages to users that are running
+   old  copies  of  IRC  software  that are vulnerable to security issues
+   (such as allows a Hacker to break into the users computer via IRC) and
+   advise  the  user  to  upgrade  their  IRC client. If you are a client
+   Author  of  a script or IRC client that has had Security Issues in the
+   past,  and  wish  us  to  add this "warning" to the Defintions, please
+   contact us directly.
+
+5.2. Customizing the Definitions file
+
+   While  we  have  taken  care  to  make  sure that you can control what
+   happens  when  a "Virus" is detected, there isn't much control left to
+   the Administrator to control what is Detected.
+
+   We     are     currently     working     on    extensions    to    the
+   http://secure.irc-chat.net/  website  that  will  allow you to control
+   what "Virus's" will be placed in the definitions file for your copy of
+   SecureServ.  Unfortuantly  implementing this feature is rather complex
+   and  requires  a great deal of coding on our site to implement. In the
+   mean  time,  we  will  shortly be releasing a Windows Binary file that
+   will  allow  you  to grab the latest version of the Dat files from the
+   website,  and customize them. Installation of the "Customized" version
+   will require a restart, and you will not be able to use the "Automatic
+   Update" features.
+
+References
+
+   1. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e51
+   2. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e97
+   3. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e144
+   4. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e161
+   5. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e214
+   6. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e237
+   7. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e269
+   8. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e323
+   9. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e337
+  10. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e348
+  11. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e357
+  12. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e369
+  13. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e378
+  14. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e387
+  15. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e396
+  16. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e408
+  17. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e417
+  18. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e426
+  19. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e437
+  20. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e446
+  21. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e477
+  22. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e494
+  23. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e503
+  24. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e514
+  25. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e523
+  26. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e538
+  27. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e543
+  28. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e548
+  29. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e553
+  30. file://localhost/home/fish/SecureServ/README.SecureServ.html#d0e585
+  31. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  32. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  33. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  34. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  35. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  36. file://localhost/home/fish/SecureServ/README.SecureServ.html
+  37. file://localhost/home/fish/SecureServ/README.SecureServ.html

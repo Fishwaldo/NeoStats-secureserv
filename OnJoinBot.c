@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.11 2003/05/23 18:26:03 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.12 2003/05/24 06:04:56 fishwaldo Exp $
 */
 
 
@@ -32,6 +32,7 @@
 
 
 unsigned hrand(unsigned upperbound, unsigned lowerbound) {
+	if ((upperbound < 1) || (lowerbound < 1)) return 0;
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
 }
   
@@ -43,6 +44,9 @@ Chans *GetRandomChan() {
 	
 	curno = 0;
 	randno = hrand(hash_count(ch), 1);	
+	if (randno == 0) {
+		return NULL;
+	}
 	hash_scan_begin(&cs, ch);
 	while ((cn = hash_scan_next(&cs)) != NULL) {
 		if (curno == randno) {

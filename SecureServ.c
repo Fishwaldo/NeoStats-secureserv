@@ -400,7 +400,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			snprintf(bots->nick, MAXNICK, "%s", argv[3]);
 			snprintf(bots->user, MAXUSER, "%s", argv[4]);
 			snprintf(bots->host, MAXHOST, "%s", argv[5]);
-			snprintf(bots->rname, MAXHOST, "%s", buf2);
+			snprintf(bots->rname, MAXREALNAME, "%s", buf2);
 			free(buf2);
 			node = lnode_create(bots);
 			list_append(nicks, node);
@@ -1395,7 +1395,7 @@ void LoadTSConf() {
 				free(exempts);
 				continue;
 			} else {
-				strncpy(rnicks->rname, tmp, MAXHOST);
+				strncpy(rnicks->rname, tmp, MAXREALNAME);
 				free(tmp);
 			}			
 			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);

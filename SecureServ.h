@@ -140,7 +140,7 @@ struct rn {
 	char nick[MAXNICK];
 	char user[MAXUSER];
 	char host[MAXHOST];
-	char rname[MAXHOST];
+	char rname[MAXREALNAME];
 };
 
 typedef struct rn randomnicks;

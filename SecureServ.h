@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.1 2003/04/18 04:38:43 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.2 2003/04/19 07:52:15 fishwaldo Exp $
 */
 
 
@@ -12,6 +12,10 @@
 #define TS_H
 
 #include "modconfig.h"
+
+
+
+
 
 typedef struct virientry {
 	char name[MAXHOST];
@@ -37,11 +41,11 @@ typedef struct virientry {
 #define ACT_NOTHING 3
 
 
-char *s_ts;
+char *s_SecureServ;
 
 
-struct ts {
-	int init;
+struct SecureServ {
+	int inited;
 	int timedif;
 	int doscan;
 	int viriversion;
@@ -52,8 +56,10 @@ struct ts {
 	int doakill;
 	int dosvsjoin;
 	int helpcount;
+	int verbose;
+	int stayinchantime;
 
-} ts;
+} SecureServ;
 
 
 struct exempts {
@@ -65,6 +71,14 @@ struct exempts {
 
 typedef struct exempts exemptinfo;
 
+struct rn {
+	char nick[MAXNICK];
+	char user[MAXUSER];
+	char host[MAXHOST];
+	char rname[MAXHOST];
+};
+
+typedef struct rn randomnicks;
 
 /* this is the list of viri */
 
@@ -73,10 +87,15 @@ list_t *viri;
 /* this is the list of exempted hosts/servers */
 list_t *exempt;
 
+
+/* this is the list of random nicknames */
+
+list_t *nicks;
+
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
 #define MAX_VIRI	100
-
+#define MAX_NICKS	100
 /* ts.c */
 int findscan(const void *key1, const void *key2);
 

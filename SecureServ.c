@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.2 2003/04/18 04:47:02 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.3 2003/04/19 07:52:15 fishwaldo Exp $
 */
 
 
@@ -33,6 +33,7 @@
 #include "dl.h"
 #include "log.h"
 #include "stats.h"
+#include "conf.h"
 #include "SecureServ.h"
 
 const char tsversion_date[] = __DATE__;
@@ -73,19 +74,6 @@ Functions my_fn_list[] = {
 };
 
 
-int findscan(const void *key1, const void *key2) {
-#if 0
-        const scaninfo *chan1 = key1;
-        return (strcasecmp(chan1->who, key2));
-#endif
-	return 0;
-}
-
-
-unsigned hrand(unsigned upperbound, unsigned lowerbound) {
-	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
-}
-  
 
 int __Bot_Message(char *origin, char **argv, int argc)
 {
@@ -100,16 +88,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	} 
 	if (!strcasecmp(argv[1], "help")) {
 		if (argc == 2) {
-			privmsg_list(u->nick, s_ts, ts_help);
+			privmsg_list(u->nick, s_SecureServ, ts_help);
 		} else {
-			prefmsg(u->nick, s_ts, "Invalid Syntax. /msg %s help for more info", s_ts);
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 		}
 		return 1;
 	} else if (!strcasecmp(argv[1], "list")) {
 		do_list(u);
 		return 1;
+	} else if (!strcasecmp(argv[1], "cycle")) {
+		JoinNewChan();
+		return 1;
 	} else {
-		prefmsg(u->nick, s_ts, "Syntax Error. /msg %s help", s_ts);
+		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
 	return 1;
 }
@@ -124,8 +115,8 @@ void do_list(User *u) {
 
 	i = 0;
 	node = list_first(viri);
-	prefmsg(u->nick, s_ts, "Virus List:");
-	prefmsg(u->nick, s_ts, "===========");
+	prefmsg(u->nick, s_SecureServ, "Virus List:");
+	prefmsg(u->nick, s_SecureServ, "===========");
 	while ((node = list_next(viri, node)) != NULL) {
 		ve = lnode_get(node);
 		i++;
@@ -152,88 +143,138 @@ void do_list(User *u) {
 			default:
 				snprintf(action, MAXHOST, "Warn Client Only");
 		}
-		prefmsg(u->nick, s_ts, "%d) Virus: %s. Detection Via: %s. Action: %s", i, ve->name, type, action);
+		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection Via: %s. Action: %s", i, ve->name, type, action);
 	}
-	prefmsg(u->nick, s_ts, "End of List.");
+	prefmsg(u->nick, s_SecureServ, "End of List.");
 }
 
 int Online(char **av, int ac) {
 
 	strcpy(segv_location, "TS:Online");
-
-	if (init_bot(s_ts,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name) == -1 ) {
+	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name) == -1 ) {
 		/* Nick was in use!!!! */
-		s_ts = strcat(s_ts, "_");
-		init_bot(s_ts,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name);
+		s_SecureServ = strcat(s_SecureServ, "_");
+		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name);
 	}
 	LoadTSConf();
-	chanalert(s_ts, "%d Trojans Patterns loaded", list_count(viri));
-
+	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
+	srand(hash_count(ch));
+	/* kick of the autojoin timer */
+	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
 	return 1;
 };
 
 
-void saveconf() {
-	lnode_t *node;
-	exemptinfo *exempts;
-	FILE *fp = fopen("data/ts.db", "w");	
-
-	strcpy(segv_location, "TS:savecache");
-	
-	if (!fp) {
-		nlog(LOG_WARNING, LOG_MOD, "TS: warning, Can not open config file for writting");
-		chanalert(s_ts, "Warning, Can not open config file for writting");
-		return;
-	}
-	fprintf(fp, "%d\n", ts.doscan);
-	fprintf(fp, "%d\n", ts.timedif);
-	/* exempts next */
-	node = list_first(exempt);
-	while (node) {
-		exempts = lnode_get(node);
-		fprintf(fp, "%s %d %s %s\n", exempts->host, exempts->server, exempts->who, exempts->reason);
-		node = list_next(exempt, node);
-	}
-}
-
 void LoadTSConf() {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
+	randomnicks *rnicks;
 	virientry *viridet;
 	char buf[512];
-	FILE *fp = fopen("data/ts.db", "r");
+	char **data;
+	int i;
+	FILE *fp;
+	char *tmp;
+	char datapath[MAXHOST];
+	strcpy(segv_location, "TS:loadTSConf");
 
-	strcpy(segv_location, "TS:loadcache");
+	
+	if(GetConf((void *)SecureServ.doscan, CFGBOOL, "DoVersionScan") <= 0) {
+		/* not configured, don't scan */
+		SecureServ.doscan = 0;
+	}
+		
+	if (GetConf((void *)SecureServ.timedif, CFGINT, "NetSplitTime") <= 0) {
+		/* use Default */
+		SecureServ.timedif = 300;
+	}
+	if (GetConf((void *)SecureServ.verbose, CFGINT, "Verbose") <= 0){
+		/* yes */
+		SecureServ.verbose = 1;
+	}
+	if (GetConf((void *)SecureServ.stayinchantime, CFGINT, "StayInChanTime") <= 0) {
+		/* 60 seconds */
+		SecureServ.stayinchantime = 60;
+	}
+	
+	
+	GetDir("g/SecureServ:/Exempt", &data);
+	/* try */
+	for (i = 0; data[i] != NULL; i++) {
+		exempts = malloc(sizeof(exemptinfo));
+		strncpy(exempts->host, data[i], MAXHOST);
 
-	if (!fp) {
-		nlog(LOG_WARNING, LOG_MOD, "TS: Warning, Can not open Config file for Reading");
-		chanalert(s_ts, "Warning, Can not open Config file for Reading, Using Defaults");
-	} else {
-		fgets(buf, 512, fp);
-		ts.doscan = atoi(buf);
-		fgets(buf, 512, fp);
-		ts.timedif = atoi(buf);
-		while (fgets(buf, 512, fp)) {
-			if (list_isfull(exempt))
-				break;
-			exempts = malloc(sizeof(exemptinfo));
-			snprintf(exempts->host, MAXHOST, "%s", strtok(buf, " "));
-			exempts->server = atoi(strtok(NULL, " "));
-			snprintf(exempts->who, MAXNICK, "%s", strtok(NULL, " "));
-			snprintf(exempts->reason, MAXHOST, "%s", strtok(NULL, "\n"));
-			node = lnode_create(exempts);
-			list_prepend(exempt, node);			
+		snprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
+		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+			free(exempts);
+			continue;
+		} else {
+			strncpy(exempts->who, tmp, MAXNICK);
+			free(tmp);
 		}
-		fclose(fp);
-	}	
+		snprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
+		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+			free(exempts);
+			continue;
+		} else {
+			strncpy(exempts->reason, tmp, MAXHOST);
+			free(tmp);
+		}
+		snprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
+		if (GetConf((void *)&exempts->server, CFGBOOL, datapath) <= 0) {
+			free(exempts);
+			continue;
+		}			
+		nlog(LOG_DEBUG2, LOG_MOD, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
+		node = lnode_create(exempts);
+		list_prepend(exempt, node);			
+	}
+
+	/* get Random Nicknames */
+	GetDir("g/SecureServ:/RandomNicks", &data);
+	/* try */
+	for (i = 0; data[i] != NULL; i++) {
+		rnicks = malloc(sizeof(randomnicks));
+		strncpy(rnicks->nick, data[i], MAXNICK);
+
+		snprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
+		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+			free(rnicks);
+			continue;
+		} else {
+			strncpy(rnicks->user, tmp, MAXUSER);
+			free(tmp);
+		}
+		snprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
+		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+			free(rnicks);
+			continue;
+		} else {
+			strncpy(rnicks->host, tmp, MAXHOST);
+			free(tmp);
+		}
+		snprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
+		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+			free(exempts);
+			continue;
+		} else {
+			strncpy(rnicks->rname, tmp, MAXHOST);
+			free(tmp);
+		}			
+		nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
+		node = lnode_create(rnicks);
+		list_prepend(nicks, node);			
+	}
+
+	free(data);
 	fp = fopen("data/viri.dat", "r");
 	if (!fp) {
-		nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_ts);
-		chanalert(s_ts, "Error not viri.dat file found, %s is disabled", s_ts);
+		nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
+		chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
 		return;
 	} else {
 		fgets(buf, 512, fp);
-		ts.viriversion = atoi(buf);
+		SecureServ.viriversion = atoi(buf);
 		while (fgets(buf, 512, fp)) {
 			if (list_isfull(viri))
 				break;
@@ -251,7 +292,7 @@ void LoadTSConf() {
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 		}
 	}
-	ts.init = 1;
+	SecureServ.inited = 1;
 
 	
 }
@@ -285,9 +326,8 @@ static int ScanNick(char **av, int ac) {
 	exemptinfo *exempts;
 
 	strcpy(segv_location, "TS:ScanNick");
-
 	/* don't do anything if NeoStats hasn't told us we are online yet */
-	if (!ts.init)
+	if (!SecureServ.inited)
 		return 0;
 							
 	u = finduser(av[0]);
@@ -315,12 +355,12 @@ static int ScanNick(char **av, int ac) {
 		node = list_next(exempt, node);
 	}
 
-	if (time(NULL) - u->TS > ts.timedif) {
+	if (time(NULL) - u->TS > SecureServ.timedif) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning", av[0]);
 		return -1;
 	}
-	prefmsg(u->nick, s_ts, ts.signonscanmsg);
-	privmsg(u->nick, s_ts, "\1VERSION\1");
+	prefmsg(u->nick, s_SecureServ, SecureServ.signonscanmsg);
+	privmsg(u->nick, s_SecureServ, "\1VERSION\1");
 	return 1;
 }
 
@@ -342,7 +382,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Version %s against %s", buf, viridetails->recvmsg);
 				if (fnmatch(viridetails->recvmsg, buf, 0) == 0) {
 					gotpositive(finduser(origin), viridetails, DET_CTCP);
-					if (ts.breakorcont == 0)
+					if (SecureServ.breakorcont == 0)
 						continue;
 					else 
 						break;
@@ -357,30 +397,30 @@ int check_version_reply(char *origin, char **av, int ac) {
 
 void gotpositive(User *u, virientry *ve, int type) {
 
-	prefmsg(u->nick, s_ts, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_ts, ve->name);
-	prefmsg(u->nick, s_ts, ve->sendmsg);
+	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
+	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
 	switch (ve->action) {
 		case ACT_AKILL:
-			if (ts.doakill > 0) {
-				prefmsg(u->nick, s_ts, ts.akillinfo);
-				chanalert(s_ts, "Akilling %s for Virus %s", u->nick, ve->name);
+			if (SecureServ.doakill > 0) {
+				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
+				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
 				break;
 			}
 		case ACT_SVSJOIN:
-			if (ts.dosvsjoin > 0) {
-				if (ts.helpcount > 0) {		
-					chanalert(s_ts, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
+			if (SecureServ.dosvsjoin > 0) {
+				if (SecureServ.helpcount > 0) {		
+					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					break;
 				} else {
-					prefmsg(u->nick, s_ts, ts.nohelp);
-					chanalert(s_ts, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
-					globops(s_ts, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
+					chanalert(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
 					break;
 				}
 			}
 		case ACT_WARN:
-			chanalert(s_ts, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
-			globops(s_ts, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
+			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
+			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
 			break;
 	}
 }
@@ -389,19 +429,21 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 void _init() {
 
-	s_ts = "TrojanServ";
+	s_SecureServ = "SecureServ";
+	strcpy(segvinmodule, "SecureServ");
 	exempt = list_create(MAX_EXEMPTS);
 	viri = list_create(MAX_VIRI);
-	ts.init = 0;			
-	ts.timedif = 300;	
-	ts.doscan = 1;
-	snprintf(ts.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_ts);
-	snprintf(ts.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
-	snprintf(ts.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
-	ts.breakorcont = 1;
-	ts.doakill = 1;
-	ts.dosvsjoin = 1;
-	ts.helpcount = 0;
+	nicks = list_create(MAX_NICKS);
+	SecureServ.inited = 0;			
+	SecureServ.timedif = 300;	
+	SecureServ.doscan = 1;
+	snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+	snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
+	snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
+	SecureServ.breakorcont = 1;
+	SecureServ.doakill = 1;
+	SecureServ.dosvsjoin = 1;
+	SecureServ.helpcount = 0;
 
 	
 }
@@ -410,5 +452,3 @@ void _init() {
 void _fini() {
 
 };
-
-

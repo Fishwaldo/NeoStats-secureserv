@@ -85,8 +85,10 @@ int __ModuleAuth (User * u)
 {
 	UserDetail *ud;
 	ud = (UserDetail *)u->moddata[SecureServ.modnum];
-	if (ud->type == USER_HELPER) {
-		return 30;
+	if (ud) {
+		if (ud->type == USER_HELPER) {
+			return 30;
+		}
 	}
 	return 0;
 }

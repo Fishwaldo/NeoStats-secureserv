@@ -203,11 +203,15 @@ static randomnicks * GetNewBot(int resetflag)
 void MonBotCycle()
 {
 	lnode_t *mcnode;
+	Chans *c;
+	char *chan;
 	/* cycle one of hte monchans, if configured to */
 	if (SecureServ.monbot[0] == 0) {
 		return;
 	}
 	if (SecureServ.monchancycle > 0) {
+	/* this is broken, so lets just do something simple for the meantime */
+#if 0
 		if (lastmonchan == NULL) {
 			/* its brand new */
 			mcnode = list_first(monchans);	
@@ -226,11 +230,29 @@ void MonBotCycle()
 		if (!findchan(lnode_get(mcnode))) {
 			return;
 		}	
-		
-		/* ok, if we are here mcnode == the channel to cycle */
-		spart_cmd(SecureServ.monbot, lnode_get(mcnode));
-		join_bot_to_chan(SecureServ.monbot, lnode_get(mcnode), 0);
-		lastmonchan = mcnode;
+#else
+		mcnode = list_first(monchans);
+		while (mcnode != NULL) {
+			chan = lnode_get(mcnode);
+			if (!chan) {
+				nlog(LOG_WARNING, LOG_MOD, "MonChans has a empty node?");
+				mcnode = list_next(monchans, mcnode);
+				continue;
+			}
+			c = findchan(chan);
+			if (!c) {
+				/* channel isn't online atm, ignore */
+				mcnode = list_next(monchans, mcnode);
+				continue;
+			}
+			if (IsChanMember(c, finduser(SecureServ.monbot))) {
+				spart_cmd(SecureServ.monbot, c->name);
+			}
+			join_bot_to_chan(SecureServ.monbot, c->name, 0);
+			mcnode = list_next(monchans, mcnode);
+		}
+#endif
+			
 	}
 }
 

@@ -1,13 +1,13 @@
-TrojanServ Module for NeoStats Changelog.
+SecureServ Module for NeoStats Changelog.
 ==============================================================================
-0.9.5 - Fish - 22 Aug, 2003
- - Fixed a problem with users signing off while NeoStats was still booting.
- - Fixed a typo in help set (BugID #42)
- - Fixed a problem with Exclude lists not being saved after a delete (BugID #41)
- - HTTP agent wasn't reporting correct version to website
- - Update segv code
-- (M) Cleaned up help text and reformatted help to match the rest of NeoStats
-- (M) Cleaned up old includes of <fnmatch.h>
+0.9.5 - Fish (F) and Mark (M) - 22 Aug, 2003
+ - Fixed a problem with users signing off while NeoStats was still booting. (F)
+ - Fixed a typo in help set (BugID #42) (F)
+ - Fixed a problem with Exclude lists not being saved after a delete (BugID #41) (F)
+ - HTTP agent wasn't reporting correct version to website (F)
+ - Update segv code (M/F)
+ - Cleaned up help text and reformatted help to match the rest of NeoStats (M)
+ - Cleaned up old includes of <fnmatch.h> (M)
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

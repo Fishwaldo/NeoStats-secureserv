@@ -971,7 +971,7 @@ int CheckMonBotKill(char* nick)
 	if (SecureServ.monbot[0] == 0) {
 		return 0;
 	}
-	if (!strcasecmp(nick, SecureServ.monbot)) {
+	if (strcasecmp(nick, SecureServ.monbot)) {
 		return 0;
 	}
 	if (findbot(SecureServ.monbot) == NULL) {

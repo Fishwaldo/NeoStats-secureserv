@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.32 2003/07/30 15:38:41 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.33 2003/08/01 13:49:46 fishwaldo Exp $
 */
 
 
@@ -88,8 +88,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	char url[255];
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
+	randomnicks *bots;
 	int i;
-	char *buf;
+	char *buf, *buf2;
 
 	strcpy(segv_location, "TS:Bot_Message");
 	u = finduser(origin); 
@@ -130,6 +131,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_update);
 			} else if ((!strcasecmp(argv[2], "status")) && (UserLevel(u) >= 40)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_status);
+			} else if ((!strcasecmp(argv[2], "bots")) && (UserLevel(u) >= 100)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_bots);
 			} else {
 				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 			}
@@ -276,6 +279,94 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			}
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+			return 0;
+		}
+	} else if (!strcasecmp(argv[1], "BOTS")) {
+		if (UserLevel(u) < 100) {
+			prefmsg(u->nick, s_SecureServ, "Access Denied");
+			chanalert(s_SecureServ, "%s tried to use BOTS, but is not a operator", u->nick);
+			return 1;
+		}
+		if (argc < 3) {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bots", s_SecureServ);
+			return 0;
+		}
+		if (!strcasecmp(argv[2], "LIST")) {
+			node = list_first(nicks);
+			i = 1;
+			prefmsg(u->nick, s_SecureServ, "Bot List:");
+			while (node) {
+				bots = lnode_get(node);
+				prefmsg(u->nick, s_SecureServ, "%d) %s (%s@%s) - %s", i, bots->nick, bots->user, bots->host, bots->rname);
+				++i;
+ 				node = list_next(nicks, node);
+			}
+			prefmsg(u->nick, s_SecureServ, "End of List.");
+			chanalert(s_SecureServ, "%s requested Bot List", u->nick);
+		} else if (!strcasecmp(argv[2], "ADD")) {
+			if (argc < 6) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bot", s_SecureServ);
+				return 0;
+			}
+			if (list_isfull(nicks)) {
+				prefmsg(u->nick, s_SecureServ, "Error, Bot list is full", s_SecureServ);
+				return 0;
+			}
+			buf = malloc(MAXHOST+1);
+			snprintf(buf, MAXHOST, "RandomNicks/%s/User", argv[3]);
+			SetConf((void *)argv[4], CFGSTR, buf);
+			snprintf(buf, MAXHOST, "RandomNicks/%s/Host", argv[3]);
+			SetConf((void *)argv[5], CFGSTR, buf);
+			snprintf(buf, MAXHOST, "RandomNicks/%s/RealName", argv[3]);
+			buf2 = joinbuf(argv, argc, 6);			
+			SetConf((void *)buf2, CFGSTR, buf);
+			free(buf);
+			bots = malloc(sizeof(randomnicks));
+			snprintf(bots->nick, MAXNICK, "%s", argv[3]);
+			snprintf(bots->user, MAXUSER, "%s", argv[4]);
+			snprintf(bots->host, MAXHOST, "%s", argv[5]);
+			snprintf(bots->rname, MAXHOST, "%s", buf2);
+			free(buf2);
+			node = lnode_create(bots);
+			list_append(nicks, node);
+			prefmsg(u->nick, s_SecureServ, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->rname);
+			chanalert(s_SecureServ, "%s added %s (%s@%s - %s) Bot to Bot list", u->nick, bots->nick, bots->user, bots->host, bots->rname);
+			return 1;
+		} else if (!strcasecmp(argv[2], "DEL")) {
+			if (argc < 3) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+				return 0;
+			}
+			if (atoi(argv[3]) != 0) {
+				node = list_first(nicks);
+				i = 1;
+				while (node) {
+					if (i == atoi(argv[3])) {
+						/* delete the entry */
+						bots = lnode_get(node);
+						list_delete(nicks, node);
+						buf = malloc(MAXHOST+1);
+						snprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
+						DelConf(buf);
+						free(buf);
+						prefmsg(u->nick, s_SecureServ, "Deleted %s out of Bot list", bots->nick);
+						chanalert(s_SecureServ, "%s deleted %s out of bot list", u->nick, bots->nick);
+						lnode_destroy(node);
+						free(bots);
+						return 1;
+					}
+					++i;
+					node = list_next(nicks, node);
+				}		
+				/* if we get here, then we can't find the entry */
+				prefmsg(u->nick, s_SecureServ, "Error, Can't find entry %d. /msg %s bots list", atoi(argv[3]), s_SecureServ);
+				return 0;
+			} else {
+				prefmsg(u->nick, s_SecureServ, "Error, Out of Range");
+				return 0;
+			}
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bots", s_SecureServ);
 			return 0;
 		}
 	} else if (!strcasecmp(argv[1], "checkchan")) {

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.6 2003/07/30 15:38:41 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.7 2003/08/01 13:49:46 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -38,8 +38,8 @@ NULL
 
 const char *ts_help_oper[] = {
 "OPERTATOR COMMANDS:",
-"     CHECKCHAN STATUS    SET    EXCLUDE",
-"     CYCLE     LIST      UPDATE"
+"     CHECKCHAN STATUS    SET     EXCLUDE",
+"     CYCLE     LIST      UPDATE  BOTS"
 "",
 NULL
 };
@@ -121,6 +121,22 @@ const char *ts_help_exclude[] = {
 "                       a Value of 0 after the hostname indicates a hostname (eg, *.adsl.home.com)",
 "                       The final portion of the string is a description of the exclusion for future reference",
 "                       Wildcards such as * and ? may be used in the hostname portion",
+"    \2DEL <NUM>\2    - This will delete entry numbered <NUM> in the list from the exclusions"
+"",
+NULL
+};
+
+const char *ts_help_bots[] = {
+"Usage: \2BOTS <LIST/ADD/DEL>\2",
+"",
+"This command lets you view or manipulate the random Bot list.",
+"Bots from this list are randomly selected to join channels, scanning for Onjoin based virus's",
+"You should try to use names/hosts etc that look real, and if possible, should change this list often.",
+"The Options are:",
+"    \2LIST\2         - This will list the current bots and the positions in the list",
+"                       If you wish to remove a entry, you must exaime the list position first",
+"    \2ADD <nick> <ident> <host> <info>\2",
+"                     - This option will add a entry of bot with the particular details to the bot list",
 "    \2DEL <NUM>\2    - This will delete entry numbered <NUM> in the list from the exclusions"
 "",
 NULL

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.8 2003/05/16 13:56:28 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.9 2003/05/16 16:53:33 fishwaldo Exp $
 */
 
 
@@ -68,6 +68,8 @@ void JoinNewChan() {
 		spart_cmd(lastnick, lastchan);
 		del_bot(lastnick, "Finished Scanning");
 	}
+	/* restore segvinmodules */
+	strcpy(segvinmodule, "SecureServ");
 	trychan = 0;
 restartchans:
 	trychan++;
@@ -153,6 +155,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	while ((node = list_next(viri, node)) != NULL) {
 		viridetails = lnode_get(node);
 		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20)) {
+			SecureServ.trigcounts[DET_MSG]++;
 			nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
 			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 			if (rc < -1) {

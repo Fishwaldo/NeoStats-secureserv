@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.11 2003/05/16 13:56:28 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.12 2003/05/16 16:53:34 fishwaldo Exp $
 */
 
 
@@ -45,6 +45,7 @@ int check_version_reply(char *origin, char **av, int ac);
 void gotpositive(User *u, virientry *ve, int type);
 void do_set(User *u, char **av, int ac);
 void do_list(User *u);
+void do_status(User *u);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
 void load_dat();
@@ -102,9 +103,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		}
 		return 1;
 	} else if (!strcasecmp(argv[1], "list")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to list, but Permission was denied", u->nick);
+			return -1;
+		}			
 		do_list(u);
 		return 1;
 	} else if (!strcasecmp(argv[1], "cycle")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
+			return -1;
+		}			
 		JoinNewChan();
 		return 1;
 	} else if (!strcasecmp(argv[1], "set")) {
@@ -115,6 +126,15 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		}
 		do_set(u, argv, argc);
 		return 1;		
+	} else if (!strcasecmp(argv[1], "status")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to list status, but Permission was denied", u->nick);
+			return -1;
+		}			
+		do_status(u);
+		return 1;
+	
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
@@ -410,7 +430,37 @@ void do_set(User *u, char **av, int ac) {
 
 
 }
-
+void do_status(User *u) {
+	
+	prefmsg(u->nick, s_SecureServ, "SecureServ Status:");
+	prefmsg(u->nick, s_SecureServ, "==================");
+	prefmsg(u->nick, s_SecureServ, "Virus Patterns Loaded: %d", list_count(viri));
+	prefmsg(u->nick, s_SecureServ, "CTCP Version Messages Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
+	prefmsg(u->nick, s_SecureServ, "CTCP Messages Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
+	prefmsg(u->nick, s_SecureServ, "CTCP Definitions: %d", SecureServ.definitions[DET_CTCP]);
+	prefmsg(u->nick, s_SecureServ, "Private Messages Recieved: %d", SecureServ.trigcounts[DET_MSG]);
+	prefmsg(u->nick, s_SecureServ, "Private Messages Acted on: %d", SecureServ.actioncounts[DET_MSG]);
+	prefmsg(u->nick, s_SecureServ, "Private Message Definitions: %d", SecureServ.definitions[DET_MSG]);
+	prefmsg(u->nick, s_SecureServ, "NickNames Checked: %d", SecureServ.trigcounts[DET_NICK]);
+	prefmsg(u->nick, s_SecureServ, "NickName Acted on: %d", SecureServ.actioncounts[DET_NICK]);
+	prefmsg(u->nick, s_SecureServ, "NickName Definitions: %d", SecureServ.definitions[DET_NICK]);
+	prefmsg(u->nick, s_SecureServ, "Ident's Checked: %d", SecureServ.trigcounts[DET_IDENT]);
+	prefmsg(u->nick, s_SecureServ, "Ident's Acted on: %d", SecureServ.actioncounts[DET_IDENT]);
+	prefmsg(u->nick, s_SecureServ, "Ident Definitions: %d", SecureServ.definitions[DET_IDENT]);
+	prefmsg(u->nick, s_SecureServ, "RealNames Checked: %d", SecureServ.trigcounts[DET_REALNAME]);
+	prefmsg(u->nick, s_SecureServ, "RealNames Acted on: %d", SecureServ.actioncounts[DET_REALNAME]);
+	prefmsg(u->nick, s_SecureServ, "RealName Definitions: %d", SecureServ.definitions[DET_REALNAME]);
+	prefmsg(u->nick, s_SecureServ, "ChannelNames Checked: %d", SecureServ.trigcounts[DET_CHAN]);
+	prefmsg(u->nick, s_SecureServ, "ChannelNames Acted on: %d", SecureServ.actioncounts[DET_CHAN]);
+	prefmsg(u->nick, s_SecureServ, "ChannelName Definitions: %d", SecureServ.definitions[DET_CHAN]);
+	prefmsg(u->nick, s_SecureServ, "Built-In Checks Run: %d", SecureServ.actioncounts[DET_BUILTIN]);
+	prefmsg(u->nick, s_SecureServ, "Built-In Checks Acted on: %d", SecureServ.actioncounts[DET_BUILTIN]);
+	prefmsg(u->nick, s_SecureServ, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);
+	prefmsg(u->nick, s_SecureServ, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
+	prefmsg(u->nick, s_SecureServ, "Current Top AJPP: %d (in %d Seconds): %s", SecureServ.MaxAJPP, SecureServ.sampletime, SecureServ.MaxAJPPChan);
+	prefmsg(u->nick, s_SecureServ, "End of List.");
+	
+}
 
 
 void do_list(User *u) {
@@ -429,28 +479,43 @@ void do_list(User *u) {
 		i++;
 		switch (ve->dettype) {
 			case DET_CTCP:
-				snprintf(type, MAXHOST, "CTCP Version Check");
+				snprintf(type, MAXHOST, "Version");
 				break;
 			case DET_MSG:
-				snprintf(type, MAXHOST, "OnJoin Receive Message");
+				snprintf(type, MAXHOST, "PM");
+				break;
+			case DET_NICK:
+				snprintf(type, MAXHOST, "Nick");
+				break;
+			case DET_IDENT:
+				snprintf(type, MAXHOST, "Ident");
+				break;
+			case DET_REALNAME:
+				snprintf(type, MAXHOST, "RealName");
+				break;
+			case DET_CHAN:
+				snprintf(type, MAXHOST, "Chan");
+				break;
+			case DET_BUILTIN:
+				snprintf(type, MAXHOST, "Built-In");
 				break;
 			default:
-				snprintf(type, MAXHOST, "Any Recieved Message");
+				snprintf(type, MAXHOST, "Unknown(%d)", ve->dettype);
 		}
 		switch (ve->action) {
 			case ACT_SVSJOIN:
-				snprintf(action, MAXHOST, "SVSjoin to AV channel");
+				snprintf(action, MAXHOST, "SVSjoin");
 				break;
 			case ACT_AKILL:
-				snprintf(action, MAXHOST, "Akill Client");
+				snprintf(action, MAXHOST, "Akill");
 				break;
 			case ACT_WARN:
-				snprintf(action, MAXHOST, "Warn Opers");
+				snprintf(action, MAXHOST, "OpersWarn");
 				break;
 			default:
-				snprintf(action, MAXHOST, "Warn Client Only");
+				snprintf(action, MAXHOST, "ClientWarn");
 		}
-		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection Via: %s. Action: %s", i, ve->name, type, action);
+		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
 	} while ((node = list_next(viri, node)) != NULL);
 	prefmsg(u->nick, s_SecureServ, "End of List.");
 }
@@ -490,7 +555,7 @@ void LoadTSConf() {
 		/* not configured, don't scan */
 		SecureServ.doscan = 0;
 	} 
-	if (GetConf((void *)&SecureServ.timedif, CFGINT, "NetSplitTime") <= 0) {
+	if (GetConf((void *)&SecureServ.timedif, CFGINT, "SplitTime") <= 0) {
 		/* use Default */
 		SecureServ.timedif = 300;
 	}
@@ -498,15 +563,54 @@ void LoadTSConf() {
 		/* yes */
 		SecureServ.verbose = 1;
 	}
-	if (GetConf((void *)&SecureServ.stayinchantime, CFGINT, "StayInChanTime") <= 0) {
+	if (GetConf((void *)&SecureServ.stayinchantime, CFGINT, "CycleTime") <= 0) {
 		/* 60 seconds */
 		SecureServ.stayinchantime = 60;
 	}
-	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpgrade") <= 0) {
-		/* autoupgrade is the default */
+	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
+		/* disable autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
 	}
-	
+	if (GetConf((void *)&SecureServ.dofizzer, CFGINT, "FizzerCheck") <= 0) {
+		/* scan for fizzer is the default */
+		SecureServ.dofizzer = 1;
+	}
+	if (GetConf((void *)&SecureServ.breakorcont, CFGINT, "MultiCheck") <= 0) {
+		/* break is the default is the default */
+		SecureServ.breakorcont = 1;
+	}
+	if (GetConf((void *)&SecureServ.doakill, CFGINT, "DoAkill") <= 0) {
+		/* we akill is the default */
+		SecureServ.doakill = 1;
+	}
+	if (GetConf((void *)&SecureServ.akilltime, CFGINT, "AkillTime") <= 0) {
+		/* 1 hour is the default */
+		SecureServ.akilltime = 3600;
+	}
+	if (GetConf((void *)&SecureServ.dosvsjoin, CFGINT, "DoSvsJoin") <= 0) {
+		/* scan for fizzer is the default */
+		SecureServ.dosvsjoin = 1;
+	}
+	if (GetConf((void *)&SecureServ.sampletime, CFGINT, "SampleTime") <= 0) {
+		/* 5 secondsis the default */
+		SecureServ.dosvsjoin = 5;
+	}
+	if (GetConf((void *)&SecureServ.JoinThreshold, CFGINT, "JoinThreshold") <= 0) {
+		/* 5 joins is the default */
+		SecureServ.JoinThreshold = 5;
+	}
+	if (GetConf((void *)&SecureServ.signonscanmsg, CFGSTR, "SignOnMsg") <= 0) {
+		snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+	}
+	if (GetConf((void *)&SecureServ.nohelp, CFGSTR, "NoHelpMsg") <= 0) {
+		snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
+	}
+	if (GetConf((void *)&SecureServ.akillinfo, CFGSTR, "AkillMsg") <= 0) {
+		snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
+	}
+	if (GetConf((void *)&SecureServ.HelpChan, CFGSTR, "HelpChan") <= 0) {
+		snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
+	}
 	
 	if (GetDir("Exempt", &data) > 0) {
 		/* try */
@@ -605,7 +709,9 @@ void load_dat() {
 			free(viridet);
 		} while ((node = list_next(viri, node)) != NULL);
 	}
-	
+	for (rc = 0; rc > 20; rc++) {
+		SecureServ.definitions[rc] = 0;
+	}	
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = malloc(sizeof(virientry));
@@ -617,6 +723,7 @@ void load_dat() {
 	snprintf(viridet->sendmsg, MAXHOST, "Your Infected with the Fizzer Virus");
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
+	SecureServ.definitions[DET_BUILTIN]++;
 	node = lnode_create(viridet);
 	list_prepend(viri, node);
 	nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
@@ -672,6 +779,7 @@ void load_dat() {
 				nlog(LOG_WARNING, LOG_MOD, "Regular Expression Study for %s failed: %s", viridet->name, error);
 				/* don't exit */
 			}
+			SecureServ.definitions[viridet->dettype]++;
 			node = lnode_create(viridet);
 			list_prepend(viri, node);
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
@@ -760,6 +868,7 @@ static int CheckNick(char **av, int ac) {
 	do {
 		viridetails = lnode_get(node);
 		if (viridetails->dettype == DET_NICK) {
+			SecureServ.trigcounts[DET_NICK]++;
 			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Nick %s against %s", u->nick, viridetails->recvmsg);
 			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
 			if (rc < -1) {
@@ -798,7 +907,7 @@ static int ScanNick(char **av, int ac) {
 		return -1;
 	}
 	
-	if (is_exempt(u)) {
+	if (is_exempt(u) > 0) {
 		return -1;
 	}
 
@@ -811,6 +920,7 @@ static int ScanNick(char **av, int ac) {
 		snprintf(username, 11, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
 		free(user);
 		nlog(LOG_DEBUG2, LOG_MOD, "Fizzer RealName Check %s -> %s", username, u->username);
+		SecureServ.trigcounts[DET_BUILTIN]++;
 		if (!strcmp(username, u->username)) {
 			nlog(LOG_NOTICE, LOG_MOD, "Fizzer Bot Detected: %s (%s -> %s)", u->nick, u->username, u->realname);
 			/* do kill */
@@ -830,6 +940,7 @@ static int ScanNick(char **av, int ac) {
 	do {
 		viridetails = lnode_get(node);
 		if (viridetails->dettype == DET_NICK) {
+			SecureServ.trigcounts[DET_NICK]++;
 			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Nick %s against %s", u->nick, viridetails->recvmsg);
 			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
 			if (rc < -1) {
@@ -844,6 +955,7 @@ static int ScanNick(char **av, int ac) {
 					return 1;
 			}
 		} else if (viridetails->dettype == DET_IDENT) {
+			SecureServ.trigcounts[DET_IDENT]++;
 			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking ident %s against %s", u->username, viridetails->recvmsg);
 			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->username, strlen(u->username), 0, 0, NULL, 0);
 			if (rc < -1) {
@@ -858,6 +970,7 @@ static int ScanNick(char **av, int ac) {
 					return 1;
 			}
 		} else if (viridetails->dettype == DET_REALNAME) {
+			SecureServ.trigcounts[DET_REALNAME]++;
 			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Realname %s against %s", u->realname, viridetails->recvmsg);
 			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->realname, strlen(u->realname), 0, 0, NULL, 0);
 			if (rc < -1) {
@@ -890,6 +1003,8 @@ int check_version_reply(char *origin, char **av, int ac) {
 	lnode_t *node;
 	virientry *viridetails;
 	int rc;
+	char **av1;
+	int ac1 = 0;
 	
 	/* if its not a ctcp message, forget it */
 	if (av[1][0] != '\1') 
@@ -897,11 +1012,22 @@ int check_version_reply(char *origin, char **av, int ac) {
 	
 	if (!strcasecmp(av[1], "\1version")) {
 		buf = joinbuf(av, ac, 2);
+		/* send a Module_Event, so StatServ can pick up the version info !!! */
+		/* nice little side effect isn't it? */
+	
+		AddStringToList(&av1, origin, &ac1);
+		AddStringToList(&av1, buf, &ac1);	
+ 		Module_Event("CLIENTVERSION", av1, ac1);
+ 		free(av1);
+ 		/* reset segvinmodule */
+ 		strcpy(segvinmodule, "SecureServ");
+		
 		if (SecureServ.verbose) chanalert(s_SecureServ, "Got Version Reply from %s: %s", origin, buf);
 		node = list_first(viri);
 		do {
 			viridetails = lnode_get(node);
 			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > 20)) {
+				SecureServ.trigcounts[DET_CTCP]++;
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Version %s against %s", buf, viridetails->recvmsg);
 				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 				if (rc < -1) {
@@ -929,6 +1055,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
 	ve->nofound++;
+	SecureServ.actioncounts[type]++;
 	switch (ve->action) {
 		case ACT_AKILL:
 			if (SecureServ.doakill > 0) {
@@ -964,7 +1091,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 
 void _init() {
-
+	int i;
 	s_SecureServ = "SecureServ";
 	strcpy(segvinmodule, "SecureServ");
 	/* init the exemptions list */
@@ -995,6 +1122,10 @@ void _init() {
 	SecureServ.doUpdate = 0;
 	SecureServ.dofizzer = 1;
 	SecureServ.MaxAJPP = 0;
+	for (i = 0; i > 20; i++) {
+		SecureServ.trigcounts[i] = 0;
+		SecureServ.actioncounts[i] = 0;
+	}
 	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
 }
 

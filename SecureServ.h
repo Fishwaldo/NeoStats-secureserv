@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.8 2003/05/16 13:56:29 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.9 2003/05/16 16:53:34 fishwaldo Exp $
 */
 
 
@@ -74,6 +74,9 @@ struct SecureServ {
 	int dofizzer;
 	int MaxAJPP;
 	char MaxAJPPChan[CHANLEN];
+	int trigcounts[20];
+	int actioncounts[20];
+	int definitions[20];
 } SecureServ;
 
 

@@ -77,7 +77,7 @@ void JoinNewChan() {
 		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 	}
 	/* restore segvinmodules */
-	strcpy(segvinmodule, "SecureServ");
+	SET_SEGV_INMODULE("SecureServ");
 
 	/* if we don't do OnJoin Checking, Don't go any further */
 	if (SecureServ.DoOnJoin < 1)
@@ -232,7 +232,7 @@ restartnicksondemand:
 		del_bot(SecureServ.lastnick, "Finished Scanning");
 	}
 	/* restore segvinmodules */
-	strcpy(segvinmodule, "SecureServ");
+	SET_SEGV_INMODULE("SecureServ");
 	trychan = 0;
 
 	strncpy(SecureServ.lastnick, nickname->nick, MAXNICK);
@@ -356,7 +356,7 @@ int MonChan(User *u, char *requestchan) {
 		}
 	}
 	/* restore segvinmodules */
-	strcpy(segvinmodule, "SecureServ");
+	SET_SEGV_INMODULE("SecureServ");
 	
 	/* join the monitor bot to the new channel */
 #if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
@@ -365,7 +365,7 @@ int MonChan(User *u, char *requestchan) {
 	sjoin_cmd(SecureServ.monbot, c->name);
 #endif
 	/* restore segvinmodules */
-	strcpy(segvinmodule, "SecureServ");
+	SET_SEGV_INMODULE("SecureServ");
 
 	chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Virus's by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
 	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);

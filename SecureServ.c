@@ -100,7 +100,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	char *buf, *buf2;
 	UserDetail *ud;
 
-	strcpy(segv_location, "TS:Bot_Message");
+	SET_SEGV_LOCATION();
 	u = finduser(origin); 
 	if (!u) { 
 		nlog(LOG_WARNING, LOG_CORE, "Unable to find user %s (ts)", origin); 
@@ -1153,7 +1153,7 @@ void do_list(User *u) {
 
 int Online(char **av, int ac) {
 
-	strcpy(segv_location, "TS:Online");
+	SET_SEGV_LOCATION();
 	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		s_SecureServ = strcat(s_SecureServ, "_");
@@ -1205,7 +1205,7 @@ void LoadTSConf() {
 	int i;
 	char *tmp;
 	char datapath[MAXHOST];
-	strcpy(segv_location, "TS:loadTSConf");
+	SET_SEGV_LOCATION();
 
 	
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
@@ -1770,7 +1770,7 @@ static int ScanNick(char **av, int ac) {
 	char *s1, *s2, *user;
 	int rc;
 
-	strcpy(segv_location, "TS:ScanNick");
+	SET_SEGV_LOCATION();
 	/* don't do anything if NeoStats hasn't told us we are online yet */
 	if (!SecureServ.inited)
 		return 0;
@@ -1901,7 +1901,7 @@ int check_version_reply(char *origin, char **av, int ac) {
  		Module_Event("CLIENTVERSION", av1, ac1);
  		free(av1);
  		/* reset segvinmodule */
- 		strcpy(segvinmodule, "SecureServ");
+		SET_SEGV_INMODULE("SecureServ");
 		
 		if (SecureServ.verbose) chanalert(s_SecureServ, "Got Version Reply from %s: %s", origin, buf);
 		node = list_first(viri);
@@ -2006,7 +2006,7 @@ int __ModInit(int modnum, int apiversion) {
 		return -1;
 	}
 	s_SecureServ = "SecureServ";
-	strcpy(segvinmodule, "SecureServ");
+	SET_SEGV_INMODULE("SecureServ");
 	
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);

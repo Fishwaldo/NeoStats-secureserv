@@ -74,7 +74,7 @@ Functions __module_functions[] = {
 	{ NULL,		NULL,		0 }
 };
 
-int __Bot_Message(char *origin, char **argv, int argc)
+int __BotMessage(char *origin, char **argv, int argc)
 {
 	User *u;
 	UserDetail *ud;
@@ -1184,7 +1184,7 @@ static int check_version_reply(User* u, char **av, int ac)
 
 	AddStringToList(&av1, u->nick, &ac1);
 	AddStringToList(&av1, buf, &ac1);	
- 	Module_Event(EVENT_CLIENTVERSION, av1, ac1);
+ 	ModuleEvent(EVENT_CLIENTVERSION, av1, ac1);
  	free(av1);
  	/* reset segvinmodule */
 	SET_SEGV_INMODULE("SecureServ");

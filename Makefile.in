@@ -1,12 +1,12 @@
 #SecureServ Makefile!
-CC=@CC@
-CFLAGS=@CFLAGS@
+CC = @CC@
+CFLAGS = @CFLAGS@
 LDFLAGS= @LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
-DIRECTORY=@DIRINST@/dl/
-INCLUDES=-I@DIRINST@/include/ -I.
+DIRECTORY = @DIRINST@/dl/
+INCLUDES = -I@DIRINST@/include/ -I.
 
 SRCS= SecureServ.c SecureServ_help.c OnJoinBot.c FloodCheck.c Helpers.c scan.c exempts.c update.c
 OBJS= ${SRCS:.c=.o}

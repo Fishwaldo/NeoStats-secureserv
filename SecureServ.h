@@ -112,8 +112,6 @@ struct SecureServ {
 	int verbose;
 	int stayinchantime;
 	int monchancycletime;
-	int sampletime;
-	int JoinThreshold;
 	int autoupgrade;
 	int doUpdate;
 	int dofizzer;
@@ -129,11 +127,7 @@ struct SecureServ {
 	char lastnick[MAXNICK];
 	char monbot[MAXNICK];
 	char botquitmsg[BUFSIZE];
-	int nfcount;
 	int doprivchan;
-	char ChanKey[MAXCHANLEN];
-	int closechantime;
-	int FloodProt;
 	struct sockaddr_in sendtohost;
 	int sendtosock;
 	int signoutaway;
@@ -193,17 +187,6 @@ int SS_IsUserExempt(Client *u);
 int SS_do_exempt(CmdParams *cmdparams);
 int SS_InitExempts(void);
 
-/* FloodCheck.c */
-int InitJoinFlood(void);
-int JoinFloodJoinChan(Client *u, Channel *c);
-int JoinFloodDelChan(Channel *c);
-int CheckLockChan(void);
-int InitNickFlood(void);
-int CleanNickFlood(void);
-int NickFloodSignOff(char * n);
-int CheckNickFlood(Client* u);
-void FloodStatus (CmdParams *cmdparams);
- 
 /* Helpers.c */
 int HelpersInit(void);
 int HelpersLogin(CmdParams *cmdparams);
@@ -247,9 +230,8 @@ extern const char ts_help_monchan_oneline[];
 extern const char ts_help_helpers_oneline[];
 extern const char ts_help_reload_oneline[];
 
-extern const char *ts_help_set_splittime[];
-extern const char *ts_help_set_chankey[];
 extern const char *ts_help_set_version[];
+extern const char *ts_help_set_splittime[];
 extern const char *ts_help_set_signonmsg[];
 extern const char *ts_help_set_botquitmsg[];
 extern const char *ts_help_set_akillmsg[];
@@ -258,14 +240,11 @@ extern const char *ts_help_set_helpchan[];
 extern const char *ts_help_set_autosignout[];
 extern const char *ts_help_set_joinhelpchan[];
 extern const char *ts_help_set_report[];
-extern const char *ts_help_set_floodprot[];
 extern const char *ts_help_set_doprivchan[];
 extern const char *ts_help_set_checkfizzer[];
 extern const char *ts_help_set_multicheck[];
 extern const char *ts_help_set_akill[];
 extern const char *ts_help_set_akilltime[];
-extern const char *ts_help_set_chanlocktime[];
-extern const char *ts_help_set_nfcount[];
 extern const char *ts_help_set_dojoin[];
 extern const char *ts_help_set_doonjoin[];
 extern const char *ts_help_set_botecho[];
@@ -276,7 +255,6 @@ extern const char *ts_help_set_monchancycletime[];
 extern const char *ts_help_set_cycletime[];
 extern const char *ts_help_set_monbot[];
 extern const char *ts_help_set_autoupdate[];
-extern const char *ts_help_set_sampletime[];
 extern const char *ts_help_set_updateinfo[];
 extern const char *ts_help_set_onjoinbotmodes[];
 

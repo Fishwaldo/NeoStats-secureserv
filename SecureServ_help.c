@@ -228,55 +228,6 @@ const char *ts_help_assist[] = {
 	NULL
 };
 
-const char *ts_help_set[] = {
-	"Syntax: \2SET <OPTION> <SETTING>\2",
-	"",
-	"This command will set various options relating to SecureServ.",
-	"You can view the settings by typing \2SET LIST\2",
-	"The Settings take effect straight away",
-	"The Options are:",
-	"    \2VERSION <on/off>\2       - Turns CTCP Version Checking on and Off",
-	"    \2CHECKFIZZER <on/off>\2   - Turns on and off Fizzer Checking. Disable if your network is not affected by Fizzer",
-	"    \2DOONJOIN <on/off>\2      - Turns on and off the On join Virus Checking.",
-	"    \2AKILL <on/off>\2         - Tells SecureServ to never issue an Akill on your Network. A warning message is sent to the operators instead",
-	"    \2AKILLTIME <seconds>\2	- Sets the time an AKILL will last for.",
-	"    \2DOJOIN <on/off>\2        - Tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
-	"    \2DOPRIVCHAN <on/off>\2	- Tells SecureServ not to join Private Channels",
-	"    \2FLOODPROT <on/off>\2     - Enable Channel Flood Protection Scanning.",
-	"    \2CHANKEY <key>\2          - When Flood Protection for a Channel is active, this is the key we will use to lock the channel",
-	"    \2CHANLOCKTIME <seconds>\2 - How long (Approx) do we lock a Channel for. Time in seconds",
-	"    \2UPDATEINFO <username> <password>\2",
-	"                               - Sets the Username and Password required for updating the SecureServ",
-	"                                 Definitions file. See the Readme file for more info",
-	"    \2MONBOT <bot>\2           - Assign <bot> (from /msg SecureServ bots list) to be used for Channel Monitoring",
-	"    \2BOTECHO <on/off>\2       - Make the onjoin bots echo messages received to the services channel regardless of the verbose setting",
-	"\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
-	"    \2REPORT <on/off>\2        - Enable Reporting to Secure.irc-chat.net of infected users.",
-	"    \2AUTOSIGNOUT <on/off>\2   - Automatically sign out helpers if they set away.",
-	"    \2JOINHELPCHAN <on/off>\2	- Should SecureServ join the help channel when there is at least one helper logged in",
-	"    \2MULTICHECK <on/off>\2    - Makes SecureServ check all Patterns when an infected User is found.",
-	"                                 Please Read the Readme file for important Performance information",
-	"    \2MONCHANCYCLE <on/off>\2  - Should the monitor bot cycle the channels occasionally",
-	"    \2MONCHANCYCLETIME <seconds>\2 ",
-	"                               - How often should the Monitor bot cycle a single channel",
-	"    \2VERBOSE <on/off>\2       - Turn on Verbose Mode. Prepare to be flooded!",
-	"    \2CYCLETIME <seconds>\2    - How Often Should SecureServ check new channels for infections.",
-	"                                 See the Readme file for recommended Settings",
-	"    \2AUTOUPDATE <on/off>\2    - Should SecureServ automatically update the Definitions file daily, if required?",
-	"    \2SAMPLETIME <seconds> <joins>\2",
-	"                               - Sets the threshold for Flood Checking. Read the Readme File for more information",
-	"    \2NFCOUNT <number>\2       - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
-	"    \2SIGNONMSG <message>\2    - Changes the message sent to users when they connect if Version Checking is enabled",
-	"    \2AKILLMSG <message>\2     - Changes the message sent to users when they are akilled",
-	"    \2NOHELPMSG <message>\2    - Changes the message sent to users when their are no helpers logged in",
-	"    \2HELPCHAN <channel>\2     - Changes the Channel that Virus infected users are joined to if there are helpers logged in",
-	"    \2TREATCHANMSGASPM <on/off>\2",
-	"                               - This option makes SecureServ check all channel messages against the virus signatures listed only for PM",
-	"                                 This option will consume \2LOTS\2 of CPU time. You Shouldn't need to enable this under normal circumstances",
-	"                                 as the Virus Database has a seperate list of signatures for channels",
-	NULL
-};
-
 const char *ts_help_reload[] = {
 	"Syntax: \2RELOAD\2",
 	"",
@@ -294,10 +245,6 @@ const char *ts_help_set_updateinfo[] = {
 
 const char *ts_help_set_splittime[] = {
 	"\2SPLITTIME <time>\2 - ",
-	NULL
-};
-const char *ts_help_set_chankey[] = {
-	"\2CHANKEY <key>\2 - Sets the key to use for locking the channel when flood protection is active",
 	NULL
 };
 const char *ts_help_set_version[] = {
@@ -336,10 +283,6 @@ const char *ts_help_set_report[] = {
 	"\2REPORT <on/off>\2 - Enable Reporting to Secure.irc-chat.net of infected users.",
 	NULL
 };
-const char *ts_help_set_floodprot[] = {
-	"\2FLOODPROT <on/off>\2 - Enable channel flood protection.",
-	NULL
-};
 const char *ts_help_set_doprivchan[] = {
 	"\2DOPRIVCHAN <on/off>\2 - Whether onjoin bots scan private channels",
 	NULL
@@ -359,14 +302,6 @@ const char *ts_help_set_akill[] = {
 };
 const char *ts_help_set_akilltime[] = {
 	"\2AKILLTIME <seconds>\2 - Sets the time an AKILL will last for.",
-	NULL
-};
-const char *ts_help_set_chanlocktime[] = {
-	"\2CHANLOCKTIME <seconds>\2 - Set the time to lock a channel for when flood protection is enabled. Time in seconds",
-	NULL
-};
-const char *ts_help_set_nfcount[] = {
-	"\2NFCOUNT <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
 	NULL
 };
 const char *ts_help_set_dojoin[] = {
@@ -412,11 +347,6 @@ const char *ts_help_set_monbot[] = {
 };
 const char *ts_help_set_autoupdate[] = {
 	"\2AUTOUPDATE <on/off>\2 - Should SecureServ automatically update the definitions file daily, if required?",
-	NULL
-};
-const char *ts_help_set_sampletime[] = {
-	"\2SAMPLETIME <seconds> <joins>\2",
-	"Sets the threshold for flood checking. Read the Readme file for more information",
 	NULL
 };
 const char *ts_help_set_onjoinbotmodes[] = {

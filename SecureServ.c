@@ -46,7 +46,6 @@ static int do_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_monchancycletime (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_cycletime (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_autoupdate (CmdParams *cmdparams, SET_REASON reason);
-static int do_set_sampletime (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_updateinfo (CmdParams *cmdparams, SET_REASON reason);
 
 Bot *ss_bot;
@@ -103,7 +102,6 @@ static bot_cmd ss_commands[]=
 static bot_setting ss_settings[]=
 {
 	{"SPLITTIME",	&SecureServ.timedif,	SET_TYPE_INT,		0,	1000,		NS_ULEVEL_ADMIN, "SplitTime",	NULL,	ts_help_set_splittime, NULL, (void *)300 },
-	{"CHANKEY",		&SecureServ.ChanKey,	SET_TYPE_STRING,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN, "ChanKey",		NULL,	ts_help_set_chankey, NULL, (void *)"Eeeek" },
 	{"VERSION",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoVersionScan",NULL,	ts_help_set_version, NULL, (void *)0 },
 	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
 	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
@@ -112,14 +110,11 @@ static bot_setting ss_settings[]=
 	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAwaySignOut",NULL,	ts_help_set_autosignout, NULL, (void *)1 },
 	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoJoinHelpChan",NULL,	ts_help_set_joinhelpchan, NULL, (void *)1 },
 	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoReport",		NULL,	ts_help_set_report, NULL, (void *)1 },
-	{"FLOODPROT",	&SecureServ.FloodProt,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoFloodProt",	NULL,	ts_help_set_floodprot, NULL, (void *)1 },
 	{"DOPRIVCHAN",	&SecureServ.doprivchan,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoPrivChan",	NULL,	ts_help_set_doprivchan, NULL, (void *)1 },
 	{"CHECKFIZZER",	&SecureServ.dofizzer,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"FizzerCheck",	NULL,	ts_help_set_checkfizzer, NULL, (void *)1 },
 	{"MULTICHECK",	&SecureServ.breakorcont,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"MultiCheck",	NULL,	ts_help_set_multicheck, NULL, (void *)1 },
 	{"AKILL",		&SecureServ.doakill,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAkill",		NULL,	ts_help_set_akill, NULL, (void *)1 },
 	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"AkillTime",	NULL,	ts_help_set_akilltime, NULL, (void *)3600 },
-	{"CHANLOCKTIME",&SecureServ.closechantime,SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"ChanLockTime", NULL,	ts_help_set_chanlocktime, NULL, (void *)30 },
-	{"NFCOUNT",		&SecureServ.nfcount,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"NFCount",		NULL,	ts_help_set_nfcount, NULL, (void *)5 },
 	{"DOJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoSvsJoin",	NULL,	ts_help_set_dojoin, NULL, (void *)1 },
 	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoOnJoin",		NULL,	ts_help_set_doonjoin, NULL, (void *)1 },
 	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"BotEcho",		NULL,	ts_help_set_botecho, NULL, (void *)0 },
@@ -130,7 +125,6 @@ static bot_setting ss_settings[]=
 	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	1000,		NS_ULEVEL_ADMIN,"CycleTime",	NULL,	ts_help_set_cycletime, do_set_cycletime, (void *)60 },
 	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_monbot, do_set_monbot, (void *)0 },
 	{"AUTOUPDATE",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_autoupdate, do_set_autoupdate, (void *)0 },
-	{"SAMPLETIME",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_sampletime, do_set_sampletime, (void *)0 },
 	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_updateinfo, do_set_updateinfo, (void *)0 },
 	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,"OnJoinBotModes",NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
 	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
@@ -268,42 +262,6 @@ static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason)
 	}
 	return NS_SUCCESS;
 }
-static int do_set_sampletime(CmdParams *cmdparams, SET_REASON reason) 
-{
-	int i, j;
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
-	}
-	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		if (SecureServ.FloodProt) {
-			irc_prefmsg (ss_bot, cmdparams->source, "SAMPLETIME:   %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
-		}
-		return NS_SUCCESS;
-	}
-	if (cmdparams->ac < 5) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
-		return NS_SUCCESS;
-	}			
-	i = atoi(cmdparams->av[1]);
-	j = atoi(cmdparams->av[2]);	
-	if ((i <= 0) || (i > 1000)) {
-		irc_prefmsg (ss_bot, cmdparams->source, "SampleTime Value out of Range.");
-		return NS_SUCCESS;
-	}
-	if ((j <= 0) || (i > 1000)) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Threshold Value is out of Range");
-		return NS_SUCCESS;
-	}
-	/* if we get here, all is ok */
-	SecureServ.sampletime = i;
-	SecureServ.JoinThreshold = j;
-	irc_prefmsg (ss_bot, cmdparams->source, "Flood Protection is now enabled at %d joins in %d Seconds", j, i);
-	irc_chanalert (ss_bot, "%s Set Flood Protection to %d joins in %d Seconds", cmdparams->source, j, i);
-	SetConf((void *)i, CFGINT, "SampleTime");
-	SetConf((void *)j, CFGINT, "JoinThreshold");
-	return NS_SUCCESS;
-}
-
 static int do_viriversion(CmdParams *cmdparams)
 {
 	irc_prefmsg (ss_bot, cmdparams->source, "%d", SecureServ.viriversion);
@@ -317,7 +275,6 @@ static int do_status(CmdParams *cmdparams)
 	irc_prefmsg (ss_bot, cmdparams->source, "==================");
 	ScanStatus (cmdparams);
 	HelpersStatus (cmdparams);
-	FloodStatus (cmdparams);
 	OnJoinBotStatus (cmdparams);
 	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
 	return NS_SUCCESS;
@@ -376,10 +333,6 @@ int ss_join_chan(CmdParams *cmdparams)
 			cd->scanned = 1;
 		}
 	}
-	if(JoinFloodJoinChan(cmdparams->source, cmdparams->channel))
-		return NS_SUCCESS;
-
-	
 	return NS_SUCCESS;
 }
 
@@ -391,7 +344,6 @@ int ss_del_chan(CmdParams *cmdparams)
 	cd = (ChannelDetail *)GetChannelModValue (cmdparams->channel);
 	ns_free(cd);
 	ClearChannelModValue (cmdparams->channel);
-	JoinFloodDelChan(cmdparams->channel);
 	return NS_SUCCESS;
 }
 
@@ -454,7 +406,6 @@ ModuleEvent module_events[] = {
 static int DelNick(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	NickFloodSignOff(cmdparams->source->name);
 	HelpersSignoff(cmdparams);
 	return NS_SUCCESS;
 }
@@ -470,9 +421,6 @@ static int NickChange(CmdParams *cmdparams)
 		dlog (DEBUG1, "Bye, I'm Exempt %s", cmdparams->source);
 		return -1;
 	}
-	/* is it a nickflood? */
-	CheckNickFlood(cmdparams->source);
-
 	/* check the nickname */
 	if(ScanUser(cmdparams->source, SCAN_NICK)) {
 		return NS_SUCCESS;
@@ -487,6 +435,10 @@ static int ScanNick(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	if (SecureServ.doscan == 0) 
 		return -1;
+	if (time(NULL) - cmdparams->source->tsconnect > SecureServ.timedif) {
+		dlog (DEBUG1, "Netsplit Nick %s, Not Scanning", cmdparams->source->name);
+		return -1;
+	}
 	if (cmdparams->source->flags && NS_FLAGS_NETJOIN)
 		return -1;
 	if (SS_IsUserExempt(cmdparams->source) > 0) {
@@ -528,13 +480,9 @@ int ModInit (Module *mod_ptr)
 	SET_SEGV_LOCATION();
 	os_memset (&SecureServ, 0, sizeof (SecureServ));
 	ModuleConfig (ss_settings);
-	SecureServ.sampletime = 5;
-	SecureServ.JoinThreshold = 5;
 	SS_InitExempts();
 	InitScanner();
 	InitOnJoinBots();
-	InitJoinFlood();
-	InitNickFlood();
 	return NS_SUCCESS;
 }
 
@@ -568,10 +516,6 @@ int ModSynch (void)
 	/* kick of the autojoin timer */
 	add_timer (TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime);
 	add_timer (TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime);
-	/* start cleaning the nickflood list now */
-	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
-	add_timer (TIMER_TYPE_INTERVAL, CleanNickFlood, "CleanNickFlood", 60);
-	add_timer (TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60);
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {

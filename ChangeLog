@@ -1,6 +1,7 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
-3.0 - Mark (M)
+3.0prealpha1 - Mark (M)
+ - Remove flood check code, this is now handled by a new module FloodServ
  - Port to 3.0 API and Win32
 
 1.3 - Fish (F) and Mark (M) - 27 Aug, 2004

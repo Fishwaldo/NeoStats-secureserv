@@ -37,7 +37,7 @@ install: module
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
 	 $(INSTALL) -m 644 $(DATA) $(DIRECTORY)../data/
 	 @cd $(DIRECTORY)..; \
-	@if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i doc/SecureServ.settings; fi
+	if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i doc/SecureServ.settings; fi
 
 dist:	
 	@echo -n "Creating Directories"

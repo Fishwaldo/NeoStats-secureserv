@@ -1,5 +1,8 @@
 TrojanServ Module for NeoStats Changelog.
 ==============================================================================
+0.9.4 - Fish - 20 Aug, 2003
+ - configure now checks for crypt.h (BugID: 37)
+
 0.9.3 - Fish - 07 June, 2003
  - Found a few bugs with nickflood detection thanks to the logs from -=OrPhEuS=-
  - added ident and host to akill message in #services chan.

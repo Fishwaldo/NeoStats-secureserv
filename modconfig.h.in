@@ -58,3 +58,4 @@ default default. */
 
 #undef POSIX_MALLOC_THRESHOLD
 
+#undef HAVE_CRYPT_H

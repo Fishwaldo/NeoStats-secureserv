@@ -18,14 +18,19 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.44 2003/08/19 13:20:23 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.45 2003/08/20 11:19:52 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
 #include <fnmatch.h>
 #include <pcre.h>
+#ifdef HAVE_CRYPT_H
 #include <crypt.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "stats.h"
 #include "dl.h"
 #include "log.h"
@@ -61,7 +66,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.3"
+	"0.9.4"
 } };
 
 

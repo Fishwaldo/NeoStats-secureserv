@@ -120,6 +120,7 @@ Chans * GetNewChan ()
 				nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot",c->name);
 				continue;
 			}
+			return(c);
 		} else {
 			/* hu? */
 			nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");

@@ -268,7 +268,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				return 0;
 			}
 			if (list_isfull(exempt)) {
-				prefmsg(u->nick, s_SecureServ, "Error, Exception list is full", s_SecureServ);
+				prefmsg(u->nick, s_SecureServ, "Error, Exception list is full");
 				return 0;
 			}
 			if (atoi(argv[4]) != 2) {
@@ -387,7 +387,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				return 0;
 			}
 			if (list_isfull(nicks)) {
-				prefmsg(u->nick, s_SecureServ, "Error, Bot list is full", s_SecureServ);
+				prefmsg(u->nick, s_SecureServ, "Error, Bot list is full");
 				return 0;
 			}
 			buf = malloc(MAXHOST+1);
@@ -507,7 +507,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		return 1;
 	} else if (!strcasecmp(argv[1], "set")) {
 		if (UserLevel(u) < NS_ULEVEL_ADMIN) {
-			prefmsg(u->nick, s_SecureServ, "Permission is denied", u->nick);
+			prefmsg(u->nick, s_SecureServ, "Permission is denied");
 			chanalert(s_SecureServ, "%s tried to use SET, but Permission was denied", u->nick);
 			return -1;
 		}
@@ -1097,7 +1097,7 @@ void do_status(User *u) {
 	
 	prefmsg(u->nick, s_SecureServ, "SecureServ Status:");
 	prefmsg(u->nick, s_SecureServ, "==================");
-	prefmsg(u->nick, s_SecureServ, "Virus Patterns Loaded: %d", list_count(viri));
+	prefmsg(u->nick, s_SecureServ, "Virus Patterns Loaded: %d", (int)list_count(viri));
 	prefmsg(u->nick, s_SecureServ, "CTCP Version Messages Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
 	prefmsg(u->nick, s_SecureServ, "CTCP Messages Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
 	prefmsg(u->nick, s_SecureServ, "CTCP Definitions: %d", SecureServ.definitions[DET_CTCP]);

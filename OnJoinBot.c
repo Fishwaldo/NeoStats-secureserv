@@ -377,7 +377,7 @@ int MonChan(User *u, char *requestchan) {
 	rnn = list_first(monchans);
 	while (rnn != NULL) {
 		if (!strcasecmp(c->name,  lnode_get(rnn))) { 
-			prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	lnode_get(rnn));
+			prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	(char*)lnode_get(rnn));
 			/* XXX TODO What if we are setup to monitor this chan, but not joined? */
 			return -1;
 		}
@@ -438,7 +438,7 @@ int StopMon(User *u, char *chan) {
 		node2 = list_next(monchans, node);
 		if (!strcasecmp(chan, lnode_get(node))) {
 			list_delete(monchans, node);
-			prefmsg(u->nick, s_SecureServ, "Deleted %s out of Monitored Channels List.", lnode_get(node));
+			prefmsg(u->nick, s_SecureServ, "Deleted %s out of Monitored Channels List.", (char*)lnode_get(node));
 			spart_cmd(SecureServ.monbot, lnode_get(node));
 			free(lnode_get(node));
 			lnode_destroy(node);
@@ -456,9 +456,9 @@ int StopMon(User *u, char *chan) {
 
 int ListMonChan(User *u) {
 	lnode_t *node;
-	prefmsg(u->nick, s_SecureServ, "Monitored Channels List (%d):", list_count(monchans)); node = list_first(monchans);
+	prefmsg(u->nick, s_SecureServ, "Monitored Channels List (%d):", (int)list_count(monchans)); node = list_first(monchans);
 	while (node != NULL) {
-		prefmsg(u->nick, s_SecureServ, "%s", lnode_get(node));
+		prefmsg(u->nick, s_SecureServ, "%s", (char*)lnode_get(node));
 		node = list_next(monchans, node);
 	}
 	prefmsg(u->nick, s_SecureServ, "End of List");

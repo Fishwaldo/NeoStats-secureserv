@@ -133,7 +133,7 @@ int Helpers_list(User *u) {
 		return -1;
 
 	
-	prefmsg(u->nick, s_SecureServ, "Helpers List (%d):", hash_count(helperhash));
+	prefmsg(u->nick, s_SecureServ, "Helpers List (%d):", (int)hash_count(helperhash));
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);

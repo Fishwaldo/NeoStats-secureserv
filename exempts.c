@@ -256,6 +256,7 @@ int do_exempt_del(User* u, char **argv, int argc)
 	char *buf;
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
+	int i;
 
 	if (argc < 4) {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);

@@ -25,7 +25,7 @@
   signatures to to help detect new, or unsupported clients/trojans. (eg,
   Bottlers). This requires some programing knowledge, and more information
   about the customviri.dat file can be found in the &#34;Custom
-  Definitions&#34; chapter. </para>
+  Definitions&#34; chapter.</para>
 
   <para>SecureServ can detect Trojan/Virus&#39;s or &#34;Security Risks&#34;
   to your Network a number of ways, including:</para>
@@ -99,7 +99,7 @@
     potential to Akill/Gline your entire network. Its strongly suggested that
     you read this entire document before even attempting to compile
     SecureServ, as I&#39;m just going to laugh, if you didn&#39;t read, and it
-    AKILL&#39;s your entire network. </para></warning></para></listitem></itemizedlist></para>
+    AKILL&#39;s your entire network.</para></warning></para></listitem></itemizedlist></para>
 
     <para>The requirement to have a valid account on <link linkend="???">http://secure.irc-chat.net</link>
     is due to the fact that I want to have some control over who receives the
@@ -556,6 +556,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>MONCHANCYCLE</para>
+      </listitem>
+
+      <listitem>
         <para>REPORT</para>
       </listitem>
 
@@ -782,6 +786,20 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
     </sect2>
 
     <sect2>
+      <title>MONCHANCYCLE Setting</title>
+
+      <para>This setting specifies if SecureServ should cycle the
+      MONCHAN&#39;s periodically (by default, it cycles one channel each time
+      a new channel is checked with the Onjoin Bots). This can help detect
+      OnJoin virus&#39;s in the channels you specify a monitor bot should be
+      placed. </para>
+
+      <para>To Change this setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set MONCHANCYCLE &#60;ON/OFF&#62;</screen>
+    </sect2>
+
+    <sect2>
       <title>REPORT Setting</title>
 
       <para>SecureServ has the option to report positive infections to
@@ -956,7 +974,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>This option enables SecureServ sending messages any of the onjoin
       bots, or monbot receives to the services channel. This can help you
       monitor for potentially new onjoin virus&#39;s, or monitor for spam
-      users. </para>
+      users.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -1244,7 +1262,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>This option reloads the viri.dat and customviri.dat files. Its no
       the same as a update command, as it does not attempt to download new dat
       files from http://secure.irc-chat.net site. Its useful if you make a
-      change to your customviri.dat file. </para>
+      change to your customviri.dat file.</para>
 
       <para>The format of the reload command is as follows:</para>
 
@@ -1257,7 +1275,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
     <para>You can create your own definitions to be used by SecureServ, but it
     requires a bit of programing skill, and knowledge of how to detect the
-    trojan/virus. </para>
+    trojan/virus.</para>
 
     <para>We have enabled SecureServ to obtain additional definitions from a
     custom, administrator defined definition file. This allows IRC

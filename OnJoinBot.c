@@ -44,6 +44,8 @@ static int SaveMonChans();
 /* this is the list of random nicknames */
 static list_t *nicks;
 static char onjoinbot_modes[] = "+";
+static lnode_t *lastmonchan;
+
 
 static unsigned hrand(unsigned upperbound, unsigned lowerbound) 
 {
@@ -202,8 +204,10 @@ void JoinNewChan()
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
+	lnode_t *mcnode;
 
 	SET_SEGV_LOCATION();
+
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (finduser(SecureServ.lastnick)) {
 		if (SecureServ.lastchan[0] != 0) {
@@ -251,6 +255,27 @@ void JoinNewChan()
 
 	if (SecureServ.verbose) {
 		chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
+	}
+
+	/* cycle one of hte monchans, if configured to */
+	if (SecureServ.monbot[0] == 0) {
+		return;
+	}
+	if (SecureServ.monchancycle > 0) {
+		if (lastmonchan == NULL) {
+			/* its brand new */
+			mcnode = list_first(monchans);	
+		} else {
+			mcnode = list_next(monchans, lastmonchan);
+			if (mcnode == NULL) {
+				/* we have moved through all teh chans, start from scratch */
+				mcnode = list_first(monchans);
+			}
+		}
+		/* ok, if we are here mcnode == the channel to cycle */
+		spart_cmd(SecureServ.monbot, lnode_get(mcnode));
+		join_bot_to_chan(SecureServ.monbot, lnode_get(mcnode), 0);
+		lastmonchan = mcnode;
 	}
 }
 
@@ -466,6 +491,7 @@ int ListMonChan(User *u)
 
 	SET_SEGV_LOCATION();
 	prefmsg(u->nick, s_SecureServ, "Monitored Channels List (%d):", (int)list_count(monchans)); node = list_first(monchans);
+	node = list_first(monchans);
 	while (node != NULL) {
 		prefmsg(u->nick, s_SecureServ, "%s", (char*)lnode_get(node));
 		node = list_next(monchans, node);
@@ -488,6 +514,7 @@ int LoadMonChans()
 		}
 	}
 	free(chan);	
+	lastmonchan = NULL;
 	return 1;
 }
 

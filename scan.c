@@ -215,7 +215,7 @@ int do_reload(User *u, char **av, int ac)
 		return -1;
 	}			
 	prefmsg(u->nick, s_SecureServ, "Reloading virus definition files");
-    chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
+    	chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
 	load_dat();
 	return 1;
 }

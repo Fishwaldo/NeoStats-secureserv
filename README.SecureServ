@@ -25,19 +25,20 @@ SecureServ Manual
         3.8. CHANLOCKTIME
         3.9. MULTICHECK Setting
         3.10. MONBOT Setting
-        3.11. REPORT Setting
-        3.12. AUTOSIGNOUT Setting
-        3.13. JOINHELPCHAN Setting
-        3.14. AKILL Setting
-        3.15. AKILLTIME Setting
-        3.16. DOJOIN Setting
-        3.17. NFCOUNT Setting
-        3.18. VERBOSE Setting
-        3.19. CYCLETIME Setting
-        3.20. AUTOUPDATE Setting
-        3.21. SAMPLETIME Setting
-        3.22. HELPCHAN Setting
-        3.23. BOTECHO Setting
+        3.11. MONCHANCYCLE Setting
+        3.12. REPORT Setting
+        3.13. AUTOSIGNOUT Setting
+        3.14. JOINHELPCHAN Setting
+        3.15. AKILL Setting
+        3.16. AKILLTIME Setting
+        3.17. DOJOIN Setting
+        3.18. NFCOUNT Setting
+        3.19. VERBOSE Setting
+        3.20. CYCLETIME Setting
+        3.21. AUTOUPDATE Setting
+        3.22. SAMPLETIME Setting
+        3.23. HELPCHAN Setting
+        3.24. BOTECHO Setting
 
    4. Operational Commands
 
@@ -497,6 +498,7 @@ Note
      * CHANLOCKTIME
      * MULTICHECK
      * MONBOT
+     * MONCHANCYCLE
      * REPORT
      * AUTOSIGNOUT
      * JOINHELPCHAN
@@ -651,7 +653,17 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set MONBOT <bot>
 
-3.11. REPORT Setting
+3.11. MONCHANCYCLE Setting
+
+   This  setting  specifies  if  SecureServ  should  cycle  the MONCHAN's
+   periodically  (by  default,  it  cycles  one  channel  each time a new
+   channel  is checked with the Onjoin Bots). This can help detect OnJoin
+   virus's in the channels you specify a monitor bot should be placed.
+
+   To Change this setting, issue the following Command:
+/msg SecureServ set MONCHANCYCLE <ON/OFF>
+
+3.12. REPORT Setting
 
    SecureServ   has   the   option   to  report  positive  infections  to
    secure.irc-chat.net  site  for  both  statistically  and  in  future a
@@ -665,7 +677,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set REPORT <ON/OFF>
 
-3.12. AUTOSIGNOUT Setting
+3.13. AUTOSIGNOUT Setting
 
    SecureServ  has  the  ability to automatically logout helpers that set
    away  while being logged in. This ensures that infected users are only
@@ -674,7 +686,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AUTOSIGNOUT <ON/OFF>
 
-3.13. JOINHELPCHAN Setting
+3.14. JOINHELPCHAN Setting
 
    SecureServ  can optionally join the help channel with the first helper
    logs  in, and leave the help channel when the last helper logs out. No
@@ -685,7 +697,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set JOINHELPCHAN <ON/OFF>
 
-3.14. AKILL Setting
+3.15. AKILL Setting
 
    If  you  do  not  wish  SecureServ to ever AKILL a user for a positive
    match,  turn this option off. It will then just issue a warning to all
@@ -695,7 +707,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILL <ON/OFF>
 
-3.15. AKILLTIME Setting
+3.16. AKILLTIME Setting
 
    This  setting  changes  the  Timeout value for AKILL's that SecureServ
    sets when it detects a "infection"
@@ -703,7 +715,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AKILLTIME <SECONDS>
 
-3.16. DOJOIN Setting
+3.17. DOJOIN Setting
 
    IF  SecureServ  detects  a  user  is  infected  with  a  virus, it can
    optionally  join  that  user  to  a  Antivirus  channel. If you do not
@@ -713,7 +725,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set DOJOIN <ON/OFF>
 
-3.17. NFCOUNT Setting
+3.18. NFCOUNT Setting
 
    SecureServ  monitors  the  number of nick changes a user makes in a 10
    second  period. If the user exceeds a threshold, it considers the user
@@ -725,7 +737,7 @@ Warning
    To Change this Setting, issue the following Command:
 /msg SecureServ set NFCOUNT <number>
 
-3.18. VERBOSE Setting
+3.19. VERBOSE Setting
 
    If  you  like to know what SecureServ is doing (and like to be flooded
    in the #services channel, then enable this option.
@@ -737,7 +749,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set VERBOSE <ON/OFF>
 
-3.19. CYCLETIME Setting
+3.20. CYCLETIME Setting
 
    SecureServ automatically creates new "pseudo" users that randomly join
    channels  looking  for OnJoin virus's or SPAM. This option changes the
@@ -749,7 +761,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set CYCLETIME <SECONDS>
 
-3.20. AUTOUPDATE Setting
+3.21. AUTOUPDATE Setting
 
    If  SecureServ  has  been  Configured with a username and password (as
    Covered  in  Section  2.2,  you  can  optionally  Setup  SecureServ to
@@ -760,7 +772,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set AUTOUPDATE <ON/OFF>
 
-3.21. SAMPLETIME Setting
+3.22. SAMPLETIME Setting
 
    As  previously mentioned, SecureServ monitors the number of joins on a
    particular  channel  over  a  period  of Time. Within SecureServ, this
@@ -774,7 +786,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set SAMPLETIME <SAMPLETIME> <JOINS>
 
-3.22. HELPCHAN Setting
+3.23. HELPCHAN Setting
 
    If  your  network  has  a  AntiVirus Channel setup, HELPCHAN sets that
    channel name. The default is #nohack
@@ -782,7 +794,7 @@ Warning
    To Change the setting, issue the following Command:
 /msg SecureServ set HELPCHAN <NAME>
 
-3.23. BOTECHO Setting
+3.24. BOTECHO Setting
 
    This  option  enables  SecureServ  sending  messages any of the onjoin
    bots,  or  monbot  receives to the services channel. This can help you

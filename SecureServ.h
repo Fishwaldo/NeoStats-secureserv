@@ -135,6 +135,7 @@ struct SecureServ {
 	int joinhelpchan;
 	int modnum;
 	char sampleversion[SS_BUF_SIZE];
+	int monchancycle;
 } SecureServ;
 
 /* SecureServ.c */

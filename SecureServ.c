@@ -572,6 +572,24 @@ static int do_set(User *u, char **av, int ac)
 			SecureServ.verbose = 0;
 			return 1;
 		}
+	} else if (!strcasecmp(av[2], "MONCHANCYCLE")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return 1;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle is now enabled");
+			chanalert(s_SecureServ, "%s enabled Monitor Channel Cycle", u->nick);
+			SetConf((void *)1, CFGINT, "MonChanCycle");
+			SecureServ.monchancycle = 1;
+			return 1;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle is now disabled");
+			chanalert(s_SecureServ, "%s disabled Monitor Channel Cycle", u->nick);
+			SetConf((void *)0, CFGINT, "MonChanCycle");
+			SecureServ.monchancycle = 0;
+			return 1;
+		}
 	} else if (!strcasecmp(av[2], "CYCLETIME")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -711,6 +729,7 @@ static int do_set(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "BOTECHO:      %s", SecureServ.BotEcho ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "DOPRIVCHAN:   %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
+		prefmsg(u->nick, s_SecureServ, "MONCHANCYCLE: %s", SecureServ.monchancycle ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "AKILL:        %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "AKILLTIME:    %d", SecureServ.akilltime);
 		prefmsg(u->nick, s_SecureServ, "NFCOUNT       %d in 10 seconds", SecureServ.nfcount);
@@ -854,6 +873,10 @@ static int LoadConfig(void)
 	if (GetConf((void *)&SecureServ.verbose, CFGINT, "Verbose") <= 0){
 		/* yes */
 		SecureServ.verbose = 1;
+	}
+	if (GetConf((void *)&SecureServ.monchancycle, CFGINT, "MonChanCycle") <= 0){
+		/* yes */
+		SecureServ.monchancycle = 1;
 	}
 	if (GetConf((void *)&SecureServ.stayinchantime, CFGINT, "CycleTime") <= 0) {
 		/* 60 seconds */
@@ -1197,7 +1220,7 @@ int __ModInit(int modnum, int apiversion)
 	SecureServ.doUpdate = 0;
 	SecureServ.MaxAJPP = 0;
 	SecureServ.updateurl[0] = 0;
-	
+	SecureServ.monchancycle = 1;
 	for (i = 0; i > MAX_PATTERN_TYPES; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;

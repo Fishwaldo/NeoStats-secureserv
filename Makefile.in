@@ -1,0 +1,37 @@
+#Neostats Module Makefile!
+CC=@CC@
+CFLAGS=@CFLAGS@
+LDFLAGS= @LIBS@
+INSTALL = @INSTALL@                                                                                                                 
+INSTALL_PROGRAM = @INSTALL_PROGRAM@                                                                                                 
+INSTALL_DATA = @INSTALL_DATA@
+DIRECTORY=@DIRINST@/dl/
+INCLUDES=-I@DIRINST@/include/ -I.
+
+SOURCES= SecureServ.c SecureServ_help.c http.c
+OBJECTS= SecureServ.o SecureServ_help.o http.o
+TARGET= SecureServ.so                 
+DOCS=README.SecureServ
+DATA=
+
+
+all:	 module
+
+.c.o:	
+	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
+
+module:	 $(OBJECTS)
+	 $(LD) -shared -o $(TARGET) $(LDFLAGS) $(OBJECTS)
+
+clean:
+	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
+
+install: module
+	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
+	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+
+$(OBJECTS): Makefile
+
+SecureServ.c:		SecureServ.h SecureServ_help.c modconfig.h 
+SecureServ_help.c: 	SecureServ.h modconfig.h
+

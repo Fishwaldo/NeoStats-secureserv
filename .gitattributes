@@ -1,0 +1,16 @@
+* text=auto !eol
+/ChangeLog -text
+/LICENSE -text
+/Makefile.in -text
+/README.SecureServ -text
+/SecureServ.c -text
+/SecureServ.h -text
+/SecureServ_help.c -text
+/config.cache -text
+/config.status -text
+/configure -text
+/configure.in -text
+/http.c -text
+/http.h -text
+/install-sh -text
+/modconfig.h.in -text

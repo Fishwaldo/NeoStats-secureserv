@@ -53,7 +53,7 @@ ModuleInfo __module_info = {
 };
 
 void do_servversion() {
-	irc_snprintf(SecureServ_VersionString, BUFSIZE, "%S - %d", MODULE_VERSION, SecureServ.viriversion);
+	ircsnprintf(SecureServ_VersionString, BUFSIZE, "%s - %d", MODULE_VERSION, SecureServ.viriversion);
 }
 
 int do_viriversion(User *u, char **av, int ac)

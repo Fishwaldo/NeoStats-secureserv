@@ -64,8 +64,11 @@ int JoinFloodJoinChan (User *u, Chans *c)
 {
 	ChanInfo *ci;
 	hnode_t *cn;
+
 	
 	SET_SEGV_LOCATION();
+	
+#ifndef NS_FLAGS_NETJOIN
 	/* check for netjoins!!!*/
 	/* XXX this isn't really the best, as a lot of 
 	* floodbots could connect to an IRC server, wait 
@@ -86,7 +89,11 @@ int JoinFloodJoinChan (User *u, Chans *c)
 		nlog(LOG_DEBUG2, LOG_MOD, "Ignoring %s joining %s as it seems server %s just linked", u->nick, c->name, u->server->name);
 		return -1;
 	}
-
+#else 
+	if (u->flags && NS_FLAGS_NETJOIN) {
+		return -1;
+	}
+#endif
 	/* if channel flood protection is disabled, return here */
 	if (SecureServ.FloodProt == 0) {
 		return 1;
@@ -289,4 +296,3 @@ int NickFloodSignOff(char * n)
 	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: After nickflood Code");
 	return 1;
 }
-

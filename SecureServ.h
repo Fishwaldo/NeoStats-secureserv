@@ -82,6 +82,10 @@ typedef struct UserDetail {
 	void *data;
 } UserDetail;
 
+typedef struct ServerDetail {
+	int tsoutcount;
+} ServerDetail;
+
 /* type list */
 #define USER_HELPER 1
 #define USER_INFECTED 2

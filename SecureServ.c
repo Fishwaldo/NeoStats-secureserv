@@ -1146,6 +1146,36 @@ int ss_user_away(char **av, int ac)
 	/* TODO: scan away messages for spam */
 	return 1;
 }
+/* this is a future s->flags define that we dont use yet */
+#ifndef NS_FLAGS_NETJOIN
+/* @brief we allocate the moduledata struct for the server so we can check for TS problems with servers */
+
+int ss_new_server(char **av, int ac)
+{
+	Server *s;
+	ServerDetail *sd;
+	s = findserver(av[0]);
+	if (s) {
+		sd = malloc(sizeof(ServerDetail));
+		sd->tsoutcount = 0;
+		s->moddata[SecureServ.modnum] = sd;
+	}
+	return 1;
+}
+
+/* @brief We de-allocate the serverdetail struct for the server */
+
+int ss_quit_server(char **av, int ac)
+{
+	Server *s;
+	s = findserver(av[0]);
+	if (s) {
+			free(s->moddata[SecureServ.modnum]);
+	}
+	return 1;
+}
+
+#endif
 
 EventFnList __module_events[] = {
 	{ EVENT_ONLINE, 	Online},
@@ -1158,6 +1188,10 @@ EventFnList __module_events[] = {
 	{ EVENT_NICKCHANGE, NickChange},
 	{ EVENT_KICK,		ss_kick_chan},
 	{ EVENT_AWAY, 		ss_user_away},
+#ifndef NS_FLAGS_NETJOIN
+	{ EVENT_SERVER,		ss_new_server},
+	{ EVENT_SQUIT,		ss_quit_server},
+#endif
 	{ NULL, 			NULL}
 };
 
@@ -1213,6 +1247,9 @@ static int NickChange(char **av, int ac)
 static int ScanNick(char **av, int ac) 
 {
 	User *u;
+#ifndef NS_FLAGS_NETJOIN
+	ServerDetail *sd;
+#endif
 
 	SET_SEGV_LOCATION();
 	/* don't do anything if NeoStats hasn't told us we are online yet */
@@ -1242,12 +1279,25 @@ static int ScanNick(char **av, int ac)
 
 	if (SecureServ.doscan == 0) 
 		return -1;
+#ifndef NS_FLAGS_NETJOIN
+	sd = u->server->moddata[SecureServ.modnum];
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
+		if (sd) {
+			sd->tsoutcount++;
+			if (sd->tsoutcount > 10) {
+				chanalert(s_SecureServ, "Hrm. Is the time on %s correct? There are a lot of Netsplit Nicks", u->server->name);
+			}
+		}
 		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning %d > %d", av[0], (int)(time(NULL) - u->TS), SecureServ.timedif);
 		return -1;
+	} else {
+		if (sd) sd->tsoutcount = 0;
 	}
-	
+#else
+	if (u->flags && NS_FLAGS_NETJOIN)
+		return -1;
+#endif
 	prefmsg(u->nick, s_SecureServ, SecureServ.signonscanmsg);
 	privmsg(u->nick, s_SecureServ, "\1VERSION\1");
 	return 1;

@@ -1937,16 +1937,14 @@ int check_version_reply(char *origin, char **av, int ac) {
 	char *buf;
 	lnode_t *node;
 	virientry *viridetails;
-	int rc;
+	int rc, positive = 0;
 	char **av1;
 	int ac1 = 0;
+	static int versioncount = 0;
 	
 	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
 	if (av[1][0] != '\1') {
-		if (!strcasecmp(SecureServ.lastnick, av[0])) {
-			/* it is! */
-			OnJoinBotMsg(finduser(origin), av, ac);
-		}
+		OnJoinBotMsg(finduser(origin), av, ac);
 		return 0;
 	}
 	if (!strcasecmp(av[1], "\1version")) {
@@ -1976,6 +1974,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 				if (rc > -1) {					
 					nlog(LOG_NOTICE, LOG_MOD, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
 					gotpositive(finduser(origin), viridetails, DET_CTCP);
+					positive = 1;
 					if (SecureServ.breakorcont == 0)
 						continue;
 					else 
@@ -1984,6 +1983,12 @@ int check_version_reply(char *origin, char **av, int ac) {
 		
 			}
 		} while ((node = list_next(viri, node)) != NULL);
+		versioncount++;
+		/* why do we only change the version reply every 23 entries? Why not? */
+		if ((positive == 0) && (versioncount > 23)) {
+			strlcpy(SecureServ.sampleversion, buf, SS_BUF_SIZE);
+			versioncount = 0;
+		}
 		free(buf);
 	}				
 	return 0;
@@ -2132,6 +2137,8 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.doUpdate = 0;
 	SecureServ.MaxAJPP = 0;
 	SecureServ.updateurl[0] = 0;
+	strlcpy(SecureServ.sampleversion, "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php", SS_BUF_SIZE);
+	
 	for (i = 0; i > MAX_PATTERN_TYPES; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;

@@ -126,6 +126,7 @@ struct SecureServ {
 	int report;
 	int joinhelpchan;
 	int modnum;
+	char sampleversion[SS_BUF_SIZE];
 } SecureServ;
 
 

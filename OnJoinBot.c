@@ -283,6 +283,13 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 		return;
 	}
 	
+printf("%s\n", argv[1]);
+	if (!strcasecmp(argv[1], "\1version\1")) {
+		/* its a version request */
+		notice(u->nick, s_SecureServ, "\1VERSION %s\1", SecureServ.sampleversion);
+		return;
+	}	
+
 	/* check if this user is exempt */
 	if (is_exempt(u) > 0) {
 		nlog(LOG_DEBUG1, LOG_MOD, "User %s is exempt from Message Checking", u->nick);

@@ -26,8 +26,6 @@
 #else
 #include "modconfig.h"
 #endif
-
-#include <stdio.h>
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #endif

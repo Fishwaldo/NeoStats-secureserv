@@ -53,7 +53,7 @@ static const char* dettypes[] =
 	"channel message",
 	"away message",
 	"quit message",
-	"reserved",
+	"topic",
 	"built-in",
 };
 
@@ -91,7 +91,7 @@ const char* DatFiles[NUM_DAT_FILES]=
 };
 
 /* this is the list of viri */
-static list_t *viri[DET_MAX+1];
+static list_t *viri[DET_MAX];
 
 static void gotpositive(Client *u, virientry *ve, int type);
 
@@ -101,23 +101,21 @@ void InitScanner(void)
 
 	SET_SEGV_LOCATION();
 	/* init the virus lists */
-	for(i = 0; i <= DET_MAX; i++)
+	for(i = 0; i < DET_MAX; i++)
 		viri[i] = list_create(MAX_VIRI);
 	load_dat();
 }
 
 void ScanStatus (CmdParams *cmdparams)
 {
+	int i;
+	
 	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns: %d", SecureServ.defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Type:            Scanned  Acted On  Definitions", virustypes[DET_CTCP].trigcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Versions  %9d %9d   %9d", virustypes[DET_CTCP].trigcount, virustypes[DET_CTCP].actcount, virustypes[DET_CTCP].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Privmsg        %9d %9d   %9d", virustypes[DET_MSG].trigcount, virustypes[DET_MSG].actcount, virustypes[DET_MSG].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Nicks          %9d %9d   %9d", virustypes[DET_NICK].trigcount, virustypes[DET_NICK].actcount, virustypes[DET_NICK].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Idents         %9d %9d   %9d", virustypes[DET_IDENT].trigcount, virustypes[DET_IDENT].actcount, virustypes[DET_IDENT].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Real names     %9d %9d   %9d", virustypes[DET_REALNAME].trigcount, virustypes[DET_REALNAME].actcount, virustypes[DET_REALNAME].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Channel names  %9d %9d   %9d", virustypes[DET_CHAN].trigcount, virustypes[DET_CHAN].actcount, virustypes[DET_CHAN].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Chanmsg        %9d %9d   %9d", virustypes[DET_CHANMSG].trigcount, virustypes[DET_CHANMSG].actcount, virustypes[DET_CHANMSG].defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Builtin        %9d %9d   %9d", virustypes[DET_BUILTIN].trigcount, virustypes[DET_BUILTIN].actcount, virustypes[DET_BUILTIN].defcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Type:             Scanned  Acted On Definitions", virustypes[DET_CTCP].trigcount);
+	for( i = 0; i < DET_MAX; i++ )
+	{
+		irc_prefmsg (ss_bot, cmdparams->source, "%-15s %9d %9d   %9d", dettypes[i], virustypes[i].trigcount, virustypes[i].actcount, virustypes[i].defcount);
+	}
 }
 
 /* This function will load viri.dat then try to load custom.dat 
@@ -142,7 +140,7 @@ void load_dat(void)
 
 	SET_SEGV_LOCATION();
 	/* if the list isn't empty, make it empty */
-	for(i = 0; i <= DET_MAX; i++) {
+	for(i = 0; i < DET_MAX; i++) {
 		if (!list_isempty(viri[i])) {
 			node = list_first(viri[i]);
 			while (node) {
@@ -218,7 +216,7 @@ void load_dat(void)
 				pcre_get_substring_list(buf, ovector, rc, &subs);		
 				strlcpy(viridet->name, subs[1], MAXVIRNAME);
 				viridet->dettype = atoi(subs[2]);
-				if (viridet->dettype < 0 || viridet->dettype > DET_MAX) {
+				if (viridet->dettype < 0 || viridet->dettype >= DET_MAX) {
 					nlog (LOG_WARNING, "Unknown dettype %d for %s", viridet->dettype, viridet->name);
 					ns_free (subs);
 					ns_free (viridet);
@@ -229,7 +227,7 @@ void load_dat(void)
 				strlcpy(viridet->recvmsg, subs[5], BUFSIZE);
 				strlcpy(viridet->sendmsg, subs[6], BUFSIZE);
 				viridet->action = atoi(subs[7]);
-				if (viridet->action < 0 || viridet->action > ACT_MAX) {
+				if (viridet->action < 0 || viridet->action >= ACT_MAX) {
 					nlog (LOG_WARNING, "Unknown acttype %d for %s", viridet->action, viridet->name);
 					ns_free (subs);
 					ns_free (viridet);
@@ -280,7 +278,7 @@ int ss_cmd_list(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "Virus List:");
 	irc_prefmsg (ss_bot, cmdparams->source, "===========");
-	for(i = 0; i <= DET_MAX; i++) {
+	for(i = 0; i < DET_MAX; i++) {
 		node = list_first(viri[i]);
 		if (node) {
 			fout = 1;

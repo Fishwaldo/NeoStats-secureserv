@@ -24,16 +24,12 @@
 #ifndef SECURESERV_H
 #define SECURESERV_H
 
-#define VIRI_DAT_DIR		"data"
 #define VIRI_DAT_NAME		"data/viri.dat"
 #define CUSTOM_DAT_NAME		"data/customviri.dat"
 #define NUM_DAT_FILES	2
 
-#define REQUIREDAPIVER 1
-
 #define MAXVIRNAME		64
 #define MAXCTCPTYPE		64
-#define LOCALBUFSIZE	32
 
 typedef struct virientry {
 	char name[MAXVIRNAME];
@@ -51,25 +47,30 @@ typedef struct virientry {
 } virientry;
 
 /* Detection Types */
-#define DET_CTCP 0
-#define DET_MSG 1
-#define DET_NICK 2
-#define DET_IDENT 3
-#define DET_REALNAME 4
-#define DET_CHAN 5
-#define DET_CHANMSG 6
-#define DET_AWAYMSG 7
-#define DET_QUITMSG 8
-#define DET_BUILTIN 10
-#define DET_MAX		DET_BUILTIN
+typedef enum DET_TYPE {
+	DET_CTCP = 0,
+	DET_MSG,
+	DET_NICK,
+	DET_IDENT,
+	DET_REALNAME,
+	DET_CHAN,
+	DET_CHANMSG,
+	DET_AWAYMSG,
+	DET_QUITMSG,
+	DET_TOPIC,
+	DET_BUILTIN,
+	DET_MAX
+} DET_TYPE;
 
 /* Action List */
-#define ACT_SVSJOIN 0
-#define ACT_AKILL 1
-#define ACT_WARN 2
-#define ACT_NOTHING 3
-#define ACT_KILL 4
-#define ACT_MAX ACT_KILL
+typedef enum ACT_TYPE {
+	ACT_SVSJOIN = 0,
+	ACT_AKILL,
+	ACT_WARN,
+	ACT_NOTHING,
+	ACT_KILL,
+	ACT_MAX
+} ACT_TYPE;
 
 extern Bot *ss_bot;
 
@@ -77,14 +78,6 @@ typedef struct UserDetail {
 	int type;
 	void *data;
 } UserDetail;
-
-typedef struct ServerDetail {
-	int tsoutcount;
-} ServerDetail;
-
-typedef struct ChannelDetail {
-	int scanned;
-} ChannelDetail;
 
 /* type list */
 #define USER_HELPER 1

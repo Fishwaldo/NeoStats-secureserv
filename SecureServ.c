@@ -201,52 +201,36 @@ static int ss_cmd_status(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_newchan(CmdParams *cmdparams)
+int ss_event_newchan( CmdParams *cmdparams )
 {
-	ChannelDetail *cd;
-
 	SET_SEGV_LOCATION();
-	cd = ns_calloc(sizeof(ChannelDetail));
-	SetChannelModValue (cmdparams->channel, (void *)cd);
+	SetChannelModValue(cmdparams->channel, (void *) 0 );
 	/* check if its a monchan and we are not in place */
-	MonJoin(cmdparams->channel);
+	MonJoin( cmdparams->channel );
 	return NS_SUCCESS;
 }
 
 int ss_event_joinchan(CmdParams *cmdparams)
 {
-	ChannelDetail *cd;
-
 	SET_SEGV_LOCATION();
-	/* is it exempt? */
-	if (ModIsChannelExcluded(cmdparams->channel) > 0) {
+	/* is channel exempt? */
+	if( ModIsChannelExcluded( cmdparams->channel ) > 0 )
 		return -1;
-	}
-	
-	/* how about the user, is he exempt? */
-	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
+	/* is user exempt */
+	if( ModIsUserExcluded( cmdparams->source ) == NS_TRUE )
 		return -1;
-	}
-	cd = (ChannelDetail *)GetChannelModValue (cmdparams->channel);
-	/* if cd doesn't exist, soemthing major is wrong */
-	if(cd && cd->scanned == 0) {
-		/* Only set the channel to scanned if it is a clean channel 
-		 * otherwise we may miss scans
-		 */
-		if(ScanChannelName(cmdparams->source, cmdparams->channel) == 0) {
-			cd->scanned = 1;
-		}
+	/* is channel already scanned */
+	if( GetChannelModValue( cmdparams->channel ) == 0 ) {
+		/* only set the channel to scanned if clean so defintion remains active */
+		if( ScanChannelName( cmdparams->source, cmdparams->channel ) == 0 )
+			SetChannelModValue( cmdparams->channel, ( void * ) 1 );
 	}
 	return NS_SUCCESS;
 }
 
 int ss_event_delchan(CmdParams *cmdparams) 
 {
-	ChannelDetail *cd;
-
 	SET_SEGV_LOCATION();
-	cd = (ChannelDetail *)GetChannelModValue (cmdparams->channel);
-	ns_free(cd);
 	ClearChannelModValue (cmdparams->channel);
 	return NS_SUCCESS;
 }
@@ -256,6 +240,13 @@ int ss_event_away(CmdParams *cmdparams)
 	SET_SEGV_LOCATION();
 	HelpersAway(cmdparams);
 	/* TODO: scan away messages for spam */
+	return NS_SUCCESS;
+}
+
+int ss_event_topic(CmdParams *cmdparams)
+{
+	SET_SEGV_LOCATION();
+	/* TODO: scan topic for spam */
 	return NS_SUCCESS;
 }
 
@@ -298,6 +289,7 @@ ModuleEvent module_events[] = {
 	{ EVENT_EMPTYCHAN,		ss_event_emptychan},	
 	{ EVENT_KICKBOT,		ss_event_kickbot},
 	{ EVENT_AWAY, 			ss_event_away},
+	{ EVENT_TOPIC, 			ss_event_topic},
 	{ EVENT_NEWCHAN,		ss_event_newchan},
 	{ EVENT_PRIVATE, 		ss_event_message},
 	{ EVENT_NOTICE, 		ss_event_message},
@@ -313,6 +305,7 @@ static int ss_event_quit(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	HelpersSignoff(cmdparams);
+	/* TODO: scan quit messages for spam */
 	return NS_SUCCESS;
 }
 
@@ -392,19 +385,12 @@ int ModInit (Module *mod_ptr)
 	return NS_SUCCESS;
 }
 
-int ScanMember (Channel *c, ChannelMember *m, void *v)
+int ScanMember( Channel *c, ChannelMember *m, void *v )
 {
-	ChannelDetail *cd;
-
-	if (ModIsUserExcluded(m->u) == NS_FALSE) {
-		cd = (ChannelDetail *)GetChannelModValue (c);
-		if (!cd) {
-			cd = ns_calloc(sizeof(ChannelDetail));
-			SetChannelModValue (c, (void *)cd);
-		}	
-		if (ScanChannelName(m->u, c) == 0) {
-			cd->scanned = 1;
-			/* Channel is OK so stop abort list handling */
+	if( ModIsUserExcluded( m->u ) == NS_FALSE ) {
+		if( ScanChannelName( m->u, c ) == 0 ) {
+			/* Channel is OK so mark as clean */
+			SetChannelModValue( c, (void *) 1 );
 			return NS_TRUE;
 		}
 	}

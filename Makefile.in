@@ -52,7 +52,6 @@ dist:
 	done
 	@echo "Done"
 	@tar -czf $(distdir).tar.gz $(distdir)/*
-	@rm -rf $(distdir)
 	@echo "Tar file $(distdir).tar.gz created, Freshmeat Time"
 
 

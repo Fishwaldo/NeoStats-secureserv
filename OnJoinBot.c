@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.25 2003/08/07 15:02:19 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.26 2003/08/19 13:20:23 fishwaldo Exp $
 */
 
 
@@ -424,7 +424,7 @@ int LoadMonChans() {
 			MonChan(NULL, chan[i]);
 		}
 	}
-	
+	free(chan);	
 	return 1;
 }
 

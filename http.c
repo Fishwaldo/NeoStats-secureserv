@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: http.c,v 1.6 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: http.c,v 1.7 2003/08/19 13:20:24 fishwaldo Exp $
 */
 /***************************************************************************
  *
@@ -310,6 +310,7 @@ int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, v
     if( (proxy = getenv( "http_proxy" )) == NULL )
     {
         path = parse_url( in_URL, scheme, host, &port );
+	if (path) free(path);
         //  check for http scheme to be safe.
         if( strcasecmp(scheme, "http") != 0 )
         {
@@ -338,6 +339,7 @@ int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, v
             return(-1);
 	}
         path = in_URL;
+        
     }
     /* -- Note : --
      * After this point, in_URL is no longer used and you should only
@@ -380,6 +382,7 @@ extern int http_read(int socknum, char *sockname) {
 	        hd->response->iError = errno;
                 hd->response->pError = strerror( errno );
                 hd->callback(hd->response);
+		if (hd->pRequest) free(hd->pRequest);
         	sock_disconnect(sockname);
 		free(hd->response);
 //		free(buf);
@@ -488,8 +491,8 @@ extern int http_read(int socknum, char *sockname) {
         	hd->callback(hd->response);
          	if( hd->pBase ) free( hd->pBase );
 		if( hd->path ) free( hd->path );
-//            	if( hd->pRequest ) free( hd->pRequest );
-		free(hd->response);
+            	if( hd->pRequest ) free( hd->pRequest );
+		if ( hd->response) free(hd->response);
         	sock_disconnect(sockname);
         	return -1;
 	/* end of succesfull get */
@@ -535,17 +538,13 @@ extern int http_read(int socknum, char *sockname) {
 extern int http_write(int socknum, char *sockname) {
     int i;
     char szContent[32];
-    char *pBuf, *pContent;
+    char *pContent;
 
     if (strlen(hd->pRequest) > 0) {
     	return 1;
     }
 
 
-
-    pBuf = (char *)calloc( 1, BUFLEN + 1 );
-    if( pBuf == NULL )
-        return(-1);
 
     //  at this point we can construct our actual request. I'm trying to 
     //  incorporate more methods than the GET method supported by httpget
@@ -578,7 +577,6 @@ extern int http_write(int socknum, char *sockname) {
                 hd->response->pError = "ERROR, invalid URL for POST request";
                 hd->callback(hd->response);
 		free(hd->response);
-                if( pBuf ) free( pBuf );
                 if( hd->pRequest ) free( hd->pRequest );
                 return(1);
             }
@@ -626,7 +624,6 @@ extern int http_write(int socknum, char *sockname) {
         hd->response->pError = strerror( errno );
         hd->callback(hd->response);
 	free(hd->response);
-        if( pBuf ) free( pBuf );
         if( hd->pRequest ) free( hd->pRequest );
        	sock_disconnect(sockname);
        	return -1;

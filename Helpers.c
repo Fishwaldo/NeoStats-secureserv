@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.4 2003/08/18 15:19:18 fishwaldo Exp $
+** $Id: Helpers.c,v 1.5 2003/08/19 13:20:23 fishwaldo Exp $
 */
 
 
@@ -64,7 +64,7 @@ void Helpers_init() {
 			hash_insert(helperhash, node, helper->nick);
 		}
 	}	
-
+	free(data);
 }
 
 int Helpers_add(User *u, char **av, int ac) {
@@ -169,6 +169,9 @@ int Helpers_Login(User *u, char **av, int ac) {
 			chanalert(s_SecureServ, "%s Successfully Logged in", u->nick);
 			if ((SecureServ.joinhelpchan == 1) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) != 1)) {
 #if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+#ifndef MODE_CHANADMIN
+#define MODE_CHANADMIN MODE_CHANOP
+#endif
 			        sjoin_cmd(s_SecureServ, SecureServ.HelpChan, MODE_CHANADMIN);
 #else
 		                sjoin_cmd(s_SecureServ, SecureServ.HelpChan);
@@ -326,4 +329,3 @@ int Helpers_Assist(User *u, char **av, int ac) {
 		return -1;
 	}		
 }	
-	

@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(SecureServ.c)
 AC_CONFIG_HEADER(modconfig.h)
 PACKAGE=SecureServ
-VERSION=0.9.2
+VERSION=0.9.3
 DIRINST=~/NeoStats/
 AC_PREFIX_DEFAULT(~/NeoStats/)
 CFLAGS="$CFLAGS -O2 -Wall"

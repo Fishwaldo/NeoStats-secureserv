@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.43 2003/08/18 15:19:19 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.44 2003/08/19 13:20:23 fishwaldo Exp $
 */
 
 
@@ -1439,6 +1439,8 @@ void load_dat() {
 			list_delete(viri, node);
 			lnode_destroy(node);
 #endif
+			if (viridet->pattern) free(viridet->pattern);
+			if (viridet->patternextra) free(viridet->patternextra);
 			free(viridet);
 		} while ((node = list_next(viri, node)) != NULL);
 		list_destroy_nodes(viri);
@@ -1521,6 +1523,7 @@ void load_dat() {
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 			free(subs);
 		}
+		free(re);
 	}
 
 	

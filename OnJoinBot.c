@@ -974,24 +974,21 @@ int CheckMonBotKill(char* nick)
 	if (strcasecmp(nick, SecureServ.monbot)) {
 		return 0;
 	}
-	if (findbot(SecureServ.monbot) == NULL) {
-		/* the monbot isn't online. Initilze it */
-		rnn = list_first(nicks);
-		while (rnn != NULL) {
-			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
-				/* its our bot */
-				break;
-			}
-			rnn = list_next(nicks, rnn);
+	rnn = list_first(nicks);
+	while (rnn != NULL) {
+		nickname = lnode_get(rnn);
+		if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+			/* its our bot */
+			break;
 		}
-		if (rnn != NULL) {
-			init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
-			CloakHost(findbot(nickname->nick));
-		} else {
-			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
-			return -1;
-		}
+		rnn = list_next(nicks, rnn);
+	}
+	if (rnn != NULL) {
+		init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+		CloakHost(findbot(nickname->nick));
+	} else {
+		nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
+		return -1;
 	}
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");

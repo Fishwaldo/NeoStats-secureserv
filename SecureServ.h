@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.5 2003/05/02 14:37:49 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.6 2003/05/13 13:09:04 fishwaldo Exp $
 */
 
 
@@ -52,8 +52,10 @@ struct SecureServ {
 	char signonscanmsg[512];
 	char akillinfo[512];
 	char nohelp[512];
+	char HelpChan[CHANLEN];
 	int breakorcont;
 	int doakill;
+	int akilltime;
 	int dosvsjoin;
 	int helpcount;
 	int verbose;
@@ -99,11 +101,9 @@ list_t *nicks;
 #define MAX_EXEMPTS	100
 #define MAX_VIRI	100
 #define MAX_NICKS	100
-/* ts.c */
-int findscan(const void *key1, const void *key2);
-extern int http_error(int socknum, char *sockname);
-extern int http_read(int socknum, char *sockname);
-extern int http_write(int socknum, char *sockname);
+/* SecureServ.c */
+void gotpositive(User *u, virientry *ve, int type);
+
 
 /* OnJoin.c */
 void JoinNewChan();

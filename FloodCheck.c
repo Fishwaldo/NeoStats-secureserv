@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.1 2003/04/22 12:49:25 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.2 2003/05/13 13:09:04 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -80,7 +80,6 @@ int ss_join_chan(char **av, int ac) {
 	ChanInfo *ci;
 	hnode_t *cn;
 	
-printf("joinchan %s %s\n", av[0], av[1]);
 	
 	u = finduser(av[1]);
 	if (u) {
@@ -137,5 +136,23 @@ printf("joinchan %s %s\n", av[0], av[1]);
 
 /* delete the channel from our hash */
 int ss_del_chan(char **av, int ac) {
+	Chans *c;
+        ChanInfo *ci;
+        hnode_t *cn;
 
+	c = findchan(av[0]);
+	if (!c) {
+		nlog(LOG_WARNING, LOG_MOD, "Can't find Channel %s", av[0]);
+		return -1;
+	}
+	cn = hash_lookup(FC_Chans, c->name);
+	if (cn) {
+		ci = hnode_get(cn);
+		hash_delete(FC_Chans, cn);
+		free(ci);
+		hnode_destroy(cn);
+	} else {
+		nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
+	}
+	return 1;
 }

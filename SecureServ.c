@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.8 2003/05/02 15:36:21 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.9 2003/05/13 13:09:04 fishwaldo Exp $
 */
 
 
@@ -42,6 +42,7 @@ static int ScanNick(char **av, int ac);
 void LoadTSConf();
 int check_version_reply(char *origin, char **av, int ac);
 void gotpositive(User *u, virientry *ve, int type);
+void do_set(User *u, char **av, int ac);
 void do_list(User *u);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
@@ -83,9 +84,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		return -1; 
 	} 
 	/* first, figure out what bot its too */
-	if (strcasecmp(argv[0], s_SecureServ) {
+	if (strcasecmp(argv[0], s_SecureServ)) {
 		OnJoinBotMsg(u, argv, argc);
-		return;
+		return -1;
 	}
 
 
@@ -103,12 +104,285 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	} else if (!strcasecmp(argv[1], "cycle")) {
 		JoinNewChan();
 		return 1;
+	} else if (!strcasecmp(argv[1], "set")) {
+		if (UserLevel(u) < 185) {
+			prefmsg(u->nick, s_SecureServ, "Permission is denied", u->nick);
+			chanalert(s_SecureServ, "%s tried to use SET, but Permission was denied", u->nick);
+			return -1;
+		}
+		do_set(u, argv, argc);
+		return 1;		
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
 	return 1;
 }
+void do_set(User *u, char **av, int ac) {
+	int i, j;
+	char *buf;
+	if (ac < 3 ) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+		return;
+	}
+	if (!strcasecmp(av[2], "SPLITTIME")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 1000)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.timedif = i;
+		prefmsg(u->nick, s_SecureServ, "Signon Split Time is set to %d", i);
+		chanalert(s_SecureServ, "%s Set Signon Split Time to %d", u->nick, i);
+		SetConf((void *)i, CFGINT, "SplitTime");
+		return;
+	} else if (!strcasecmp(av[2], "VERSION")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Version Checking is now enabled");
+			chanalert(s_SecureServ, "%s has enabled Version Checking");
+			SetConf((void *)1, CFGINT, "DoVersionScan");
+			SecureServ.doscan = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Version Checking");
+			SetConf((void *)0, CFGINT, "DoVersionScan");
+			SecureServ.doscan = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "MULTICHECK")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Complete Version Checking is now enabled");
+			chanalert(s_SecureServ, "%s enabled Complete Version Checking", u->nick);
+			SetConf((void *)1, CFGINT, "MultiCheck");
+			SecureServ.breakorcont = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Complete Version Checking is now disabled");
+			chanalert(s_SecureServ, "%s disabled Complete Version Checking", u->nick);
+			SetConf((void *)0, CFGINT, "MultiCheck");
+			SecureServ.breakorcont = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "AKILL")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Akill'ing is now enabled");
+			chanalert(s_SecureServ, "%s enabled Akill", u->nick);
+			SetConf((void *)1, CFGINT, "DoAkill");
+			SecureServ.doakill = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Akill'ing is now disabled");
+			chanalert(s_SecureServ, "%s disabled Akill", u->nick);
+			SetConf((void *)0, CFGINT, "DoAkill");
+			SecureServ.doakill = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "AKILLTIME")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 100000)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.akilltime = i;
+		prefmsg(u->nick, s_SecureServ, "Akill Time is set to %d Seconds", i);
+		chanalert(s_SecureServ, "%s Set Akill Time to %d Seconds", u->nick, i);
+		SetConf((void *)i, CFGINT, "AkillTime");
+		return;
+	} else if (!strcasecmp(av[2], "DOJOIN")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "SVSJOINing is now enabled");
+			chanalert(s_SecureServ, "%s enabled SVSJOINing", u->nick);
+			SetConf((void *)1, CFGINT, "DoSvsJoin");
+			SecureServ.dosvsjoin = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "SVSJOINing is now disabled");
+			chanalert(s_SecureServ, "%s disabled SVSJOINing", u->nick);
+			SetConf((void *)0, CFGINT, "DoSvsJoin");
+			SecureServ.dosvsjoin = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "VERBOSE")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Verbose Mode is now enabled");
+			chanalert(s_SecureServ, "%s enabled Verbose Mode", u->nick);
+			SetConf((void *)1, CFGINT, "Verbose");
+			SecureServ.verbose = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Verbose Mode is now disabled");
+			chanalert(s_SecureServ, "%s disabled Verbose Mode", u->nick);
+			SetConf((void *)0, CFGINT, "Verbose");
+			SecureServ.verbose = 0;
+			return;
+		}
+	} else if (!strcasecmp(av[2], "CYCLETIME")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 1000)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.stayinchantime = i;
+		prefmsg(u->nick, s_SecureServ, "Cycle Time is set to %d Seconds (Restart Required)", i);
+		chanalert(s_SecureServ, "%s Set Cycle Time to %d Seconds (Restart Required)",u->nick,  i);
+		SetConf((void *)i, CFGINT, "CycleTime");
+		return;
+	} else if (!strcasecmp(av[2], "AUTOUPDATE")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
+			chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
+			SetConf((void *)1, CFGINT, "AutoUpdate");
+			SecureServ.autoupgrade = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now disabled");
+			chanalert(s_SecureServ, "%s disabled AutoUpdate Mode", u->nick);
+			SetConf((void *)0, CFGINT, "AutoUpdate");
+			SecureServ.autoupgrade = 0;
+			return;
+		}
+	} else if (!strcasecmp(av[2], "SAMPLETIME")) {
+		if (ac < 5) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);
+		j = atoi(av[4]);	
+		if ((i <= 0) || (i > 1000)) {
+			prefmsg(u->nick, s_SecureServ, "SampleTime Value out of Range.");
+			return;
+		}
+		if ((j <= 0) || (i > 1000)) {
+			prefmsg(u->nick, s_SecureServ, "Threshold Value is out of Range");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.sampletime = i;
+		SecureServ.JoinThreshold = j;
+		prefmsg(u->nick, s_SecureServ, "Flood Protection is now enabled at %d joins in %d Seconds", j, i);
+		chanalert(s_SecureServ, "%s Set Flood Protection to %d joins in %d Seconds", u->nick, j, i);
+		SetConf((void *)i, CFGINT, "SampleTime");
+		SetConf((void *)j, CFGINT, "JoinThreshold");
+		return;
+	} else if (!strcasecmp(av[2], "SIGNONMSG")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+		buf = joinbuf(av, ac, 3);			
+		strncpy(SecureServ.signonscanmsg, buf, 512);
+		prefmsg(u->nick, s_SecureServ, "Signon Message is now set to %s", buf);
+		chanalert(s_SecureServ, "%s set the Signon Message to %s", u->nick, buf);
+		SetConf((void *)buf, CFGSTR, "SignOnMsg");
+		free(buf);
+	} else if (!strcasecmp(av[2], "AKILLMSG")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+		buf = joinbuf(av, ac, 3);			
+		strncpy(SecureServ.akillinfo, buf, 512);
+		prefmsg(u->nick, s_SecureServ, "Akill Message is now set to %s", buf);
+		chanalert(s_SecureServ, "%s set the Akill Message to %s", u->nick, buf);
+		SetConf((void *)buf, CFGSTR, "AkillMsg");
+		free(buf);
+	} else if (!strcasecmp(av[2], "NOHELPMSG")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+		buf = joinbuf(av, ac, 3);			
+		strncpy(SecureServ.nohelp, buf, 512);
+		prefmsg(u->nick, s_SecureServ, "No Help Message is now set to %s", buf);
+		chanalert(s_SecureServ, "%s set the No Help Message to %s", u->nick, buf);
+		SetConf((void *)buf, CFGSTR, "NoHelpMsg");
+		free(buf);
+	} else if (!strcasecmp(av[2], "NOHELPMSG")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+		if (av[3][0] != '#') {
+			prefmsg(u->nick, s_SecureServ, "Invalid Channel %s", av[3]);
+			return;
+		}
+		strncpy(SecureServ.HelpChan, av[3], CHANLEN);
+		prefmsg(u->nick, s_SecureServ, "Help Channel is now set to %s", buf);
+		chanalert(s_SecureServ, "%s set the Help Channel to %s", u->nick, buf);
+		SetConf((void *)buf, CFGSTR, "HelpChan");
+	} else if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "Current SecureServ Settings:");
+		prefmsg(u->nick, s_SecureServ, "SplitTime: %d", SecureServ.timedif);
+		prefmsg(u->nick, s_SecureServ, "Version Checking: %s", SecureServ.doscan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Multi Checking: %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
+		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
+		prefmsg(u->nick, s_SecureServ, "AutoUpdate: %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Sample Threshold: %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
+		prefmsg(u->nick, s_SecureServ, "Signon Message: %s", SecureServ.signonscanmsg);
+		prefmsg(u->nick, s_SecureServ, "Akill Information Message: %s", SecureServ.akillinfo);
+		prefmsg(u->nick, s_SecureServ, "No Help Available Message: %s", SecureServ.nohelp);
+		prefmsg(u->nick, s_SecureServ, "Virus Help Channel: %s", SecureServ.HelpChan);
+		prefmsg(u->nick, s_SecureServ, "End Of List");
+		return;
+	}		
 
+
+}
 
 
 
@@ -179,30 +453,30 @@ void LoadTSConf() {
 	exemptinfo *exempts = NULL;
 	randomnicks *rnicks;
 	char **data;
+	int j;
 	int i;
 	char *tmp;
 	char datapath[MAXHOST];
 	strcpy(segv_location, "TS:loadTSConf");
 
 	
-	if(GetConf((void *)SecureServ.doscan, CFGBOOL, "DoVersionScan") <= 0) {
+	if(GetConf((void *)&SecureServ.doscan, CFGINT, "DoVersionScan") <= 0) {
 		/* not configured, don't scan */
 		SecureServ.doscan = 0;
-	}
-		
-	if (GetConf((void *)SecureServ.timedif, CFGINT, "NetSplitTime") <= 0) {
+	} 
+	if (GetConf((void *)&SecureServ.timedif, CFGINT, "NetSplitTime") <= 0) {
 		/* use Default */
 		SecureServ.timedif = 300;
 	}
-	if (GetConf((void *)SecureServ.verbose, CFGINT, "Verbose") <= 0){
+	if (GetConf((void *)&SecureServ.verbose, CFGINT, "Verbose") <= 0){
 		/* yes */
 		SecureServ.verbose = 1;
 	}
-	if (GetConf((void *)SecureServ.stayinchantime, CFGINT, "StayInChanTime") <= 0) {
+	if (GetConf((void *)&SecureServ.stayinchantime, CFGINT, "StayInChanTime") <= 0) {
 		/* 60 seconds */
 		SecureServ.stayinchantime = 60;
 	}
-	if (GetConf((void *)SecureServ.autoupgrade, CFGINT, "AutoUpgrade") <= 0) {
+	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpgrade") <= 0) {
 		/* autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
 	}
@@ -362,7 +636,10 @@ static int ScanNick(char **av, int ac) {
 	User *u;
 	lnode_t *node;
 	exemptinfo *exempts;
-
+#if 0
+	char username[USERLEN];
+	char *s1, *s2, *user;
+#endif
 	strcpy(segv_location, "TS:ScanNick");
 	/* don't do anything if NeoStats hasn't told us we are online yet */
 	if (!SecureServ.inited)
@@ -392,6 +669,14 @@ static int ScanNick(char **av, int ac) {
 		}
 		node = list_next(exempt, node);
 	}
+	#if 0
+	/* fizzer requires realname info, which we don't store yet. */
+	if (SecureServ.dofizzer == 1) {
+		strncpy(user, u->
+		s1 = 
+		snprintf(username, USERLEN, "?%s%s", u->
+	#endif
+
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning", av[0]);
@@ -442,17 +727,20 @@ void gotpositive(User *u, virientry *ve, int type) {
 			if (SecureServ.doakill > 0) {
 				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
 				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
+				sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ: %s", ve->name);
 				break;
 			}
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {
 				if (SecureServ.helpcount > 0) {		
 					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
+					ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
 					chanalert(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
 					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
 					break;
 				}
 			}
@@ -485,11 +773,12 @@ void _init() {
 	snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
 	snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
 	snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
+	snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
 	SecureServ.breakorcont = 1;
 	SecureServ.doakill = 1;
 	SecureServ.dosvsjoin = 1;
 	SecureServ.helpcount = 0;
-
+	SecureServ.akilltime = 3600;
 	SecureServ.sampletime = 5;
 	SecureServ.JoinThreshold = 5;
 	SecureServ.autoupgrade = 0;	
@@ -559,14 +848,6 @@ void datdownload(HTTP_Response *response) {
 }
 	
 		
-#if 0
-printf("gotresponse\n");
-printf("hcode: %s %d\n", response->szHCode, response->iError);
-printf("data: %s\n", response->pData);
-}
-
-#endif
-
 void _fini() {
 
 };

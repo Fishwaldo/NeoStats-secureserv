@@ -156,10 +156,6 @@ int HelpersChpass(User *u, char **av, int ac)
 	hscan_t hlps;
 
 	SET_SEGV_LOCATION();
-	if (ac < 3) {
-		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help chpass for more info", s_SecureServ);
-		return -1;
-	}
 
 	if (IsHelpersInit == 0) 
 		return -1;
@@ -188,10 +184,6 @@ int HelpersLogin(User *u, char **av, int ac)
 	UserDetail *ud;
 
 	SET_SEGV_LOCATION();
-	if (ac < 4) {
-		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help login for more info", s_SecureServ);
-		return -1;
-	}
 
 	if (IsHelpersInit == 0) 
 		return -1;
@@ -354,10 +346,6 @@ int HelpersAssist(User *u, char **av, int ac)
 	virientry *ve;
 
 	SET_SEGV_LOCATION();
-	if (ac < 4) {
-		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
-		return -1;
-	}
 
 	if (IsHelpersInit == 0) 
 		return -1;
@@ -426,10 +414,6 @@ int do_helpers(User *u, char **av, int ac)
 		chanalert(s_SecureServ, "%s tried to use Helpers, but Permission was denied", u->nick);
 		return -1;
 	}			
-	if (ac < 3) {
-		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
-		return -1;
-	}
 	if (!strcasecmp(av[2], "add")) {
 		HelpersAdd(u, av, ac);
 		return 1;

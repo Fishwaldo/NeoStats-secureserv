@@ -23,53 +23,21 @@
 
 #include "stats.h"
 
-const char *ts_help[] = {
-	"\2SecureServ\2 is a Network Service that scans the IRC",
-	"client for Insecure IRC clients, Trojans, and Viruses.",
-	"For more Information, please contact the Network Staff",
-	"",
-	"The following commands can be used with SecureServ",
-	"",
-	"    LOGIN      Login as a helper",
-	"    LOGOUT     Logout as a helper",
-	"    CHPASS     Change your Helper Password",
-	NULL
-};
-
-const char *ts_help_helper[] = {
-	"",
-	"Additional commands for Helpers",
-	"",
-	"    ASSIST     Release/Akill infected user",
-	NULL
-};
-
-const char *ts_help_oper[] = {
-	"",
-	"Additional commands for Operators",
-	"",
-	"    CHECKCHAN  Scan a Channel", 
-	"    STATUS     Current Status of SecureServ",
-	"    SET        Configure SecureServ",
-	"    EXCLUDE    Exclude users/channels/servers from scans",
-	"    CYCLE      Scan next channel",
-	"    LIST       Current list of virus definitions",
-	"    UPDATE     Download latest definitions",
-	"    BOTS       Manage random Bot list",
-	"    MONCHAN    Set channel monitor bot",
-	"    HELPERS    Manage helper list",
-	"    RELOAD     Reload virus defintions",
-	NULL
-};
-
-const char *ts_help_on_help[] = {
-	"",
-	"To use a command, type",
-	"    \2/msg SecureServ command\2",
-	"For for more information on a command, type", 
-	"    \2/msg SecureServ HELP command\2.",
-	NULL
-};
+const char ts_help_login_oneline[] = "Login as a helper";
+const char ts_help_logout_oneline[] = "Logout as a helper";
+const char ts_help_chpass_oneline[] = "Change your Helper Password";
+const char ts_help_assist_oneline[] = "Release/Akill infected user";
+const char ts_help_checkchan_oneline[] = "Scan a Channel"; 
+const char ts_help_status_oneline[] = "Current Status of SecureServ";
+const char ts_help_set_oneline[] = "Configure SecureServ";
+const char ts_help_exclude_oneline[] = "Exclude users/channels/servers from scans";
+const char ts_help_cycle_oneline[] = "Scan next channel";
+const char ts_help_list_oneline[] = "Current list of virus definitions";
+const char ts_help_update_oneline[] = "Download latest definitions";
+const char ts_help_bots_oneline[] = "Manage random Bot list";
+const char ts_help_monchan_oneline[] = "Set channel monitor bot";
+const char ts_help_helpers_oneline[] = "Manage helper list";
+const char ts_help_reload_oneline[] = "Reload virus defintions";
 
 const char *ts_help_login[] = {
 	"Syntax: \2LOGIN <username> <password>\2",
@@ -185,10 +153,10 @@ const char *ts_help_monchan[] = {
 	"monitored. Should a channel listed here not exist when you", 
 	"start SecureServ it will be automatically deleted from the",
 	"list.",
-	"\2ADD will add an entry of <channel> to the list of",
+	"\2ADD\2 will add an entry of <channel> to the list of",
 	"monitored channels. The channel has to exist when you",
 	"use this command.",
-	"\2DEL will delete the <channel> from the monitored",
+	"\2DEL\2 will delete the <channel> from the monitored",
 	"channels list.",
 	NULL
 };
@@ -314,5 +282,140 @@ const char *ts_help_reload[] = {
 	"",
 	"Force SecureServ to reload the virus definition files.",
 	"Used after manual updates to viri.dat or customviri.dat.",
+	NULL
+};
+
+const char *ts_help_set_updateinfo[] = {
+	"\2UPDATEINFO <username> <password>\2",
+	" - Sets the Username and Password required for updating the SecureServ",
+	" Definitions file. See the Readme file for more info",
+	NULL
+};
+
+const char *ts_help_set_splittime[] = {
+	"\2SPLITTIME <time>\2 - ",
+	NULL
+};
+const char *ts_help_set_chankey[] = {
+	"\2CHANKEY <key>\2 - Sets the key to use for locking the channel when flood protection is active",
+	NULL
+};
+const char *ts_help_set_version[] = {
+	"\2VERSION <on/off>\2 - Whether to use CTCP version checking",
+	NULL
+};
+const char *ts_help_set_signonmsg[] = {
+	"\2SIGNONMSG <message>\2 - Set the message sent to users when they connect and CTCP version checking is enabled",
+	NULL
+};
+const char *ts_help_set_botquitmsg[] = {
+	"\2BOTQUITMSG <message>\2 - Set the message sent when onjoin bots quit",
+	NULL
+};
+const char *ts_help_set_akillmsg[] = {
+	"\2AKILLMSG <message>\2 - Set the message sent to users when they are akilled",
+	NULL
+};
+const char *ts_help_set_nohelpmsg[] = {
+	"\2NOHELPMSG <message>\2 - Set the message sent to users when there are no helpers logged in",
+	NULL
+};
+const char *ts_help_set_helpchan[] = {
+	"\2HELPCHAN <channel>\2 - Set the channel that infected users are joined to if there are helpers logged in",
+	NULL
+};
+const char *ts_help_set_autosignout[] = {
+	"\2AUTOSIGNOUT <on/off>\2 - Automatically sign out helpers if they set away.",
+	NULL
+};
+const char *ts_help_set_joinhelpchan[] = {
+	"\2JOINHELPCHAN <on/off>\2	- Should SecureServ join the help channel when there is at least one helper logged in",
+	NULL
+};
+const char *ts_help_set_report[] = {
+	"\2REPORT <on/off>\2 - Enable Reporting to Secure.irc-chat.net of infected users.",
+	NULL
+};
+const char *ts_help_set_floodprot[] = {
+	"\2FLOODPROT <on/off>\2 - Enable channel flood protection.",
+	NULL
+};
+const char *ts_help_set_doprivchan[] = {
+	"\2DOPRIVCHAN <on/off>\2 - Whether onjoin bots scan private channels",
+	NULL
+};
+const char *ts_help_set_checkfizzer[] = {
+	"\2CHECKFIZZER <on/off>\2 - Enable Fizzer Checking. Only required if your network is affected by Fizzer",
+	NULL
+};
+const char *ts_help_set_multicheck[] = {
+	"\2MULTICHECK <on/off>\2 - Makes SecureServ check all Patterns when an infected user is found.",
+	"Please Read the Readme file for important Performance information",
+	NULL
+};
+const char *ts_help_set_akill[] = {
+	"\2AKILL <on/off>\2 - Set whether SecureServ will akill or send a warning message to operators",
+	NULL
+};
+const char *ts_help_set_akilltime[] = {
+	"\2AKILLTIME <seconds>\2 - Sets the time an AKILL will last for.",
+	NULL
+};
+const char *ts_help_set_chanlocktime[] = {
+	"\2CHANLOCKTIME <seconds>\2 - Set the time to lock a channel for when flood protection is enabled. Time in seconds",
+	NULL
+};
+const char *ts_help_set_nfcount[] = {
+	"\2NFCOUNT <number>\2 - Sets the threshold for Nick Floods. <number> is number of changes in 10 seconds.",
+	NULL
+};
+const char *ts_help_set_dojoin[] = {
+	"\2DOJOIN <on/off>\2 - Whether SecureServ will issue a SVSJOIN. If disabled, the user is akilled instead",
+	NULL
+};
+const char *ts_help_set_doonjoin[] = {
+	"\2DOONJOIN <on/off>\2 - Enables on join virus checking.",
+	NULL
+};
+const char *ts_help_set_botecho[] = {
+	"\2BOTECHO <on/off>\2 - Make the onjoin bots echo messages received to the services channel regardless of the verbose setting",
+	NULL
+};
+const char *ts_help_set_verbose[] = {
+	"\2VERBOSE <on/off>\2 - Enable verbose mode. Prepare to be flooded!",
+	NULL
+};
+const char *ts_help_set_monchancycle[] = {
+	"\2MONCHANCYCLE <on/off>\2 - Should the monitor bot cycle the channels occasionally",
+	NULL
+};
+const char *ts_help_set_treatchanmsgaspm[] = {
+	"\2TREATCHANMSGASPM <on/off>\2",
+	"Make SecureServ check all channel messages against the virus signatures listed only for PM",
+	"This option will consume \2LOTS\2 of CPU time. You shouldn't need to enable this under normal",
+	"circumstances as the virus database has a seperate list of signatures for channels",
+	NULL
+};
+const char *ts_help_set_monchancycletime[] = {
+	"\2MONCHANCYCLETIME <seconds>\2 ",
+	"Set how often the monitor bot cycles a single channel",
+	NULL
+};
+const char *ts_help_set_cycletime[] = {
+	"\2CYCLETIME <seconds>\2 - Set how often SecureServ checks new channels for infections.",
+	"See the Readme file for recommended Settings",
+	NULL
+};
+const char *ts_help_set_monbot[] = {
+	"\2MONBOT <bot>\2 - Assign <bot> (from /msg SecureServ bots list) used for channel monitoring",
+	NULL
+};
+const char *ts_help_set_autoupdate[] = {
+	"\2AUTOUPDATE <on/off>\2 - Should SecureServ automatically update the definitions file daily, if required?",
+	NULL
+};
+const char *ts_help_set_sampletime[] = {
+	"\2SAMPLETIME <seconds> <joins>\2",
+	"Sets the threshold for flood checking. Read the Readme file for more information",
 	NULL
 };

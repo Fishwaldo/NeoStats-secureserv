@@ -35,7 +35,7 @@ typedef struct randomnicks {
 	char nick[MAXNICK];
 	char user[MAXUSER];
 	char host[MAXHOST];
-	char rname[MAXREALNAME];
+	char realname[MAXREALNAME];
 }randomnicks;
 
 static char confbuf[CONFBUFSIZE];
@@ -305,7 +305,7 @@ void JoinNewChan()
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 
 	/* ok, init the new bot. */
-	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ") == -1) {
+	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ") == -1) {
 		/* hu? Nick was in use. How is that possible? */
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
@@ -367,7 +367,7 @@ static int CheckChan(User *u, char *requestchan)
 	strlcpy(SecureServ.lastchan, c->name, CHANLEN);
 
 	/* ok, init the new bot. */
-	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+	init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
 	CloakHost(findbot(nickname->nick));
 	join_bot_to_chan (nickname->nick, c->name, 0);
 
@@ -376,19 +376,18 @@ static int CheckChan(User *u, char *requestchan)
 	return 1;
 }
 
-void OnJoinBotMsg(User *u, char **argv, int ac) 
+void OnJoinBotMsg(User *u, char *botname, char *msg)
 {
-	char *buf;
-
 	SET_SEGV_LOCATION();
+
 	if (!u) {
 		return;
 	}
 	
-	if (!strcasecmp(argv[1], "\1version\1")) {
+	if (!strncasecmp(msg, "\1version\1", sizeof("\1version\1"))) {
 		/* its a version request */
-		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot %s", u->nick, argv[0]);
-		notice(u->nick, argv[0], "\1VERSION %s\1", SecureServ.sampleversion);
+		nlog(LOG_NORMAL, LOG_MOD, "Received version request from %s to OnJoin Bot %s", u->nick, botname);
+		notice(u->nick, botname, "\1VERSION %s\1", SecureServ.sampleversion);
 		return;
 	}	
 
@@ -398,15 +397,12 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 		return;
 	}
 
-	buf = joinbuf(argv, ac, 1);
-
-	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot %s: %s", u->nick, argv[0], buf);
+	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot %s: %s", u->nick, botname, msg);
 	if (SecureServ.verbose||SecureServ.BotEcho) {
-		chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
+		chanalert(me.allbots ? botname : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", botname, u->nick, msg);
 	}
 
-	ScanMsg(u, buf, 0);
-	free(buf);
+	ScanMsg(u, msg, 0);
 }				
 
 int CheckOnjoinBotKick(char **argv, int ac) 
@@ -466,7 +462,7 @@ int MonJoin(Chans *c) {
 					rnn = list_next(nicks, rnn);
 				}
 				if (rnn != NULL) {
-					init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+					init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
 					CloakHost(findbot(nickname->nick));
 				} else {
 					nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
@@ -573,7 +569,7 @@ static int MonChan(User *u, char *requestchan)
 			rnn = list_next(nicks, rnn);
 		}
 		if (rnn != NULL) {
-			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+			init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
 			CloakHost(findbot(nickname->nick));
 		} else {
 			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
@@ -712,10 +708,10 @@ int OnJoinBotConf(void)
 				free(rnicks);
 				continue;
 			} else {
-				strlcpy(rnicks->rname, tmp, MAXREALNAME);
+				strlcpy(rnicks->realname, tmp, MAXREALNAME);
 				free(tmp);
 			}			
-			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
+			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
 			node = lnode_create(rnicks);
 			list_prepend(nicks, node);			
 		}
@@ -782,22 +778,13 @@ int do_bots(User* u, char **argv, int argc)
 	char *buf, *buf2;
 
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < 100) {
-		prefmsg(u->nick, s_SecureServ, "Access Denied");
-		chanalert(s_SecureServ, "%s tried to use BOTS, but is not an operator", u->nick);
-		return 1;
-	}
-	if (argc < 3) {
-		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bots", s_SecureServ);
-		return 0;
-	}
 	if (!strcasecmp(argv[2], "LIST")) {
 		node = list_first(nicks);
 		i = 1;
 		prefmsg(u->nick, s_SecureServ, "Bot List:");
 		while (node) {
 			bots = lnode_get(node);
-			prefmsg(u->nick, s_SecureServ, "%d) %s (%s@%s) - %s", i, bots->nick, bots->user, bots->host, bots->rname);
+			prefmsg(u->nick, s_SecureServ, "%d) %s (%s@%s) - %s", i, bots->nick, bots->user, bots->host, bots->realname);
 			++i;
  			node = list_next(nicks, node);
 		}
@@ -825,12 +812,12 @@ int do_bots(User* u, char **argv, int argc)
 		strlcpy(bots->nick, argv[3], MAXNICK);
 		strlcpy(bots->user, argv[4], MAXUSER);
 		strlcpy(bots->host, argv[5], MAXHOST);
-		strlcpy(bots->rname, buf2, MAXREALNAME);
+		strlcpy(bots->realname, buf2, MAXREALNAME);
 		free(buf2);
 		node = lnode_create(bots);
 		list_append(nicks, node);
-		prefmsg(u->nick, s_SecureServ, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->rname);
-		chanalert(s_SecureServ, "%s added %s (%s@%s - %s) Bot to Bot list", u->nick, bots->nick, bots->user, bots->host, bots->rname);
+		prefmsg(u->nick, s_SecureServ, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->realname);
+		chanalert(s_SecureServ, "%s added %s (%s@%s - %s) Bot to Bot list", u->nick, bots->nick, bots->user, bots->host, bots->realname);
 		return 1;
 	} else if (!strcasecmp(argv[2], "DEL")) {
 		if (argc < 4) {
@@ -885,15 +872,6 @@ int do_bots(User* u, char **argv, int argc)
 int do_checkchan(User* u, char **argv, int argc)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to checkchan, but Permission was denied", u->nick);
-		return -1;
-	}			
-	if (argc < 3) {
-		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help checkchan", s_SecureServ);
-		return -1;
-	}
 	CheckChan(u, argv[2]);
 	return 1;
 }
@@ -901,15 +879,6 @@ int do_checkchan(User* u, char **argv, int argc)
 int do_monchan(User* u, char **argv, int argc)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to monchan, but Permission was denied", u->nick);
-		return -1;
-	}			
-	if (argc < 3) {
-		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
-		return -1;
-	}
 	if (!strcasecmp(argv[2], "ADD")) {
 		if (argc < 4) {
 			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
@@ -935,17 +904,16 @@ int do_monchan(User* u, char **argv, int argc)
 int do_cycle(User* u, char **argv, int argc)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
-		return -1;
-	}			
 	JoinNewChan();
 	return 1;
 }
 
 int do_set_monbot(User* u, char **av, int ac)
 {
+	if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
+		return 1;
+	}
 	/* this is ok, its just to shut up fussy compilers */
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;

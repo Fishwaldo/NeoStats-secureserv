@@ -101,7 +101,7 @@ typedef struct ChannelDetail {
 struct SecureServ {
 	char user[MAXUSER]; 
 	char host[MAXHOST]; 
-	char rname[MAXREALNAME]; 
+	char realname[MAXREALNAME]; 
 	int isonline;
 	int timedif;
 	int doscan;
@@ -162,7 +162,7 @@ void GotHTTPAddress(char *data, adns_answer *a);
 
 /* OnJoin.c */
 void JoinNewChan();
-void OnJoinBotMsg(User *, char **, int );
+void OnJoinBotMsg(User *u, char *botname, char *msg);
 int ListMonChan(User *u);
 int LoadMonChans();
 int MonChanCount(void);
@@ -219,10 +219,6 @@ int HelpersChpass(User *u, char **av, int ac);
 
 
 /* SecureServ_help.c */
-extern const char *ts_help[];
-extern const char *ts_help_on_help[];
-extern const char *ts_help_oper[];
-extern const char *ts_help_set[];
 extern const char *ts_help_checkchan[];
 extern const char *ts_help_login[];
 extern const char *ts_help_logout[];
@@ -235,11 +231,55 @@ extern const char *ts_help_list[];
 extern const char *ts_help_bots[];
 extern const char *ts_help_monchan[];
 extern const char *ts_help_assist[];
-extern const char *ts_help_helper[];
 extern const char *ts_help_helpers[];
 extern const char *ts_help_reload[];
 
+extern const char ts_help_login_oneline[];
+extern const char ts_help_logout_oneline[];
+extern const char ts_help_chpass_oneline[];
+extern const char ts_help_assist_oneline[];
+extern const char ts_help_checkchan_oneline[];
+extern const char ts_help_status_oneline[];
+extern const char ts_help_exclude_oneline[];
+extern const char ts_help_cycle_oneline[];
+extern const char ts_help_list_oneline[];
+extern const char ts_help_update_oneline[];
+extern const char ts_help_bots_oneline[];
+extern const char ts_help_monchan_oneline[];
+extern const char ts_help_helpers_oneline[];
+extern const char ts_help_reload_oneline[];
 
+extern const char *ts_help_set_splittime[];
+extern const char *ts_help_set_chankey[];
+extern const char *ts_help_set_version[];
+extern const char *ts_help_set_signonmsg[];
+extern const char *ts_help_set_botquitmsg[];
+extern const char *ts_help_set_akillmsg[];
+extern const char *ts_help_set_nohelpmsg[];
+extern const char *ts_help_set_helpchan[];
+extern const char *ts_help_set_autosignout[];
+extern const char *ts_help_set_joinhelpchan[];
+extern const char *ts_help_set_report[];
+extern const char *ts_help_set_floodprot[];
+extern const char *ts_help_set_doprivchan[];
+extern const char *ts_help_set_checkfizzer[];
+extern const char *ts_help_set_multicheck[];
+extern const char *ts_help_set_akill[];
+extern const char *ts_help_set_akilltime[];
+extern const char *ts_help_set_chanlocktime[];
+extern const char *ts_help_set_nfcount[];
+extern const char *ts_help_set_dojoin[];
+extern const char *ts_help_set_doonjoin[];
+extern const char *ts_help_set_botecho[];
+extern const char *ts_help_set_verbose[];
+extern const char *ts_help_set_monchancycle[];
+extern const char *ts_help_set_treatchanmsgaspm[];
+extern const char *ts_help_set_monchancycletime[];
+extern const char *ts_help_set_cycletime[];
+extern const char *ts_help_set_monbot[];
+extern const char *ts_help_set_autoupdate[];
+extern const char *ts_help_set_sampletime[];
+extern const char *ts_help_set_updateinfo[];
 
 /* these are needed for 2.5.14 compatibility */
 #ifndef EVENT_SERVER

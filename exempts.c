@@ -338,15 +338,6 @@ static int SS_do_exempt_del(User* u, char **argv, int argc)
 int SS_do_exempt(User* u, char **argv, int argc)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < 50) {
-		prefmsg(u->nick, s_SecureServ, "Access Denied");
-		chanalert(s_SecureServ, "%s tried to use exclude, but is not an operator", u->nick);
-		return 1;
-	}
-	if (argc < 3) {
-		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
-		return 0;
-	}
 	if (!strcasecmp(argv[2], "LIST")) {
 		SS_do_exempt_list(u, argv, argc);
 		return 1;

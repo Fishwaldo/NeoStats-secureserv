@@ -39,14 +39,13 @@
 static int ScanNick(char **av, int ac);
 static int LoadConfig(void);
 static int check_version_reply(User* u, char **av, int ac);
-static int ss_notice(char *origin, char **av, int ac);
-static int do_set(User *u, char **av, int ac);
 static int do_status(User *u, char **av, int ac);
 static int NickChange(char **av, int ac);
 static int DelNick(char **av, int ac);
 static int ss_kick_chan(char **argv, int ac);
 
 char s_SecureServ[MAXNICK];
+static ModUser *ss_bot;
 
 ModuleInfo __module_info = {
 	"SecureServ",
@@ -56,155 +55,40 @@ ModuleInfo __module_info = {
 	__TIME__
 };
 
-static int new_m_version(char *origin, char **av, int ac) 
+int do_viriversion(User *u, char **av, int ac)
 {
-	snumeric_cmd(RPL_VERSION,origin, "Module SecureServ Loaded, Version: %s %s %s Dat: %d",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time, SecureServ.viriversion);
+	prefmsg(u->nick, s_SecureServ, "%d", SecureServ.viriversion);
 	return 0;
 }
 
-Functions __module_functions[] = {
-	{ MSG_VERSION,	new_m_version,	1 },
-#ifdef GOTTOKENSUPPORT
-	{ TOK_VERSION,	new_m_version,	1 },
-#endif
-	{ MSG_NOTICE,   ss_notice, 1},
-#ifdef GOTTOKENSUPPORT
-	{ TOK_NOTICE,   ss_notice, 1},
-#endif
-	{ NULL,		NULL,		0 }
+static bot_cmd ss_commands[]=
+{
+	{"LOGIN",	HelpersLogin,	2,	0,				ts_help_login,		ts_help_login_oneline},
+ 	{"LOGOUT",	HelpersLogout,	0,	30,				ts_help_logout,		ts_help_logout_oneline},
+	{"CHPASS",	HelpersChpass,	1,	30,				ts_help_chpass,		ts_help_chpass_oneline},
+	{"ASSIST",	HelpersAssist,	2,	30,				ts_help_assist,		ts_help_assist_oneline},
+	{"HELPERS",	do_helpers,		1,	NS_ULEVEL_OPER, ts_help_helpers,	ts_help_helpers_oneline},
+	{"LIST",	do_list,		0,	NS_ULEVEL_OPER, ts_help_list,		ts_help_list_oneline},
+	{"EXCLUDE",	SS_do_exempt,	1,	50,				ts_help_exclude,	ts_help_exclude_oneline},
+	{"CHECKCHAN",do_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan,	ts_help_checkchan_oneline},
+	{"CYCLE",	do_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle,		ts_help_cycle_oneline},
+	{"UPDATE",	do_update,		0,	NS_ULEVEL_ADMIN,ts_help_update,		ts_help_update_oneline},
+	{"STATUS",	do_status,		0,	NS_ULEVEL_OPER, ts_help_status,		ts_help_status_oneline},
+	{"BOTS",	do_bots,		1,	100,			ts_help_bots,		ts_help_bots_oneline},
+	{"MONCHAN",	do_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan,	ts_help_monchan_oneline},
+	{"RELOAD",	do_reload,		0,	NS_ULEVEL_OPER, ts_help_reload,		ts_help_reload_oneline},
+	{"VERSION",	do_viriversion,	0,	NS_ULEVEL_OPER,	NULL, 				NULL},
+	{NULL,		NULL,			0, 	0,				NULL, 				NULL}
 };
 
-int __BotMessage(char *origin, char **argv, int argc)
+int __ModuleAuth (User * u)
 {
-	User *u;
 	UserDetail *ud;
-
-	SET_SEGV_LOCATION();
-	u = finduser(origin); 
-	if (!u) { 
-		nlog(LOG_WARNING, LOG_CORE, "Unable to find user %s (ts)", origin); 
-		return -1; 
-	} 
-	/* first, figure out what bot its too */
-	if (strcasecmp(argv[0], s_SecureServ)) {
-		OnJoinBotMsg(u, argv, argc);
-		return -1;
+	ud = (UserDetail *)u->moddata[SecureServ.modnum];
+	if (ud->type == USER_HELPER) {
+		return 30;
 	}
-
-	if (!strcasecmp(argv[1], "help")) {
-		if (argc == 2) {
-			privmsg_list(u->nick, s_SecureServ, ts_help);
-			if ((UserLevel(u) < NS_ULEVEL_OPER) && (u->moddata[SecureServ.modnum] != NULL)) {
-				ud = (UserDetail *)u->moddata[SecureServ.modnum];
-				if (ud->type == USER_HELPER) {
-					privmsg_list(u->nick, s_SecureServ, ts_help_helper);
-				}
-			}
-			if (UserLevel(u) >= NS_ULEVEL_OPER) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_helper);
-				privmsg_list(u->nick, s_SecureServ, ts_help_oper);
-			}
-			privmsg_list(u->nick, s_SecureServ, ts_help_on_help);			
-		} else if (argc == 3) {
-			if ((!strcasecmp(argv[2], "set")) && (UserLevel(u) >= NS_ULEVEL_ADMIN)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_set);
-			} else if (!strcasecmp(argv[2], "assist")) {
-				if (u->moddata[SecureServ.modnum] != NULL) {
-					ud = (UserDetail *)u->moddata[SecureServ.modnum];
-					if (ud->type == USER_HELPER) {
-						privmsg_list(u->nick, s_SecureServ, ts_help_assist);
-						return 1;
-					}
-				}
-				if (UserLevel(u) > NS_ULEVEL_OPER) {
-					privmsg_list(u->nick, s_SecureServ, ts_help_assist);
-					return 1;
-				}
-			} else if (!strcasecmp(argv[2], "login")) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_login);
-			} else if (!strcasecmp(argv[2], "logout")) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_logout);
-			} else if (!strcasecmp(argv[2], "chpass")) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_chpass);
-			} else if ((!strcasecmp(argv[2], "helpers")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_helpers);
-			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_list);
-			} else if ((!strcasecmp(argv[2], "exclude")) && (UserLevel(u) >= 50)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_exclude);
-			} else if ((!strcasecmp(argv[2], "checkchan")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_checkchan);
-			} else if ((!strcasecmp(argv[2], "cycle")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_cycle);
-			} else if ((!strcasecmp(argv[2], "update")) && (UserLevel(u) >= NS_ULEVEL_ADMIN)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_update);
-			} else if ((!strcasecmp(argv[2], "status")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_status);
-			} else if ((!strcasecmp(argv[2], "bots")) && (UserLevel(u) >= 100)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_bots);
-			} else if ((!strcasecmp(argv[2], "MONCHAN")) && (UserLevel(u) > NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_monchan);
-			} else if ((!strcasecmp(argv[2], "RELOAD")) && (UserLevel(u) > NS_ULEVEL_OPER)) {
-				privmsg_list(u->nick, s_SecureServ, ts_help_reload);
-			} else {				
-				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
-			}
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
-		}
-		return 1;
-	} else if (!strcasecmp(argv[1], "login")) {
-		HelpersLogin(u, argv, argc);
-		return 1;		
- 	} else if (!strcasecmp(argv[1], "logout")) {
-		HelpersLogout(u, argv, argc);
- 		return 1;
-	} else if (!strcasecmp(argv[1], "chpass")) {
-		HelpersChpass(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "helpers")) {
-		do_helpers(u, argv, argc);
- 		return 1;
-	} else if (!strcasecmp(argv[1], "list")) {
-		do_list(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "ASSIST")) {
-		HelpersAssist(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
-		SS_do_exempt(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "BOTS")) {
-		do_bots(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "checkchan")) {
-		do_checkchan(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "monchan")) {
-		do_monchan(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "cycle")) {
-		do_cycle(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "set")) {
-		do_set(u, argv, argc);
-		return 1;		
-	} else if (!strcasecmp(argv[1], "status")) {
-		do_status(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "update")) {
-		do_update(u, argv, argc);
-		return 1;
-	} else if (!strcasecmp(argv[1], "reload")) {
-		do_reload(u, argv, argc);
-		return 1;	
-	} else if (!strcasecmp(argv[1], "version")) {
-		/* leave this command un-documented. Its only for checking applications */
-		prefmsg(u->nick, s_SecureServ, "%d", SecureServ.viriversion);
-	} else {
-		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
-	}
-	return 1;
+	return 0;
 }
 
 int __ChanMessage(char *origin, char **argv, int argc) {
@@ -223,626 +107,182 @@ int __ChanMessage(char *origin, char **argv, int argc) {
 		free(buf);
 	}
 	return 1;
-
 }
-static int do_set(User *u, char **av, int ac) 
-{
-	int i, j;
-	char *buf;
-	
-	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
-		prefmsg(u->nick, s_SecureServ, "Permission is denied");
-		chanalert(s_SecureServ, "%s tried to use SET, but Permission was denied", u->nick);
-		return -1;
-	}
 
-	if (ac < 3 ) {
+static int do_set_updateinfo(User *u, char **av, int ac) 
+{
+	SET_SEGV_LOCATION();
+	if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
+		if (strlen(SecureServ.updateuname)) {
+			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
+		}
+		return 1;
+	}
+	if (ac < 5) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set", s_SecureServ);
+		return 1;
+	}
+	SetConf((void *)av[3], CFGSTR, "UpdateUname");
+	SetConf((void *)av[4], CFGSTR, "UpdatePassword");
+	strlcpy(SecureServ.updateuname, av[3], MAXNICK);
+	strlcpy(SecureServ.updatepw, av[4], MAXNICK);
+	chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
+	prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
+	return 1;
+}
+static int do_set_treatchanmsgaspm(User *u, char **av, int ac) 
+{
+	if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
+		return 1;
+	}
+	if (ac < 4) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+		return 1;
+	}			
+	if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+		prefmsg(u->nick, s_SecureServ, "\2Warning:\2");
+		prefmsg(u->nick, s_SecureServ, "This option can consume a \2LOT\2 of CPU");
+		prefmsg(u->nick, s_SecureServ, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
+		prefmsg(u->nick, s_SecureServ, "Its not a recomended configuration.");
+		prefmsg(u->nick, s_SecureServ, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", s_SecureServ);
+		return 1;
+	} else if (!strcasecmp(av[3], "IGOTLOTSOFCPU")) {
+		prefmsg(u->nick, s_SecureServ, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
+		chanalert(s_SecureServ, "%s has configured %s to treat Channels messages as PM messages", u->nick, s_SecureServ);
+		SetConf((void *)1, CFGINT, "ChanMsgAsPM");
+		SecureServ.treatchanmsgaspm = 1;
+		return 1;
+	} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+		prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
+		chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
+		SetConf((void *)0, CFGINT, "ChanMsgAsPM");
+		SecureServ.treatchanmsgaspm = 0;
+		return 1;
+	} else {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 		return 1;
 	}
-	
-	if (!strcasecmp(av[2], "SPLITTIME")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 1000)) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.timedif = i;
-		prefmsg(u->nick, s_SecureServ, "Signon Split Time is set to %d", i);
-		chanalert(s_SecureServ, "%s Set Signon Split Time to %d", u->nick, i);
-		SetConf((void *)i, CFGINT, "SplitTime");
-		return 1;
-	} else if (!strcasecmp(av[2], "UPDATEINFO")) {
-		if (ac < 5) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set", s_SecureServ);
-			return 1;
-		}
-		SetConf((void *)av[3], CFGSTR, "UpdateUname");
-		SetConf((void *)av[4], CFGSTR, "UpdatePassword");
-		strlcpy(SecureServ.updateuname, av[3], MAXNICK);
-		strlcpy(SecureServ.updatepw, av[4], MAXNICK);
-		chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
-		prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
-		return 1;
-	} else if (!strcasecmp(av[2], "CHANKEY")) {
-		if ((ac < 4) || (strlen(av[3]) > CHANLEN)) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set", s_SecureServ);
-			return 1;
-		}
-		SetConf((void *)av[3], CFGSTR, "ChanKey");
-		strlcpy(SecureServ.ChanKey, av[3], CHANLEN);
-		chanalert(s_SecureServ, "%s changed the Channel Flood Protection key to %s", u->nick, SecureServ.ChanKey);
-		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Key has been updated to %s", SecureServ.ChanKey);
-		return 1;
-	} else if (!strcasecmp(av[2], "VERSION")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Version Checking is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Version Checking", u->nick);
-			SetConf((void *)1, CFGINT, "DoVersionScan");
-			SecureServ.doscan = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
-			SetConf((void *)0, CFGINT, "DoVersionScan");
-			SecureServ.doscan = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "TREATCHANMSGASPM")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "\2Warning:\2");
-			prefmsg(u->nick, s_SecureServ, "This option can consume a \2LOT\2 of CPU");
-			prefmsg(u->nick, s_SecureServ, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
-			prefmsg(u->nick, s_SecureServ, "Its not a recomended configuration.");
-			prefmsg(u->nick, s_SecureServ, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", s_SecureServ);
-			return 1;
-		} else if (!strcasecmp(av[3], "IGOTLOTSOFCPU")) {
-			prefmsg(u->nick, s_SecureServ, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-			chanalert(s_SecureServ, "%s has configured %s to treat Channels messages as PM messages", u->nick, s_SecureServ);
-			SetConf((void *)1, CFGINT, "ChanMsgAsPM");
-			SecureServ.treatchanmsgaspm = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
-			SetConf((void *)0, CFGINT, "ChanMsgAsPM");
-			SecureServ.treatchanmsgaspm = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "AUTOSIGNOUT")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Helper Away Auto logout is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Helper Away Auto Logout", u->nick);
-			SetConf((void *)1, CFGINT, "DoAwaySignOut");
-			SecureServ.signoutaway = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Helper Away Auto logout is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Helper Away Auto logout", u->nick);
-			SetConf((void *)0, CFGINT, "DoAwaySignOut");
-			SecureServ.signoutaway = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "JOINHELPCHAN")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "SecureServ will join the Help Channel");
-			chanalert(s_SecureServ, "%s has enabled SecureServ to join the HelpChannel", u->nick);
-			SetConf((void *)1, CFGINT, "DoJoinHelpChan");
-			SecureServ.joinhelpchan = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "SecureServ will not join the Help Channel");
-			chanalert(s_SecureServ, "%s has disabled SecureServ joining the Help Channel", u->nick);
-			SetConf((void *)0, CFGINT, "DoJoinHelpChan");
-			SecureServ.joinhelpchan = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "REPORT")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Reporting is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Reporting", u->nick);
-			SetConf((void *)1, CFGINT, "DoReport");
-			SecureServ.report = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Reporting is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Reporting", u->nick);
-			SetConf((void *)0, CFGINT, "DoReport");
-			SecureServ.report = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "FLOODPROT")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Channel Flood Protection", u->nick);
-			SetConf((void *)1, CFGINT, "DoFloodProt");
-			SecureServ.FloodProt = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Channel Flood Protection", u->nick);
-			SetConf((void *)0, CFGINT, "DoFloodProt");
-			SecureServ.FloodProt = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "DOPRIVCHAN")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Private Channel Checking is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Private Channel Checking", u->nick);
-			SetConf((void *)1, CFGINT, "DoPrivChan");
-			SecureServ.doprivchan = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Private Channel Checking is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Private Channel Checking", u->nick);
-			SetConf((void *)0, CFGINT, "DoPrivChan");
-			SecureServ.doprivchan = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "CHECKFIZZER")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Fizzer Virus Checking is now enabled");
-			chanalert(s_SecureServ, "%s enabled Fizzer Virus Checking", u->nick);
-			SetConf((void *)1, CFGINT, "FizzerCheck");
-			SecureServ.dofizzer = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Fizzer Checking is now disabled");
-			chanalert(s_SecureServ, "%s disabled Fizzer Checking", u->nick);
-			SetConf((void *)0, CFGINT, "FizzerCheck");
-			SecureServ.dofizzer = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "MULTICHECK")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Complete Version Checking is now enabled");
-			chanalert(s_SecureServ, "%s enabled Complete Version Checking", u->nick);
-			SetConf((void *)1, CFGINT, "MultiCheck");
-			SecureServ.breakorcont = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Complete Version Checking is now disabled");
-			chanalert(s_SecureServ, "%s disabled Complete Version Checking", u->nick);
-			SetConf((void *)0, CFGINT, "MultiCheck");
-			SecureServ.breakorcont = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "AKILL")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Akill'ing is now enabled");
-			chanalert(s_SecureServ, "%s enabled Akill", u->nick);
-			SetConf((void *)1, CFGINT, "DoAkill");
-			SecureServ.doakill = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Akill'ing is now disabled");
-			chanalert(s_SecureServ, "%s disabled Akill", u->nick);
-			SetConf((void *)0, CFGINT, "DoAkill");
-			SecureServ.doakill = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "AKILLTIME")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if (i <= 0) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.akilltime = i;
-		prefmsg(u->nick, s_SecureServ, "Akill Time is set to %d Seconds", i);
-		chanalert(s_SecureServ, "%s Set Akill Time to %d Seconds", u->nick, i);
-		SetConf((void *)i, CFGINT, "AkillTime");
-		return 1;
-	} else if (!strcasecmp(av[2], "CHANLOCKTIME")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 600)) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.closechantime = i;
-		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection will be active for %d seconds", i);
-		chanalert(s_SecureServ, "%s Set Channel Flood Protection time to %d seconds", u->nick, i);
-		SetConf((void *)i, CFGINT, "ChanLockTime");
-		return 1;
-	} else if (!strcasecmp(av[2], "NFCOUNT")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 100)) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.nfcount = i;
-		prefmsg(u->nick, s_SecureServ, "NickFlood Count is set to %d in 10 Seconds", i);
-		chanalert(s_SecureServ, "%s Set NickFlood Count to %d Seconds in 10 Seconds", u->nick, i);
-		SetConf((void *)i, CFGINT, "NFCount");
-		return 1;
-	} else if (!strcasecmp(av[2], "DOJOIN")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "SVSJOINing is now enabled");
-			chanalert(s_SecureServ, "%s enabled SVSJOINing", u->nick);
-			SetConf((void *)1, CFGINT, "DoSvsJoin");
-			SecureServ.dosvsjoin = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "SVSJOINing is now disabled");
-			chanalert(s_SecureServ, "%s disabled SVSJOINing", u->nick);
-			SetConf((void *)0, CFGINT, "DoSvsJoin");
-			SecureServ.dosvsjoin = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "DOONJOIN")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now enabled");
-			chanalert(s_SecureServ, "%s enabled OnJoin Virus Checking", u->nick);
-			SetConf((void *)1, CFGINT, "DoOnJoin");
-			SecureServ.DoOnJoin = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now disabled");
-			chanalert(s_SecureServ, "%s disabled OnJoin Virus Checking", u->nick);
-			SetConf((void *)0, CFGINT, "DoOnJoin");
-			SecureServ.DoOnJoin = 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "BOTECHO")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "OnJoin Bot Echo is now enabled");
-			chanalert(s_SecureServ, "%s enabled OnJoin Bot Echo", u->nick);
-			SetConf((void *)1, CFGINT, "BotEcho");
-			SecureServ.BotEcho= 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "OnJoin Bot Echo is now disabled");
-			chanalert(s_SecureServ, "%s disabled OnJoin Bot Echo", u->nick);
-			SetConf((void *)0, CFGINT, "BotEcho");
-			SecureServ.BotEcho= 0;
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "VERBOSE")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Verbose Mode is now enabled");
-			chanalert(s_SecureServ, "%s enabled Verbose Mode", u->nick);
-			SetConf((void *)1, CFGINT, "Verbose");
-			SecureServ.verbose = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Verbose Mode is now disabled");
-			chanalert(s_SecureServ, "%s disabled Verbose Mode", u->nick);
-			SetConf((void *)0, CFGINT, "Verbose");
-			SecureServ.verbose = 0;
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "MONCHANCYCLE")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle is now enabled");
-			chanalert(s_SecureServ, "%s enabled Monitor Channel Cycle", u->nick);
-			SetConf((void *)1, CFGINT, "MonChanCycle");
-			SecureServ.monchancycle = 1;
-			return 1;
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle is now disabled");
-			chanalert(s_SecureServ, "%s disabled Monitor Channel Cycle", u->nick);
-			SetConf((void *)0, CFGINT, "MonChanCycle");
-			SecureServ.monchancycle = 0;
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "MONCHANCYCLETIME")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 10000)) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.monchancycletime = i;
-		change_mod_timer_interval ("MonitorBotCycle", i);
-		prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle Time is set to %d Seconds", i);
-		chanalert(s_SecureServ, "%s Set Monitor Channel Cycle Time to %d Seconds",u->nick,  i);
-		SetConf((void *)i, CFGINT, "MonCycleTime");
-		return 1;
-	} else if (!strcasecmp(av[2], "CYCLETIME")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);	
-		if ((i <= 0) || (i > 1000)) {
-			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.stayinchantime = i;
-		change_mod_timer_interval ("JoinNewChan", i);
-		prefmsg(u->nick, s_SecureServ, "Cycle Time is set to %d Seconds", i);
-		chanalert(s_SecureServ, "%s Set Cycle Time to %d Seconds",u->nick,  i);
-		SetConf((void *)i, CFGINT, "CycleTime");
-		return 1;
-	} else if (!strcasecmp(av[2], "MONBOT")) {
-		do_set_monbot(u, av, ac);
-		return 1;
-	} else if (!strcasecmp(av[2], "AUTOUPDATE")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
-			if ((strlen(SecureServ.updateuname) > 0) && (strlen(SecureServ.updatepw) > 0)) {
-				prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
-				chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
-				SetConf((void *)1, CFGINT, "AutoUpdate");
-				SecureServ.autoupgrade = 1;
-				return 1;
-			} else {
-				prefmsg(u->nick, s_SecureServ, "You can not enable AutoUpdate, as you have not set a username and password");
-				return 1;
-			}
-		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
-			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now disabled");
-			chanalert(s_SecureServ, "%s disabled AutoUpdate Mode", u->nick);
-			SetConf((void *)0, CFGINT, "AutoUpdate");
-			SecureServ.autoupgrade = 0;
-			return 1;
-		}
-	} else if (!strcasecmp(av[2], "SAMPLETIME")) {
-		if (ac < 5) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		i = atoi(av[3]);
-		j = atoi(av[4]);	
-		if ((i <= 0) || (i > 1000)) {
-			prefmsg(u->nick, s_SecureServ, "SampleTime Value out of Range.");
-			return 1;
-		}
-		if ((j <= 0) || (i > 1000)) {
-			prefmsg(u->nick, s_SecureServ, "Threshold Value is out of Range");
-			return 1;
-		}
-		/* if we get here, all is ok */
-		SecureServ.sampletime = i;
-		SecureServ.JoinThreshold = j;
-		prefmsg(u->nick, s_SecureServ, "Flood Protection is now enabled at %d joins in %d Seconds", j, i);
-		chanalert(s_SecureServ, "%s Set Flood Protection to %d joins in %d Seconds", u->nick, j, i);
-		SetConf((void *)i, CFGINT, "SampleTime");
-		SetConf((void *)j, CFGINT, "JoinThreshold");
-		return 1;
-	} else if (!strcasecmp(av[2], "SIGNONMSG")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-		buf = joinbuf(av, ac, 3);			
-		strlcpy(SecureServ.signonscanmsg, buf, BUFSIZE);
-		prefmsg(u->nick, s_SecureServ, "Signon Message is now set to %s", buf);
-		chanalert(s_SecureServ, "%s set the Signon Message to %s", u->nick, buf);
-		SetConf((void *)buf, CFGSTR, "SignOnMsg");
-		free(buf);
-	} else if (!strcasecmp(av[2], "BOTQUITMSG")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-		buf = joinbuf(av, ac, 3);			
-		strlcpy(SecureServ.botquitmsg, buf, BUFSIZE);
-		prefmsg(u->nick, s_SecureServ, "Bot quit message is now set to %s", buf);
-		chanalert(s_SecureServ, "%s set the bot quit message to %s", u->nick, buf);
-		SetConf((void *)buf, CFGSTR, "BotQuitMsg");
-		free(buf);
-	} else if (!strcasecmp(av[2], "AKILLMSG")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-		buf = joinbuf(av, ac, 3);			
-		strlcpy(SecureServ.akillinfo, buf, BUFSIZE);
-		prefmsg(u->nick, s_SecureServ, "Akill Message is now set to %s", buf);
-		chanalert(s_SecureServ, "%s set the Akill Message to %s", u->nick, buf);
-		SetConf((void *)buf, CFGSTR, "AkillMsg");
-		free(buf);
-	} else if (!strcasecmp(av[2], "NOHELPMSG")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-		buf = joinbuf(av, ac, 3);			
-		strlcpy(SecureServ.nohelp, buf, BUFSIZE);
-		prefmsg(u->nick, s_SecureServ, "No Help Message is now set to %s", buf);
-		chanalert(s_SecureServ, "%s set the No Help Message to %s", u->nick, buf);
-		SetConf((void *)buf, CFGSTR, "NoHelpMsg");
-		free(buf);
-	} else if (!strcasecmp(av[2], "HELPCHAN")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}
-		if (av[3][0] != '#') {
-			prefmsg(u->nick, s_SecureServ, "Invalid Channel %s", av[3]);
-			return 1;
-		}
-		strlcpy(SecureServ.HelpChan, av[3], CHANLEN);
-		prefmsg(u->nick, s_SecureServ, "Help Channel is now set to %s", av[3]);
-		chanalert(s_SecureServ, "%s set the Help Channel to %s", u->nick, av[3]);
-		SetConf((void *)av[3], CFGSTR, "HelpChan");
-	} else if (!strcasecmp(av[2], "LIST")) {
-		prefmsg(u->nick, s_SecureServ, "Current SecureServ Settings:");
-		prefmsg(u->nick, s_SecureServ, "SPLITTIME:    %d", SecureServ.timedif);
-		prefmsg(u->nick, s_SecureServ, "VERSION:      %s", SecureServ.doscan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "CHECKFIZZER:  %s", SecureServ.dofizzer ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "MULTICHECK:   %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "FLOODPROT:    %s", SecureServ.FloodProt ? "Enabled" : "Disabled");
-		if (SecureServ.FloodProt) {
-			prefmsg(u->nick, s_SecureServ, "SAMPLETIME:   %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
-			prefmsg(u->nick, s_SecureServ, "CHANLOCKTIME: %d seconds", SecureServ.closechantime);
-			prefmsg(u->nick, s_SecureServ, "CHANKEY:      %s", SecureServ.ChanKey);
-		}
-		prefmsg(u->nick, s_SecureServ, "DOONJOIN:     %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "BOTECHO:      %s", SecureServ.BotEcho ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "DOPRIVCHAN:   %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
-		prefmsg(u->nick, s_SecureServ, "MONCHANCYCLE: %s", SecureServ.monchancycle ? "Enabled" : "Disabled");
-		if (SecureServ.monchancycle) {
-			prefmsg(u->nick, s_SecureServ, "MONCHANCYCLETIME: %d", SecureServ.monchancycletime);
-		}
-		prefmsg(u->nick, s_SecureServ, "AKILL:        %s", SecureServ.doakill ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "AKILLTIME:    %d", SecureServ.akilltime);
-		prefmsg(u->nick, s_SecureServ, "NFCOUNT       %d in 10 seconds", SecureServ.nfcount);
-		prefmsg(u->nick, s_SecureServ, "DOJOIN:       %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "VERBOSE:      %s", SecureServ.verbose ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "CYCLETIME:    %d", SecureServ.stayinchantime);
-		prefmsg(u->nick, s_SecureServ, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
-		if ((UserLevel(u) > NS_ULEVEL_ADMIN) & (strlen(SecureServ.updateuname))) {
-			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
-		}
-		prefmsg(u->nick, s_SecureServ, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "REPORT:       %s", SecureServ.report ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "AUTOSIGNOUT:  %s", SecureServ.signoutaway ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "JOINHELPCHAN: %s", SecureServ.joinhelpchan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "BOTQUITMSG:   %s", SecureServ.botquitmsg);
-		prefmsg(u->nick, s_SecureServ, "SIGNONMSG:    %s", SecureServ.signonscanmsg);
-		prefmsg(u->nick, s_SecureServ, "AKILLMSG:     %s", SecureServ.akillinfo);
-		prefmsg(u->nick, s_SecureServ, "NOHELPMSG:    %s", SecureServ.nohelp);
-		prefmsg(u->nick, s_SecureServ, "HELPCHAN:     %s", SecureServ.HelpChan);
-		prefmsg(u->nick, s_SecureServ, "TREATCHANMSGASPM:");
-		prefmsg(u->nick, s_SecureServ, "              %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "End Of List");
-		prefmsg(u->nick, s_SecureServ, "Type /msg %s HELP SET for more information on these settings", s_SecureServ);
-		return 1;
-	} else {
-		prefmsg(u->nick, s_SecureServ, "Unknown Set option %s. try /msg %s help set", av[2], s_SecureServ);
-		return 1;
-	}		
 	return 1;
 }
+static int do_set_monchancycletime(User *u, char **av, int ac) 
+{
+	change_mod_timer_interval ("MonitorBotCycle", SecureServ.monchancycletime);
+	return 1;
+}
+static int do_set_cycletime(User *u, char **av, int ac) 
+{
+	change_mod_timer_interval ("JoinNewChan", SecureServ.stayinchantime);
+	return 1;
+}
+
+static int do_set_autoupdate(User *u, char **av, int ac) 
+{
+	if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
+		return 1;
+	}
+	if (ac < 4) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+		return 1;
+	}			
+	if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+		if ((strlen(SecureServ.updateuname) > 0) && (strlen(SecureServ.updatepw) > 0)) {
+			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
+			chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
+			SetConf((void *)1, CFGINT, "AutoUpdate");
+			SecureServ.autoupgrade = 1;
+			return 1;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "You can not enable AutoUpdate, as you have not set a username and password");
+			return 1;
+		}
+	} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+		prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now disabled");
+		chanalert(s_SecureServ, "%s disabled AutoUpdate Mode", u->nick);
+		SetConf((void *)0, CFGINT, "AutoUpdate");
+		SecureServ.autoupgrade = 0;
+		return 1;
+	}
+	return 1;
+}
+static int do_set_sampletime(User *u, char **av, int ac) 
+{
+	int i, j;
+	if (!strcasecmp(av[2], "LIST")) {
+		if (SecureServ.FloodProt) {
+			prefmsg(u->nick, s_SecureServ, "SAMPLETIME:   %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
+		}
+		return 1;
+	}
+	if (ac < 5) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+		return 1;
+	}			
+	i = atoi(av[3]);
+	j = atoi(av[4]);	
+	if ((i <= 0) || (i > 1000)) {
+		prefmsg(u->nick, s_SecureServ, "SampleTime Value out of Range.");
+		return 1;
+	}
+	if ((j <= 0) || (i > 1000)) {
+		prefmsg(u->nick, s_SecureServ, "Threshold Value is out of Range");
+		return 1;
+	}
+	/* if we get here, all is ok */
+	SecureServ.sampletime = i;
+	SecureServ.JoinThreshold = j;
+	prefmsg(u->nick, s_SecureServ, "Flood Protection is now enabled at %d joins in %d Seconds", j, i);
+	chanalert(s_SecureServ, "%s Set Flood Protection to %d joins in %d Seconds", u->nick, j, i);
+	SetConf((void *)i, CFGINT, "SampleTime");
+	SetConf((void *)j, CFGINT, "JoinThreshold");
+	return 1;
+}
+
+static bot_setting ss_settings[]=
+{
+	{"NICK",		&s_SecureServ,			SET_TYPE_NICK,		0,	MAXNICK, 	NS_ULEVEL_ADMIN, "Nick",		NULL,	ns_help_set_nick, NULL  },
+	{"USER",		&SecureServ.user,		SET_TYPE_USER,		0,	MAXUSER, 	NS_ULEVEL_ADMIN, "User",		NULL,	ns_help_set_user, NULL  },
+	{"HOST",		&SecureServ.host,		SET_TYPE_HOST,		0,	MAXHOST, 	NS_ULEVEL_ADMIN, "Host",		NULL,	ns_help_set_host, NULL  },
+	{"REALNAME",	&SecureServ.realname,	SET_TYPE_REALNAME,	0,	MAXREALNAME,NS_ULEVEL_ADMIN, "RealName",	NULL,	ns_help_set_realname, NULL  },
+	{"SPLITTIME",	&SecureServ.timedif,	SET_TYPE_INT,		0,	1000,		NS_ULEVEL_ADMIN, "SplitTime",	NULL,	ts_help_set_splittime, NULL },
+	{"CHANKEY",		&SecureServ.ChanKey,	SET_TYPE_STRING,	0,	CHANLEN,	NS_ULEVEL_ADMIN, "ChanKey",		NULL,	ts_help_set_chankey, NULL },
+	{"VERSION",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoVersionScan",NULL,	ts_help_set_version, NULL },
+	{"SIGNONMSG",	&SecureServ.signonscanmsg,	SET_TYPE_MSG,	0,	0,			NS_ULEVEL_ADMIN,"SignOnMsg",	NULL,	ts_help_set_signonmsg, NULL },
+	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL },
+	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL },
+	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"NoHelpMsg",	NULL,	ts_help_set_nohelpmsg, NULL },
+	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	0,			NS_ULEVEL_ADMIN,"HelpChan",		NULL,	ts_help_set_helpchan, NULL },
+	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAwaySignOut",NULL,	ts_help_set_autosignout, NULL },
+	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoJoinHelpChan",NULL,	ts_help_set_joinhelpchan, NULL },
+	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoReport",		NULL,	ts_help_set_report, NULL },
+	{"FLOODPROT",	&SecureServ.FloodProt,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoFloodProt",	NULL,	ts_help_set_floodprot, NULL },
+	{"DOPRIVCHAN",	&SecureServ.doprivchan,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoPrivChan",	NULL,	ts_help_set_doprivchan, NULL },
+	{"CHECKFIZZER",	&SecureServ.dofizzer,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"FizzerCheck",	NULL,	ts_help_set_checkfizzer, NULL },
+	{"MULTICHECK",	&SecureServ.breakorcont,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"MultiCheck",	NULL,	ts_help_set_multicheck, NULL },
+	{"AKILL",		&SecureServ.doakill,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAkill",		NULL,	ts_help_set_akill, NULL },
+	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"AkillTime",	NULL,	ts_help_set_akilltime, NULL },
+	{"CHANLOCKTIME",&SecureServ.closechantime,SET_TYPE_INT,		0,	600,		NS_ULEVEL_ADMIN,"ChanLockTime", NULL,	ts_help_set_chanlocktime, NULL },
+	{"NFCOUNT",		&SecureServ.nfcount,	SET_TYPE_INT,		0,	100,		NS_ULEVEL_ADMIN,"NFCount",		NULL,	ts_help_set_nfcount, NULL },
+	{"DOJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoSvsJoin",	NULL,	ts_help_set_dojoin, NULL },
+	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoOnJoin",		NULL,	ts_help_set_doonjoin, NULL },
+	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"BotEcho",		NULL,	ts_help_set_botecho, NULL },
+	{"VERBOSE",		&SecureServ.verbose,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"Verbose",		NULL,	ts_help_set_verbose, NULL },
+	{"MONCHANCYCLE",&SecureServ.monchancycle,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"MonChanCycle", NULL,	ts_help_set_monchancycle, NULL },
+	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_CUSTOM,0,0,		NS_ULEVEL_ADMIN,"ChanMsgAsPM",	NULL,	ts_help_set_treatchanmsgaspm, do_set_treatchanmsgaspm },
+	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_CUSTOM,1,10000,	NS_ULEVEL_ADMIN,"MonitorBotCycle",NULL,	ts_help_set_monchancycletime, do_set_monchancycletime },
+	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_CUSTOM,	1,	1000,		NS_ULEVEL_ADMIN,"CycleTime",	NULL,	ts_help_set_cycletime, do_set_cycletime },
+	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_monbot, do_set_monbot },
+	{"AUTOUPDATE",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_autoupdate, do_set_autoupdate },
+	{"SAMPLETIME",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_sampletime, do_set_sampletime },
+	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_updateinfo, do_set_updateinfo },
+	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
+};
 
 static int do_status(User *u, char **av, int ac)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to list status, but Permission was denied", u->nick);
-		return -1;
-	}			
 	prefmsg(u->nick, s_SecureServ, "SecureServ Status:");
 	prefmsg(u->nick, s_SecureServ, "==================");
 	prefmsg(u->nick, s_SecureServ, "Virus Patterns Loaded: %d", ViriCount());
@@ -888,11 +328,8 @@ static int Online(char **av, int ac)
 	hscan_t hs;
 	
 	SET_SEGV_LOCATION();
-	if (init_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.rname, services_bot_modes, __module_info.module_name) == -1 ) {
-		/* Nick was in use!!!! */
-		strlcat(s_SecureServ, "_", MAXNICK);
-		init_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.rname, services_bot_modes, __module_info.module_name);
-	}
+	ss_bot = init_mod_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.realname,
+		services_bot_modes, BOT_FLAG_RESTRICT_OPERS|BOT_FLAG_DEAF, ss_commands, ss_settings, __module_info.module_name);
 	HelpersInit();
 	if (SecureServ.verbose) {
 		chanalert(s_SecureServ, "%d Trojans Patterns loaded", ViriCount());
@@ -958,10 +395,10 @@ static int LoadConfig(void)
 		strlcpy(SecureServ.host, tmp, MAXHOST);
 		free(tmp);
 	}
-	if (GetConf((void *) &tmp, CFGSTR, "Rname") < 0) {
-		ircsnprintf(SecureServ.rname, MAXREALNAME, "Trojan Scanning Bot");
+	if (GetConf((void *) &tmp, CFGSTR, "RealName") < 0) {
+		ircsnprintf(SecureServ.realname, MAXREALNAME, "Trojan Scanning Bot");
 	} else {
-		strlcpy(SecureServ.rname, tmp, MAXREALNAME);
+		strlcpy(SecureServ.realname, tmp, MAXREALNAME);
 		free(tmp);
 	}
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
@@ -1267,8 +704,47 @@ int ss_quit_server(char **av, int ac)
 
 #endif
 
+static int event_private(char **av, int ac) 
+{
+	User *u;
+
+	SET_SEGV_LOCATION();
+	u = finduser(av[0]); 
+	if (!u) { 
+		nlog(LOG_WARNING, LOG_CORE, "Unable to find user %s (ts)", av[0]); 
+		return -1; 
+	} 
+	/* first, figure out what bot its too */
+	if (strcasecmp(av[1], s_SecureServ)) {
+		OnJoinBotMsg(u, av[1], av[2]);
+		return -1;
+	}
+	return 1;
+}
+
+static int event_notice(char **av, int ac) 
+{
+	User *u;
+
+	SET_SEGV_LOCATION();
+	u = finduser(av[0]); 
+	if(!u) {
+		return 0;
+	}
+	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
+	if (av[2][0] != '\1') {
+		OnJoinBotMsg(u, av[1], av[2]);
+		return 0;
+	}
+
+	if (!strncasecmp(av[2], "\1version", 8)) {
+		check_version_reply(u, av, ac);
+	}				
+	return 1;
+}
+
 EventFnList __module_events[] = {
-	{ EVENT_ONLINE, 	Online},
+ 	{ EVENT_ONLINE, 	Online},
 	{ EVENT_SIGNON, 	ScanNick},
 	{ EVENT_SIGNOFF, 	DelNick},
 	{ EVENT_KILL, 		DelNick},
@@ -1283,6 +759,8 @@ EventFnList __module_events[] = {
 	{ EVENT_SERVER,		ss_new_server},
 	{ EVENT_SQUIT,		ss_quit_server},
 #endif
+	{ EVENT_PRIVATE, 	event_private},
+	{ EVENT_NOTICE, 	event_notice},
 	{ NULL, 			NULL}
 };
 
@@ -1428,28 +906,6 @@ static int check_version_reply(User* u, char **av, int ac)
 		versioncount = 0;
 	}
 	free(buf);
-	return 0;
-}
-
-static int ss_notice(char *origin, char **av, int ac) 
-{
-	User* u;
-
-	SET_SEGV_LOCATION();
-	u = finduser(origin);
-	if(!u) {
-		return 0;
-	}
-	
-	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
-	if (av[1][0] != '\1') {
-		OnJoinBotMsg(u, av, ac);
-		return 0;
-	}
-
-	if (!strcasecmp(av[1], "\1version")) {
-		check_version_reply(u, av, ac);
-	}				
 	return 0;
 }
 

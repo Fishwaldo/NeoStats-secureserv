@@ -230,11 +230,6 @@ int AutoUpdate(void)
 int do_update(User *u, char **av, int ac)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
-		return -1;
-	}
 	bzero(ss_buf, SS_BUF_SIZE);
 	ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
 	if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", u, datver) != NS_SUCCESS) {

@@ -209,13 +209,8 @@ void load_dat(void)
 int do_reload(User *u, char **av, int ac)
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to reload, but Permission was denied", u->nick);
-		return -1;
-	}			
 	prefmsg(u->nick, s_SecureServ, "Reloading virus definition files");
-    	chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
+   	chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
 	load_dat();
 	return 1;
 }
@@ -229,11 +224,6 @@ int do_list(User *u, char **av, int ac)
 	int i;
 
 	SET_SEGV_LOCATION();
-	if (UserLevel(u) < NS_ULEVEL_OPER) {
-		prefmsg(u->nick, s_SecureServ, "Permission Denied");
-		chanalert(s_SecureServ, "%s tried to list, but Permission was denied", u->nick);
-		return -1;
-	}			
 
 	i = 0;
 	node = list_first(viri);

@@ -36,7 +36,7 @@ install: module
 # to this
 #	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
 	 @cd $(DIRECTORY)..; \
-	if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i doc/SecureServ.settings; fi
+	if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i ./doc/SecureServ.settings; fi
 
 dist:	
 	@echo -n "Creating Directories"

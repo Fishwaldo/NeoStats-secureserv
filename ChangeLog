@@ -1,6 +1,11 @@
 SecureServ Module for NeoStats Changelog.
+Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
-3.0.a1 - Mark (M)
+3.0.a2 - Mark (M)
+ - Add AUTOUPDATETIME setting so users can choose the interval at which
+   SecureServ checks for dat file updates. (D)
+ 
+3.0.a1 - Mark (M) 23 Feb 2005
  - Add preliminary support for topic message scans. (M)
  - Update module to use new core module exclusion support. (M)
  - Add preliminary support for away message and quit message scans. (M)

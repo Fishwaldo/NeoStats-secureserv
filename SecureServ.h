@@ -102,6 +102,7 @@ struct SecureServ {
 	int stayinchantime;
 	int monchancycletime;
 	int autoupgrade;
+	int autoupgradetime;
 	int doUpdate;
 	int dofizzer;
 	int DoOnJoin;
@@ -131,6 +132,7 @@ struct SecureServ {
 int ss_cmd_update(CmdParams *cmdparams);
 int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdate_cb (CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_set_autoupdatetime_cb (CmdParams *cmdparams, SET_REASON reason);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
 
@@ -240,6 +242,7 @@ extern const char *ts_help_set_monchancycletime[];
 extern const char *ts_help_set_cycletime[];
 extern const char *ts_help_set_monbot[];
 extern const char *ts_help_set_autoupdate[];
+extern const char *ts_help_set_autoupdatetime[];
 extern const char *ts_help_set_updateinfo[];
 extern const char *ts_help_set_onjoinbotmodes[];
 

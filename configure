@@ -1301,7 +1301,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 PACKAGE=SecureServ
 MODULE_MAJOR=3
 MODULE_MINOR=0
-MODULE_REV=a1
+MODULE_REV=a2-dev
 VERSION=$MODULE_MAJOR.$MODULE_MINOR.$MODULE_REV
 cat >>confdefs.h <<_ACEOF
 #define MODULE_VERSION "$VERSION"

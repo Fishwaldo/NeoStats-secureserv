@@ -320,6 +320,11 @@ const char *ts_help_set_autoupdate[] = {
 	"\2AUTOUPDATE <on/off>\2 - Should SecureServ automatically update the definitions file daily, if required?",
 	NULL
 };
+const char *ts_help_set_autoupdatetime[] = {
+	"\2AUTOUPDATETIME <seconds>\2 - How often SecureServ automatically checks for update if AUTOUPDATE is enabled",
+	"Min - 3600 (1 Hour) , MAX - 172800 (2 days) , Default is 7200 seconds (2 hours)",
+	NULL
+};
 const char *ts_help_set_onjoinbotmodes[] = {
 	"\2ONJOINBOTMODES <modes>\2",
 	"Sets the modes used by onjoin bots. <modes> should be a valid mode string as",

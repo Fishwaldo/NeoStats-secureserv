@@ -114,6 +114,7 @@ static bot_setting ss_settings[]=
 	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,"MonBot",		NULL,	ts_help_set_monbot, ss_cmd_set_monbot, (void *)0 },
 	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,"UpdateUname",			NULL,	ts_help_set_updateinfo, ss_cmd_set_updateinfo, (void *)0 },
 	{"AUTOUPDATE",	&SecureServ.autoupgrade,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"AutoUpdate",	NULL,	ts_help_set_autoupdate, ss_cmd_set_autoupdate_cb, (void *)0 },
+	{"AUTOUPDATETIME",	&SecureServ.autoupgradetime,SET_TYPE_INT,	3600,	172800,			NS_ULEVEL_ADMIN,"AutoUpdateTime",	NULL,	ts_help_set_autoupdatetime, ss_cmd_set_autoupdatetime_cb, (void *)7200 },
 	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,"OnJoinBotModes",NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
 	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
 };
@@ -435,7 +436,7 @@ int ModSynch (void)
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {
-		AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
+		AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime);
 	}
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
 	GetChannelList (ScanChannel, NULL);

@@ -265,7 +265,7 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 	{
 		if (SecureServ.autoupgrade == 1) {
 			if ((SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
-				AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
+				AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime);
 			} else {
 				irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate, as you have not set a username and password");
 				SecureServ.autoupgrade = 0;
@@ -273,6 +273,17 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 			}
 		} else {
 			DelTimer ("AutoUpdate");
+		}
+	}
+	return NS_SUCCESS;
+}
+
+int ss_cmd_set_autoupdatetime_cb(CmdParams *cmdparams, SET_REASON reason) 
+{
+	if( reason == SET_CHANGE )
+	{
+		if ((SecureServ.autoupgrade == 1) && (SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
+			SetTimerInterval("AutoUpdate", SecureServ.autoupgradetime);
 		}
 	}
 	return NS_SUCCESS;

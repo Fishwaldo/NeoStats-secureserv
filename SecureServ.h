@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.2 2003/04/19 07:52:15 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.3 2003/04/22 12:49:26 fishwaldo Exp $
 */
 
 
@@ -58,7 +58,8 @@ struct SecureServ {
 	int helpcount;
 	int verbose;
 	int stayinchantime;
-
+	int sampletime;
+	int JoinThreshold;
 } SecureServ;
 
 
@@ -99,6 +100,12 @@ list_t *nicks;
 /* ts.c */
 int findscan(const void *key1, const void *key2);
 
+/* OnJoin.c */
+void JoinNewChan();
 
-
+/* FloodCheck.c */
+void ss_init_chan_hash();
+int ss_new_chan(char **av, int ac);
+int ss_join_chan(char **av, int ac);
+int ss_del_chan(char **av, int ac);
 #endif /* TS_H */

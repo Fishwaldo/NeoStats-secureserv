@@ -18,17 +18,11 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.4 2003/04/21 10:34:20 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.5 2003/04/22 12:49:26 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
-#include <fnmatch.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
 #include <fnmatch.h>
 #include "dl.h"
 #include "log.h"
@@ -301,6 +295,9 @@ void LoadTSConf() {
 EventFnList my_event_list[] = {
 	{ "ONLINE", 	Online},
 	{ "SIGNON", 	ScanNick},
+	{ "NEWCHAN",	ss_new_chan},
+	{ "JOINCHAN", 	ss_join_chan},
+	{ "DELCHAN",	ss_del_chan},
 	{ NULL, 	NULL}
 };
 
@@ -431,9 +428,16 @@ void _init() {
 
 	s_SecureServ = "SecureServ";
 	strcpy(segvinmodule, "SecureServ");
+	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
+	/* init the virus lists */
 	viri = list_create(MAX_VIRI);
+	/* init the random nicks list */
 	nicks = list_create(MAX_NICKS);
+	/* init the channel tracking hash */
+	ss_init_chan_hash();
+	
+	/* set some defaults */
 	SecureServ.inited = 0;			
 	SecureServ.timedif = 300;	
 	SecureServ.doscan = 1;
@@ -445,6 +449,8 @@ void _init() {
 	SecureServ.dosvsjoin = 1;
 	SecureServ.helpcount = 0;
 
+	SecureServ.sampletime = 5;
+	SecureServ.JoinThreshold = 5;
 	
 }
 

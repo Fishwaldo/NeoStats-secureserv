@@ -18,17 +18,11 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.2 2003/04/21 10:34:20 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.3 2003/04/22 12:49:26 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
-#include <fnmatch.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <arpa/nameser.h>
 #include <fnmatch.h>
 #include "dl.h"
 #include "log.h"

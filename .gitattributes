@@ -1,5 +1,6 @@
 * text=auto !eol
 /ChangeLog -text
+/FloodCheck.c -text
 /LICENSE -text
 /Makefile.in -text
 /OnJoinBot.c -text

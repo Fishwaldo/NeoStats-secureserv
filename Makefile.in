@@ -11,8 +11,8 @@ INCLUDES=-I@DIRINST@/include/ -I.
 SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c
 OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
 TARGET= SecureServ.so 
-DOCS=README.SecureServ
-DATA=
+DOCS=README.SecureServ SecureServ.settings
+DATA=viri.dat
 DISTFILES = $(SOURCES) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h
 distdir = @PACKAGE@-@VERSION@
 
@@ -31,6 +31,10 @@ clean:
 install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+	 $(INSTALL) -m 644 $(DATA) $(DIRECTORY)../data/
+	 @cd $(DIRECTORY)..; \
+	 ./kptool -i doc/SecureServ.settings; 
+
 dist:	
 	@echo -n "Creating Directories"
 	@-rm -rf $(distdir)

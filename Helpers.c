@@ -184,7 +184,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 			}
 			chanalert(s_SecureServ, "%s Successfully Logged in", u->nick);
 			if ((SecureServ.joinhelpchan == 1) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) != 1)) {
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
 #ifndef MODE_CHANADMIN
 #define MODE_CHANADMIN MODE_CHANOP
 #endif

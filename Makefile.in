@@ -1,6 +1,6 @@
 #Neostats Module Makefile!
 CC=@CC@
-CFLAGS=@CFLAGS@ -Ipcre
+CFLAGS=@CFLAGS@
 LDFLAGS= @LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -9,7 +9,7 @@ DIRECTORY=@DIRINST@/dl/
 INCLUDES=-I@DIRINST@/include/ -I.
 
 SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c
-OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o
+OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o @BUILDPCRE@
 TARGET= secureserv.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
 DATA=viri.dat
@@ -25,8 +25,8 @@ all:	 module
 libpcre.a:
 	 (cd pcre; $(MAKE) $@)
 
-module:	 libpcre.a $(OBJECTS)
-	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS) pcre/libpcre.a
+module:	 $(OBJECTS)
+	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS) @BUILDPCRE@
 
 clean:
 	 (cd pcre; $(MAKE) $@)

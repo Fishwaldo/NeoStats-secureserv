@@ -188,7 +188,7 @@ restartnicks:
 		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
 		return;
 	}
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else
 	sjoin_cmd(nickname->nick, c->name);
@@ -261,7 +261,7 @@ restartnicksondemand:
 
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else
 	sjoin_cmd(nickname->nick, c->name);
@@ -318,11 +318,35 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 }				
 
 int ss_kick_chan(char **argv, int ac) {
+	lnode_t *mn;
+	
 	/* check its one of our nicks */
 	if (!strcasecmp(SecureServ.lastnick, argv[1]) && (!strcasecmp(SecureServ.lastchan, argv[0]))) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
 		SecureServ.lastchan[0] = 0;
 	}
+	if (SecureServ.monbot[0] == 0) {
+		return 1;
+	}
+	/* if its our monbot, rejoin the channel! */
+	if (!strcasecmp(SecureServ.monbot, argv[1])) {
+		mn = list_first(monchans);
+		while (mn != NULL) {
+			if (!strcasecmp(argv[0], lnode_get(mn))) {
+				/* rejoin the monitor bot to the channel */
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
+				sjoin_cmd(SecureServ.monbot, argv[0], 0);
+#else
+				sjoin_cmd(SecureServ.monbot, argv[0]);
+#endif
+				/* restore segvinmodules */
+				SET_SEGV_INMODULE("SecureServ");
+			
+				return 1;
+			}
+			mn = list_next(monchans, mn);
+		}
+	}					
 	return 1;
 }		
 
@@ -380,7 +404,7 @@ int MonChan(User *u, char *requestchan) {
 	SET_SEGV_INMODULE("SecureServ");
 	
 	/* join the monitor bot to the new channel */
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
 	sjoin_cmd(SecureServ.monbot, c->name, 0);
 #else
 	sjoin_cmd(SecureServ.monbot, c->name);

@@ -1,5 +1,5 @@
-/* NeoStats - IRC Statistical Services Copyright (c) 1999-2002 NeoStats Group Inc.
-** Copyright (c) 1999-2002 Adam Rutter, Justin Hammond
+/* NeoStats - IRC Statistical Services 
+** Copyright (c) 1999-2003 Justin Hammond
 ** http://www.neostats.net/
 **
 **  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.6 2003/05/26 11:24:39 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.7 2003/05/28 12:55:42 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -48,62 +48,6 @@ hash_t *FC_Chans;
 void ss_init_chan_hash() {
 
 	FC_Chans = hash_create(-1, 0, 0);
-}
-
-/* create a new record for the channel */
-int ss_new_chan(char **av, int ac) {
-	ChanInfo *ci;
-	hnode_t *cn;
-	Chans *c;
-#if 0
-        lnode_t *node;
-        virientry *viridetails;
-	int rc;
-#endif	                
-	if (SecureServ.inited != 1) return -1;
-	c = findchan(av[0]);
-	if (c) {
-#if 0
-/* we can't do this here, as we don't have the nickname */
-		/* check the exempt lists */
-		if (Chan_Exempt(c) != 1) {
-			/* first, check if this is a *bad* channel */
-		        node = list_first(viri);
-			if (node) {
-	                	do {
-        	        		viridetails = lnode_get(node);
-                			if (viridetails->dettype == DET_CHAN) {
-                				SecureServ.trigcounts[DET_CHAN]++;
-	                        	        nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
-        	                        	rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
-	                	                if (rc < -1) {
-		                	                nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
-                	                	        continue;
-	                	                }
-        	                	        if (rc > -1) {
-	        	                	        gotpositive(finduser(av[1]), viridetails, DET_CHAN);
-                        	                	if (SecureServ.breakorcont == 0)
-		                        	                continue;
-        	                                	else
-	        	                                        return 1;
-        	        	                }
-                	        	}
-		                } while ((node = list_next(viri, node)) != NULL);
-			}
-		}
-#endif
-		ci = malloc(sizeof(ChanInfo));
-		ci->ajpp = 0;
-		ci->sampletime = 0;
-		ci->c = c;
-		cn = hnode_create(ci);
-		hash_insert(FC_Chans, cn, ci->c->name);
-		return 1;
-	} else {
-		nlog(LOG_WARNING, LOG_MOD, "Ehhh, Can't find chan %s", av[0]);
-		return -1;
-	}
-	return 1;
 }
 
 /* update ajpp for chan, if required */
@@ -171,6 +115,13 @@ int ss_join_chan(char **av, int ac) {
 		if ((time(NULL) - u->TS) > SecureServ.timedif) {
 			nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", av[1]);
 			/* forget the update */
+			return -1;
+		}
+
+		/* ok, now if the server just linked in as well, ignore this */
+		/* XXX should this time be configurable? */
+		if ((time(NULL) - u->server->connected_since) < 120) {
+			nlog(LOG_DEBUG2, LOG_MOD, "Ignoring %s joining %s as it seems server %s just linked", u->nick, c->name, u->server->name);
 			return -1;
 		}
 	} else {

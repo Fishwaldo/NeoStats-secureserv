@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.2 2003/05/24 06:04:56 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.3 2003/05/28 12:55:42 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -152,6 +152,7 @@ const char *ts_help_set[] = {
 "The Options are:",
 "    \2VERSION <on/off>\2       - This option turns CTCP Version Checking on and Off",
 "    \2CHECKFIZZER <on/off>\2   - This turns on and off FizzerChecking. Disable if your network is not affected by Fizzer",
+"    \2DOONJOIN <on/off>\2      - This turns on and off the Onjoin Virus Checking.",
 "    \2AKILL <on/off>\2         - This option tells SecureServ to never issue a Akill on your Network. A warning message is sent to the operators instead",
 "    \2DOJOIN <on/off>\2        - This option tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
 "    \2UPDATEINFO <username> <password>\2",
@@ -166,11 +167,11 @@ const char *ts_help_set[] = {
 "    \2AUTOUPDATE <on/off>\2    - Should SecureServ automatically update the Definitions file daily, if required?",
 "    \2SAMPLETIME <seconds> <joins>\2",
 "                               - This Sets the threshold for FloodChecking. Read the Readme File for more information",
+"    \2NFCOUNT <number>\2       - This Sets the threshold for NickFloods. <number> is number of changes in 10 seconds.",
 "    \2SIGNONMSG <message>\2    - This changes the message sent to users when they connect if Version Checking is enabled",
 "    \2AKILLMSG <message>\2     - This changes the message sent to users when they are akilled",
 "    \2NOHELPMSG <message>\2    - This changes the message sent to users when their are no helpers logged in",
 "    \2HELPCHAN <channel>\2     - This changes the Channel that Virus's infected users are joined to if there are helpers logged in",
-"",
 NULL
 };
 

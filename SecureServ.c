@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.18 2003/05/27 11:42:32 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.19 2003/05/28 12:55:42 fishwaldo Exp $
 */
 
 
@@ -53,7 +53,8 @@ int is_exempt(User *u);
 static int CheckNick(char **av, int ac);
 static void GotHTTPAddress(char *data, adns_answer *a);
 static void save_exempts();
-
+int AutoUpdate();
+int CleanNickFlood();
 
 Module_Info my_info[] = { {
 	"SecureServ",
@@ -467,6 +468,22 @@ void do_set(User *u, char **av, int ac) {
 		chanalert(s_SecureServ, "%s Set Akill Time to %d Seconds", u->nick, i);
 		SetConf((void *)i, CFGINT, "AkillTime");
 		return;
+	} else if (!strcasecmp(av[2], "NFCOUNT")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 100)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return;
+		}
+		/* if we get here, all is ok */
+		SecureServ.nfcount = i;
+		prefmsg(u->nick, s_SecureServ, "NickFlood Count is set to %d in 10 Seconds", i);
+		chanalert(s_SecureServ, "%s Set NickFlood Count to %d Seconds in 10 Seconds", u->nick, i);
+		SetConf((void *)i, CFGINT, "NFCount");
+		return;
 	} else if (!strcasecmp(av[2], "DOJOIN")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -483,6 +500,27 @@ void do_set(User *u, char **av, int ac) {
 			chanalert(s_SecureServ, "%s disabled SVSJOINing", u->nick);
 			SetConf((void *)0, CFGINT, "DoSvsJoin");
 			SecureServ.dosvsjoin = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "DOONJOIN")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now enabled");
+			chanalert(s_SecureServ, "%s enabled OnJoin Virus Checking", u->nick);
+			SetConf((void *)1, CFGINT, "DoOnJoin");
+			SecureServ.DoOnJoin = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now disabled");
+			chanalert(s_SecureServ, "%s disabled OnJoin Virus Checking", u->nick);
+			SetConf((void *)0, CFGINT, "DoOnJoin");
+			SecureServ.DoOnJoin = 0;
 			return;
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -619,6 +657,7 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "SplitTime: %d", SecureServ.timedif);
 		prefmsg(u->nick, s_SecureServ, "Version Checking: %s", SecureServ.doscan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Multi Checking: %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
 		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
@@ -747,7 +786,9 @@ int Online(char **av, int ac) {
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
-
+	/* start cleaning the nickflood list now */
+	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
+	add_mod_timer("CleanNickFlood", "CleanNickFlood", my_info[0].module_name, 60);
 
 	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 
@@ -803,6 +844,10 @@ void LoadTSConf() {
 		/* 60 seconds */
 		SecureServ.stayinchantime = 60;
 	}
+	if (GetConf((void *)&SecureServ.nfcount, CFGINT, "NFCount") <= 0) {
+		/* 5 in 10 seconds */
+		SecureServ.nfcount = 5;
+	}
 	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
 		/* disable autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
@@ -829,6 +874,10 @@ void LoadTSConf() {
 		/* break is the default is the default */
 		SecureServ.breakorcont = 1;
 	}
+	if (GetConf((void *)&SecureServ.DoOnJoin, CFGINT, "DoOnJoin") <= 0) {
+		/* yes is the default is the default */
+		SecureServ.DoOnJoin = 1;
+	}
 	if (GetConf((void *)&SecureServ.doakill, CFGINT, "DoAkill") <= 0) {
 		/* we akill is the default */
 		SecureServ.doakill = 1;
@@ -849,17 +898,29 @@ void LoadTSConf() {
 		/* 5 joins is the default */
 		SecureServ.JoinThreshold = 5;
 	}
-	if (GetConf((void *)&SecureServ.signonscanmsg, CFGSTR, "SignOnMsg") <= 0) {
+	if (GetConf((void *)&tmp, CFGSTR, "SignOnMsg") <= 0) {
 		snprintf(SecureServ.signonscanmsg, 512, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+	} else {
+		strncpy(SecureServ.signonscanmsg, tmp, 512);
+		free(tmp);
 	}
-	if (GetConf((void *)&SecureServ.nohelp, CFGSTR, "NoHelpMsg") <= 0) {
+	if (GetConf((void *)&tmp, CFGSTR, "NoHelpMsg") <= 0) {
 		snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
+	} else {
+		strncpy(SecureServ.nohelp, tmp, 512);
+		free(tmp);
 	}
-	if (GetConf((void *)&SecureServ.akillinfo, CFGSTR, "AkillMsg") <= 0) {
+	if (GetConf((void *)&tmp, CFGSTR, "AkillMsg") <= 0) {
 		snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
+	} else {
+		strncpy(SecureServ.akillinfo, tmp, 512);
+		free(tmp);
 	}
-	if (GetConf((void *)&SecureServ.HelpChan, CFGSTR, "HelpChan") <= 0) {
+	if (GetConf((void *)&tmp, CFGSTR, "HelpChan") <= 0) {
 		snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
+	} else {
+		strncpy(SecureServ.HelpChan, tmp, CHANLEN);
+		free(tmp);
 	}
 	
 	if (GetDir("Exempt", &data) > 0) {
@@ -964,7 +1025,6 @@ void load_dat() {
 	}
 	
 	for (rc = 0; rc < 20; rc++) {
-		printf("doing %d\n", rc);
 		SecureServ.definitions[rc] = 0;
 	}	
 
@@ -1049,7 +1109,6 @@ void load_dat() {
 EventFnList my_event_list[] = {
 	{ "ONLINE", 	Online},
 	{ "SIGNON", 	ScanNick},
-	{ "NEWCHAN",	ss_new_chan},
 	{ "JOINCHAN", 	ss_join_chan},
 	{ "DELCHAN",	ss_del_chan},
 	{ "NICK_CHANGE", CheckNick},
@@ -1130,9 +1189,10 @@ int Chan_Exempt(Chans *c) {
 static int CheckNick(char **av, int ac) {
 	User *u;
 	lnode_t *node;
+	hnode_t *nfnode;
+	nicktrack *nick;
 	virientry *viridetails;
 	int rc;
-
 	u = finduser(av[1]);
 	if (!u) {
 		nlog(LOG_WARNING, LOG_MOD, "Cant Find user %s", av[1]);
@@ -1142,8 +1202,49 @@ static int CheckNick(char **av, int ac) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Bye, I'm Exempt %s", u->nick);
 		return -1;
 	}
+	/* is it a nickflood? */
+	nfnode = hash_lookup(nickflood, av[0]);
+	
+	if (nfnode) {
+		/* its already there */
+		nick = hnode_get(nfnode);
+		/* first, remove it from the hash, as the nick has changed */
+		hash_delete(nickflood, nfnode);
+		/* increment the nflood count */
+		nick->changes++;
+		nlog(LOG_DEBUG2, LOG_MOD, "NickFlood Check: %d in 10", nick->changes);
+		if ((nick->changes > SecureServ.nfcount) && ((time(NULL) - nick->when) <= 10)) {
+			/* its a bad bad bad flood */
+			chanalert(s_SecureServ, "NickFlood Detected on %s", u->nick);
+			/* XXX Do Something bad !!!! */
+			
+			/* free the struct */
+			hnode_destroy(nfnode);
+			free(nick);
+		} else if ((time(NULL) - nick->when) > 10) {
+			nlog(LOG_DEBUG2, LOG_MOD, "Resetting NickFlood Count on %s", u->nick);
+			strncpy(nick->nick, u->nick, MAXNICK);
+			nick->changes = 1;
+			nick->when = time(NULL);
+			hash_insert(nickflood, nfnode, nick->nick);
+		} else {			
+			/* re-insert it into the hash */
+			strncpy(nick->nick, u->nick, MAXNICK);
+			hash_insert(nickflood, nfnode, nick->nick);
+		}
+	} else {
+		/* this is a first */
+		nick = malloc(sizeof(nicktrack));
+		strncpy(nick->nick, u->nick, MAXNICK);
+		nick->changes = 1;
+		nick->when = time(NULL);
+		nfnode = hnode_create(nick);
+		hash_insert(nickflood, nfnode, nick->nick);
+		nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
+	}
 
-	/* check the nickname, ident, realname */
+
+	/* check the nickname */
 	node = list_first(viri);
 	do {
 		viridetails = lnode_get(node);
@@ -1166,6 +1267,29 @@ static int CheckNick(char **av, int ac) {
 	} while ((node = list_next(viri, node)) != NULL);
 	return -1;
 }
+
+/* periodically clean up the nickflood hash so it doesn't grow to big */
+int CleanNickFlood() {
+	hscan_t nfscan;
+	hnode_t *nfnode;
+	nicktrack *nick;
+
+        hash_scan_begin(&nfscan, nickflood);
+        while ((nfnode = hash_scan_next(&nfscan)) != NULL) {
+        	nick = hnode_get(nfnode);
+        	if ((time(NULL) - nick->when) > 10) {
+        		/* delete the nickname */
+			nlog(LOG_DEBUG2, LOG_MOD, "Deleting %s out of NickFlood Hash", nick->nick);
+        		hash_scan_delete(nickflood, nfnode);
+        		hnode_destroy(nfnode);
+        		free(nick);
+        	}
+        }
+	return 1;
+}       
+	                
+
+
 
 /* scan someone connecting */
 static int ScanNick(char **av, int ac) {
@@ -1383,6 +1507,9 @@ void _init() {
 	nicks = list_create(MAX_NICKS);
 	/* init the channel tracking hash */
 	ss_init_chan_hash();
+
+	/* init the nickflood hash */
+	nickflood = hash_create(-1, 0, 0);
 	
 	/* set some defaults */
 	SecureServ.inited = 0;			
@@ -1403,6 +1530,7 @@ void _init() {
 	SecureServ.doUpdate = 0;
 	SecureServ.dofizzer = 1;
 	SecureServ.MaxAJPP = 0;
+	SecureServ.nfcount = 5;
 	strncpy(SecureServ.updateurl, "", 255);
 	strncpy(SecureServ.updateuname, "", 255);
 	strncpy(SecureServ.updatepw, "", 255);
@@ -1411,6 +1539,8 @@ void _init() {
 		SecureServ.actioncounts[i] = 0;
 	}
 	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
+
+
 }
 
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
@@ -1524,6 +1654,8 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 			if ((strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {
 				snprintf(url2, 255, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 				http_request(url2, 2, HFLAG_NONE, datver); 
+				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
+				add_mod_timer("AutoUpdate", "AutoUpdateDat", my_info[0].module_name, 86400);
 			} else {
 				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
 			}
@@ -1536,3 +1668,13 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 	        chanalert(s_SecureServ,  "DNS Error checking for Updates");
 	}
 }
+
+int AutoUpdate() {
+	char url2[255];                
+
+	if ((SecureServ.autoupgrade > 0) && (strlen(SecureServ.updateuname) > 0) && strlen(SecureServ.updatepw) > 0) {
+		snprintf(url2, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(url2, 2, HFLAG_NONE, datver); 
+	}
+	return 0;
+}	

@@ -1,5 +1,5 @@
-/* NeoStats - IRC Statistical Services Copyright (c) 1999-2002 NeoStats Group Inc.
-** Copyright (c) 1999-2002 Adam Rutter, Justin Hammond
+/* NeoStats - IRC Statistical Services 
+** Copyright (c) 1999-2003 Justin Hammond
 ** http://www.neostats.net/
 **
 **  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.14 2003/05/25 15:01:44 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.15 2003/05/28 12:55:42 fishwaldo Exp $
 */
 
 
@@ -72,6 +72,13 @@ void JoinNewChan() {
 	}
 	/* restore segvinmodules */
 	strcpy(segvinmodule, "SecureServ");
+
+	/* if we don't do OnJoin Checking, Don't go any further */
+	if (SecureServ.DoOnJoin > 0)
+		return;
+
+
+
 	trychan = 0;
 restartchans:
 	trychan++;
@@ -139,7 +146,13 @@ restartnicks:
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
-	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
+	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ") == -1) {
+		/* hu? Nick was in use. How is that possible? */
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		strncpy(SecureServ.lastchan, "\0", MAXNICK);
+		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
+		return;
+	}
 #ifdef ULTIMATE3
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else

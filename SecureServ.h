@@ -1,10 +1,24 @@
-/* NetStats - IRC Statistical Services Copyright (c) 1999 Adam Rutter,
-** Justin Hammond http://codeworks.kamserve.com
-*
-** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
-*
-** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.11 2003/05/24 06:04:56 fishwaldo Exp $
+/* NeoStats - IRC Statistical Services Copyright 
+** Copyright (c) 1999-2003 Justin Hammond
+** http://www.neostats.net/
+**
+**  This program is free software; you can redistribute it and/or modify
+**  it under the terms of the GNU General Public License as published by
+**  the Free Software Foundation; either version 2 of the License, or
+**  (at your option) any later version.
+**
+**  This program is distributed in the hope that it will be useful,
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**  GNU General Public License for more details.
+**
+**  You should have received a copy of the GNU General Public License
+**  along with this program; if not, write to the Free Software
+**  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+**  USA
+**
+** NeoStats CVS Identification
+** $Id: SecureServ.h,v 1.12 2003/05/28 12:55:42 fishwaldo Exp $
 */
 
 
@@ -73,6 +87,7 @@ struct SecureServ {
 	int doUpdate;
 	int dofizzer;
 	int MaxAJPP;
+	int DoOnJoin;
 	char MaxAJPPChan[CHANLEN];
 	int trigcounts[20];
 	int actioncounts[20];
@@ -82,6 +97,7 @@ struct SecureServ {
 	char updatepw[255];
 	char lastchan[CHANLEN];
 	char lastnick[MAXNICK];
+	int nfcount;
 } SecureServ;
 
 
@@ -112,8 +128,20 @@ list_t *exempt;
 
 
 /* this is the list of random nicknames */
-
 list_t *nicks;
+
+
+/* this is the nickflood stuff */
+struct nicktrack_ {
+	char nick[MAXNICK];
+	int changes;
+	int when;
+};
+
+typedef struct nicktrack_ nicktrack;
+
+hash_t *nickflood;
+
 
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
@@ -130,7 +158,6 @@ int CheckChan(User *u, char *requestchan);
 
 /* FloodCheck.c */
 void ss_init_chan_hash();
-int ss_new_chan(char **av, int ac);
 int ss_join_chan(char **av, int ac);
 int ss_del_chan(char **av, int ac);
 

@@ -1,16 +1,14 @@
-SecureServ 1.0 Release Notes - 21/11/2003
+SecureServ 1.1 Release Notes - 09/02/2004
 ========================================
-- SecureServ now supports a Custom Virus definition file. Read the manual
-  for more details
+- Lots of BugFixes, speedups and tidy ups in this release. Everyone of the reported
+  bugs that we could reproduce has been fixed.
 
-- SecureServ will now optionally invite users to the help channel if the
-  definitions say to do a SVSJOIN, but the IRCd does not support SVSJOIN
+- MonBots will now cycle their channels. See MONCHANCYCLE and /msg
+  MONCHANCYCLETIME in the documentation for SET for more info. 
+
+- SecureServ will now warn you if you have a TS sync issue on your network.
+  You MUST ensure that all your servers clocks are synced. 
 
 - If you wish to take advantage of updated Definition files, you *MUST*
   apply for a account at http://secure.irc-chat.net/ (currently 140+
   Signatures, and due to grow even bigger shortly after this release)
-
-- A new option, /msg SecureServ set botecho on will now echo any messages
-  the onjoin bots, or monbot recieves to the services channel, regardless of
-  the verbose settting. 
-

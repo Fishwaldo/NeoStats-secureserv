@@ -231,4 +231,12 @@ extern const char *ts_help_helper[];
 extern const char *ts_help_helpers[];
 extern const char *ts_help_reload[];
 
+
+
+/* these are needed for 2.5.14 compatibility */
+#ifndef EVENT_SERVER
+#define EVENT_SERVER EVENT_NEWSERVER
+#endif
+
+
 #endif /* SECURESERV_H */

@@ -58,7 +58,7 @@ ModuleInfo __module_info = {
 
 static int new_m_version(char *origin, char **av, int ac) 
 {
-	snumeric_cmd(RPL_VERSION,origin, "Module SecureServ Loaded, Version: %s %s %s",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time);
+	snumeric_cmd(RPL_VERSION,origin, "Module SecureServ Loaded, Version: %s %s %s Dat: %d",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time, SecureServ.viriversion);
 	return 0;
 }
 
@@ -198,6 +198,8 @@ int __BotMessage(char *origin, char **argv, int argc)
 	} else if (!strcasecmp(argv[1], "reload")) {
 		do_reload(u, argv, argc);
 		return 1;	
+	} else if (!strcasecmp(argv[1], "version")) {
+		prefmsg(u->nick, s_SecureServ, "%d", SecureServ.viriversion);
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}

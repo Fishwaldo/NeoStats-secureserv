@@ -2,6 +2,7 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a3-dev - Mark (M)
+ - Update to FetchRows handlers to take size parameter. (M)
  - Fix auth level for username and password. (M)
  - stop channels being scanned when global exclude list enabled and
    channel is on global exclude list (D)

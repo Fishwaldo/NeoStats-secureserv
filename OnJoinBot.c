@@ -603,7 +603,7 @@ int ss_cmd_monchan_list( CmdParams *cmdparams )
 	return 1;
 }
 
-int LoadMonChan(void *data) 
+int LoadMonChan(void *data, int size) 
 {
 	MonChan(NULL, (char *)data);
 	return NS_FALSE;
@@ -632,7 +632,7 @@ int SaveMonChans()
 	return 1;
 }
 
-int LoadRandomNick (void *data)
+int LoadRandomNick (void *data, int size)
 {
 	BotInfo *rnicks;
 

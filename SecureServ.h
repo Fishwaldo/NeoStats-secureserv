@@ -117,10 +117,8 @@ struct SecureServ {
 	int autoupgrade;
 	int doUpdate;
 	int dofizzer;
-	int MaxAJPP;
 	int DoOnJoin;
 	int BotEcho;
-	char MaxAJPPChan[MAXCHANLEN];
 	int trigcounts[MAX_PATTERN_TYPES];
 	int actioncounts[MAX_PATTERN_TYPES];
 	int definitions[MAX_PATTERN_TYPES];
@@ -145,8 +143,6 @@ struct SecureServ {
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
 	int treatchanmsgaspm;
-	Bot *monbotptr;
-	Bot *ojbotptr;
 } SecureServ;
 
 /* SecureServ.c */
@@ -158,6 +154,7 @@ int AutoUpdate(void);
 
 /* OnJoin.c */
 int JoinNewChan(void);
+void OnJoinBotStatus (CmdParams *cmdparams);
 int OnJoinBotMsg (CmdParams *cmdparams);
 int OnJoinBotVersionRequest (CmdParams *cmdparams);
 int ListMonChan(Client *u);
@@ -172,14 +169,14 @@ int do_checkchan(CmdParams *cmdparams);
 int do_monchan(CmdParams *cmdparams);
 int do_cycle(CmdParams *cmdparams);
 int do_set_monbot (CmdParams *cmdparams, SET_REASON reason);
-int CheckOnjoinBotKick(CmdParams *cmdparams);
+int CheckOnJoinBotKick(CmdParams *cmdparams);
+int CheckOnJoinEmptyChannel(CmdParams *cmdparams);
 int MonJoin(Channel *c);
-int MonBotDelChan(Channel *);
 int CheckMonBotKill(char* nick);
-void OnJoinDelChan(Channel* c);
 int MonBotCycle(void);
 
 /* scan.c */
+void ScanStatus (CmdParams *cmdparams);
 int ScanFizzer(Client *u);
 int ScanChan(Client* u, Channel *c);
 int ScanUser(Client *u, unsigned flags);
@@ -205,6 +202,7 @@ int InitNickFlood(void);
 int CleanNickFlood(void);
 int NickFloodSignOff(char * n);
 int CheckNickFlood(Client* u);
+void FloodStatus (CmdParams *cmdparams);
  
 /* Helpers.c */
 int HelpersInit(void);
@@ -215,6 +213,7 @@ int HelpersAway(CmdParams *cmdparams);
 int HelpersAssist(CmdParams *cmdparams);
 int do_helpers(CmdParams *cmdparams);
 int HelpersChpass(CmdParams *cmdparams);
+void HelpersStatus (CmdParams *cmdparams);
 
 
 /* SecureServ_help.c */
@@ -283,13 +282,6 @@ extern const char *ts_help_set_onjoinbotmodes[];
 
 extern char onjoinbot_modes[MODESIZE];
 
-
 int is_monchan(char* chan);
-
-/* these are needed for 2.5.14 compatibility */
-#ifndef EVENT_SERVER
-#define EVENT_SERVER EVENT_NEWSERVER
-#endif
-
 
 #endif /* SECURESERV_H */

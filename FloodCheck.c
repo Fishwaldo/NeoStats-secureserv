@@ -48,6 +48,14 @@ static hash_t *FC_Chans;
 /* the hash that contains the nicks we are tracking */
 static hash_t *nickflood;
 
+static int MaxAJPP = 0;
+static char MaxAJPPChan[MAXCHANLEN];
+
+void FloodStatus (CmdParams *cmdparams)
+{
+	irc_prefmsg (ss_bot, cmdparams->source, "Current Top AJPP: %d (in %d Seconds): %s", MaxAJPP, SecureServ.sampletime, MaxAJPPChan);
+}
+
 /* init the channel hash */	
 int InitJoinFlood(void) 
 {
@@ -118,11 +126,11 @@ int JoinFloodJoinChan (Client *u, Channel *c)
 	}		
 
 	/* just some record keeping */
-	if (ci->ajpp > SecureServ.MaxAJPP) {
+	if (ci->ajpp > MaxAJPP) {
 		dlog (DEBUG1, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
 		if (SecureServ.verbose) irc_chanalert (ss_bot, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
-		SecureServ.MaxAJPP = ci->ajpp;
-		strlcpy(SecureServ.MaxAJPPChan, c->name, MAXCHANLEN);
+		MaxAJPP = ci->ajpp;
+		strlcpy(MaxAJPPChan, c->name, MAXCHANLEN);
 	}
 	return 1;
 }

@@ -41,6 +41,11 @@ static hash_t *helperhash;
 static int IsHelpersInit = 0;
 static char confpath[CONFBUFSIZE];
 
+void HelpersStatus (CmdParams *cmdparams)
+{
+	irc_prefmsg (ss_bot, cmdparams->source, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
+}
+
 int HelpersInit(void) 
 {
 	char **data, *tmp;

@@ -35,7 +35,14 @@ static int SaveMonChans();
 static list_t *nicks;
 char onjoinbot_modes[MODESIZE] = "+";
 static lnode_t *lastmonchan;
+static Bot *monbotptr;
+static Bot *ojbotptr;
 
+void OnJoinBotStatus (CmdParams *cmdparams)
+{
+	if (SecureServ.lastchan[0]) 
+		irc_prefmsg (ss_bot, cmdparams->source, "Currently Checking %s with %s", SecureServ.lastchan, SecureServ.lastnick);
+}
 
 static unsigned hrand(unsigned upperbound, unsigned lowerbound) 
 {
@@ -293,8 +300,8 @@ int JoinNewChan()
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 
 	/* ok, init the new bot. */
-	SecureServ.ojbotptr = AddBot(nickname);
-	if (!SecureServ.ojbotptr) {
+	ojbotptr = AddBot(nickname);
+	if (!ojbotptr) {
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
 		nlog (LOG_WARNING, "init_bot reported nick was in use. How? Dunno");
@@ -352,8 +359,8 @@ static int CheckChan(Client *u, char *requestchan)
 	strlcpy(SecureServ.lastchan, c->name, MAXCHANLEN);
 
 	/* ok, init the new bot. */
-	SecureServ.ojbotptr = AddBot(nickname);
-	if (!SecureServ.ojbotptr) {
+	ojbotptr = AddBot(nickname);
+	if (!ojbotptr) {
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
 		return 1;
@@ -390,7 +397,7 @@ int OnJoinBotMsg (CmdParams *cmdparams)
 	return NS_SUCCESS;
 }				
 
-int CheckOnjoinBotKick(CmdParams *cmdparams) 
+int CheckOnJoinBotKick(CmdParams *cmdparams) 
 {
 	lnode_t *mn;
 	
@@ -399,30 +406,31 @@ int CheckOnjoinBotKick(CmdParams *cmdparams)
 	if (!strcasecmp(SecureServ.lastnick, cmdparams->target->name) && (!strcasecmp(SecureServ.lastchan, cmdparams->channel->name))) {
 		nlog (LOG_NOTICE, "Our Bot %s was kicked from %s", cmdparams->target->name, cmdparams->channel->name);
 		SecureServ.lastchan[0] = 0;
-		return 1;
+		return NS_SUCCESS;
 	}
 	if (SecureServ.monbot[0] == 0) {
-		return 0;
+		return NS_SUCCESS;
 	}
 	/* if its our monbot, rejoin the channel! */
-	if (!strcasecmp(SecureServ.monbot, cmdparams->target->name)) {
+	if (cmdparams->bot == monbotptr) {
 		mn = list_first(monchans);
 		while (mn != NULL) {
 			if (!strcasecmp(cmdparams->channel->name, lnode_get(mn))) {
 				/* rejoin the monitor bot to the channel */
 				irc_join (find_bot(SecureServ.monbot), cmdparams->channel->name, 0);
 				if (SecureServ.verbose) {
-					irc_chanalert (ss_bot, "%s was kicked out of Monitored Channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
+					irc_chanalert (ss_bot, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
 				}
-				nlog (LOG_NOTICE, "%s was kicked out of Monitored Channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
-				return 1;
+				nlog (LOG_NOTICE, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
+				return NS_SUCCESS;
 			}
 			mn = list_next(monchans, mn);
 		}
-		return 1;
+		return NS_SUCCESS;
 	}					
-	return 0;
-}		
+	return NS_SUCCESS;
+}
+
 int MonJoin(Channel *c) {
 	BotInfo *nickname = NULL;
 	lnode_t *rnn, *mn;
@@ -445,20 +453,20 @@ int MonJoin(Channel *c) {
 					rnn = list_next(nicks, rnn);
 				}
 				if (rnn != NULL) {
-					SecureServ.monbotptr = AddBot(nickname);
-					if (!SecureServ.monbotptr) {
+					monbotptr = AddBot(nickname);
+					if (!monbotptr) {
 						return 1;
 					}
-					irc_cloakhost (find_bot(nickname->nick));
+					irc_cloakhost (monbotptr);
 				} else {
 					nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
 					return -1;
 				}
 			}
 			/* if they the monbot is not a member of the channel, join it. */
-			if (!IsChannelMember(c, find_user(SecureServ.monbot))) {
+			if (!IsChannelMember(c, monbotptr->u)) {
 				/* join the monitor bot to the new channel */
-				irc_join (find_bot(SecureServ.monbot), c->name, 0);
+				irc_join (monbotptr, c->name, 0);
 			}	
 		return 1;
 		}
@@ -466,21 +474,6 @@ int MonJoin(Channel *c) {
 	}
 	return 1;
 }	
-int MonBotDelChan(Channel *c) 
-{
-	if (c->users != 2) {
-		return -1;
-	}
-	if (SecureServ.monbot[0] == 0) {
-		return -1;
-	}
-	/* really easy way to tell if this is our monitored channel */
-	if (IsChannelMember(c, find_user(SecureServ.monbot))) {
-		/* yep, its us just part the channel */
-		irc_part (find_bot(SecureServ.monbot), c->name);
-	}				
-	return 1;
-}
 
 static int MonChan(Client *u, char *requestchan) 
 {
@@ -540,8 +533,8 @@ static int MonChan(Client *u, char *requestchan)
 			rnn = list_next(nicks, rnn);
 		}
 		if (rnn != NULL) {
-			SecureServ.monbotptr = AddBot(nickname);
-			if (!SecureServ.monbotptr) {
+			monbotptr = AddBot(nickname);
+			if (!monbotptr) {
 				return 1;
 			}
 			irc_cloakhost (find_bot(nickname->nick));
@@ -957,8 +950,8 @@ int CheckMonBotKill(char* nick)
 		rnn = list_next(nicks, rnn);
 	}
 	if (rnn != NULL) {
-		SecureServ.monbotptr = AddBot(nickname);
-		if (!SecureServ.monbotptr) {
+		monbotptr = AddBot(nickname);
+		if (!monbotptr) {
 			return 1;
 		}
 		irc_cloakhost (find_bot(nickname->nick));
@@ -986,22 +979,16 @@ int CheckMonBotKill(char* nick)
 	return 1;
 }
 
-void OnJoinDelChan(Channel* c) 
+int CheckOnJoinEmptyChannel(CmdParams *cmdparams)
 {
-	SET_SEGV_LOCATION();
-
-	if (c->users != 2) {
-		return;
+	if (monbotptr && cmdparams->bot == monbotptr)
+	{
 	}
-	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (SecureServ.lastnick[0] != 0 && SecureServ.lastchan[0] != 0) {
-		if (find_user(SecureServ.lastnick)) {
-			if (strcasecmp(SecureServ.lastchan, c->name) == 0) {
-				irc_part (find_bot(SecureServ.lastnick), SecureServ.lastchan);
-				irc_quit ( find_bot(SecureServ.lastnick), "Finished Scanning");
-				SecureServ.lastchan[0] = 0;
-				SecureServ.lastnick[0] = 0;
-			}
-		}
+	else if (ojbotptr && cmdparams->bot == ojbotptr)
+	{
+		irc_quit ( ojbotptr, "Leaving");
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
 	}
+	return NS_SUCCESS;
 }

@@ -26,13 +26,10 @@
 #else
 #include "modconfig.h"
 #endif
-
-#include <stdio.h>
+#include "neostats.h"
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #endif
-
-#include "neostats.h"
 #include "SecureServ.h"
 
 #define MAX_VIRI	-1
@@ -48,6 +45,35 @@ void InitScanner(void)
 	/* init the virus lists */
 	viri = list_create(MAX_VIRI);
 	load_dat();
+}
+
+void ScanStatus (CmdParams *cmdparams)
+{
+	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns Loaded: %d", ViriCount());
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Messages Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Messages Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Definitions: %d", SecureServ.definitions[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Received: %d", SecureServ.trigcounts[DET_MSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Acted on: %d", SecureServ.actioncounts[DET_MSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Private Message Definitions: %d", SecureServ.definitions[DET_MSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "NickNames Checked: %d", SecureServ.trigcounts[DET_NICK]);
+	irc_prefmsg (ss_bot, cmdparams->source, "NickName Acted on: %d", SecureServ.actioncounts[DET_NICK]);
+	irc_prefmsg (ss_bot, cmdparams->source, "NickName Definitions: %d", SecureServ.definitions[DET_NICK]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Ident's Checked: %d", SecureServ.trigcounts[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Ident's Acted on: %d", SecureServ.actioncounts[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Ident Definitions: %d", SecureServ.definitions[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Checked: %d", SecureServ.trigcounts[DET_REALNAME]);
+	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Acted on: %d", SecureServ.actioncounts[DET_REALNAME]);
+	irc_prefmsg (ss_bot, cmdparams->source, "RealName Definitions: %d", SecureServ.definitions[DET_REALNAME]);
+	irc_prefmsg (ss_bot, cmdparams->source, "ChannelNames Checked: %d", SecureServ.trigcounts[DET_CHAN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "ChannelNames Acted on: %d", SecureServ.actioncounts[DET_CHAN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "ChannelName Definitions: %d", SecureServ.definitions[DET_CHAN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Checked: %d", SecureServ.trigcounts[DET_CHANMSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Acted on: %d", SecureServ.actioncounts[DET_CHANMSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages Definitions: %d", SecureServ.definitions[DET_CHANMSG]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Checks Run: %d", SecureServ.actioncounts[DET_BUILTIN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Checks Acted on: %d", SecureServ.actioncounts[DET_BUILTIN]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);
 }
 
 int ViriCount(void)

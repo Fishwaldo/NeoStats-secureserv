@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.38 2003/08/13 14:17:33 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.39 2003/08/13 14:33:57 fishwaldo Exp $
 */
 
 
@@ -1858,8 +1858,8 @@ void gotpositive(User *u, virientry *ve, int type) {
 	}
 	/* send a update to secure.irc-chat.net */
 	if (SecureServ.sendtosock > 0) {
-		snprintf(buf2, 3, "%c%c", SecureServ.updatepw[0], SecureServ.updatepw[3]);
-		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname);
+		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[3]);
+		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, my_info[0].module_version, SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 		printf("Sendto returned %d\n", i);
 	}	

@@ -291,6 +291,7 @@ int JoinNewChan()
 				irc_part(ojbotptr, lastchan, NULL );
 			}
 			irc_quit (ojbotptr, "Finished Scanning");
+			ojbotptr = NULL;
 			lastchan[0] = 0;
 			lastnick[0] = 0;
 		}
@@ -366,6 +367,7 @@ static int CheckChan(Client *u, char *requestchan)
 	if (lastchan[0] != 0) {
 		irc_part( ojbotptr, lastchan, NULL );
 		irc_quit (ojbotptr, "Finished Scanning");
+		ojbotptr = NULL;
 	}
 	strlcpy(lastnick, nickname->nick, MAXNICK);
 	strlcpy(lastchan, c->name, MAXCHANLEN);
@@ -928,6 +930,7 @@ int ss_event_emptychan(CmdParams *cmdparams)
 	else if (ojbotptr && cmdparams->bot == ojbotptr)
 	{
 		irc_quit (ojbotptr, "Leaving");
+		ojbotptr = NULL;
 		lastchan[0] = 0;
 		lastnick[0] = 0;
 	}

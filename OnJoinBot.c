@@ -22,10 +22,7 @@
 */
 
 #include <stdio.h>
-#include "dl.h"
-#include "log.h"
-#include "stats.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 #define MAX_NICKS	100

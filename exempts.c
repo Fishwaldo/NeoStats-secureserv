@@ -31,10 +31,7 @@
 #include <unistd.h>
 #endif
 
-#include "stats.h"
-#include "dl.h"
-#include "log.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 /* this is the size of the exempt list */

@@ -30,10 +30,7 @@
 #include <unistd.h>
 #endif
 
-#include "stats.h"
-#include "dl.h"
-#include "log.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 static int ScanNick(char **av, int ac);

@@ -23,10 +23,7 @@
 
 
 #include <stdio.h>
-#include "dl.h"
-#include "log.h"
-#include "stats.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 static int HelpersAdd(User *u, char **av, int ac);

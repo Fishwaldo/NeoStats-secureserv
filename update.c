@@ -33,10 +33,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
                      
-#include "stats.h"
-#include "dl.h"
-#include "log.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 void datver(void *data, int status, char *ver, int versize);

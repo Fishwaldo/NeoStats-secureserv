@@ -21,7 +21,7 @@
 ** $Id$
 */
 
-#include "stats.h"
+#include "neostats.h"
 
 const char ts_help_login_oneline[] = "Login as a helper";
 const char ts_help_logout_oneline[] = "Logout as a helper";

@@ -29,9 +29,7 @@
 #include <unistd.h>
 #endif
 
-#include "stats.h"
-#include "dl.h"
-#include "log.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 #define MAX_VIRI	-1

@@ -24,10 +24,7 @@
 /* http://sourceforge.net/projects/muhstik/ */
 
 #include <stdio.h>
-#include "dl.h"
-#include "log.h"
-#include "stats.h"
-#include "conf.h"
+#include "neostats.h"
 #include "SecureServ.h"
 
 /* the structure to keep track of joins per period (ajpp = average joins per period) */

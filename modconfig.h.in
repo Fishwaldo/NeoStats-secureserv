@@ -1,6 +1,7 @@
 /* define this to enable debug code for this module */
 #undef DEBUG
 
+/* define this if crypt.h is available */
 #undef HAVE_CRYPT_H
 
 /* Version number of package */
@@ -11,3 +12,6 @@
 
 /* Minor Version */
 #undef MODULE_MINOR
+
+/* Revision */
+#undef MODULE_REV

@@ -10,7 +10,6 @@
 /RELNOTES -text
 /SecureServ.c eol=lf
 /SecureServ.h eol=lf
-/SecureServ.settings -text
 /SecureServ.xml -text
 /SecureServ_help.c eol=lf
 /configure -text
@@ -19,8 +18,8 @@
 /html.css -text
 /install-sh -text
 /modconfig.h.in -text
+/modconfigwin32.h -text
 /scan.c -text
 /secureserv.vcproj -text
 /update.c -text
 /viri.dat -text
-/win32modconfig.h -text

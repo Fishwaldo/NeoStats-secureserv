@@ -149,9 +149,6 @@
 			<File
 				RelativePath=".\SecureServ.h">
 			</File>
-			<File
-				RelativePath=".\win32modconfig.h">
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -180,7 +177,7 @@
 			RelativePath=".\README.SecureServ.html">
 		</File>
 		<File
-			RelativePath=".\RelNotes.txt">
+			RelativePath=".\Relnotes">
 		</File>
 		<File
 			RelativePath=".\SecureServ.settings">

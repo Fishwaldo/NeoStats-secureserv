@@ -1,3 +1,4 @@
+#Neostats Module Makefile
 CC = @CC@
 CFLAGS = @CFLAGS@
 LDFLAGS= @LDFLAGS@
@@ -13,7 +14,7 @@ TARGET = secureserv.so
 DOCS = README.SecureServ README.SecureServ.html html.css 
 DATA = viri.dat
 SCRIPTS = 
-DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in SecureServ.h RelNotes.txt
+DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in SecureServ.h RELNOTES secureserv.vcproj modconfigwin32.h
 DISTDIR = @PACKAGE@-@VERSION@
 
 all:	module

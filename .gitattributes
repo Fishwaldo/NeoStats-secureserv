@@ -14,6 +14,7 @@
 /SecureServ_help.c -text
 /configure -text
 /configure.in -text
+/html.css -text
 /http.c -text
 /http.h -text
 /install-sh -text

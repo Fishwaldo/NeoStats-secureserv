@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.33 2003/08/01 13:49:46 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.34 2003/08/05 12:10:07 fishwaldo Exp $
 */
 
 
@@ -133,6 +133,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_status);
 			} else if ((!strcasecmp(argv[2], "bots")) && (UserLevel(u) >= 100)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_bots);
+			} else if ((!strcasecmp(argv[2], "MONCHAN")) && (UserLevel(u) > 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_monchan);
 			} else {
 				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 			}
@@ -344,6 +346,16 @@ int __Bot_Message(char *origin, char **argv, int argc)
 					if (i == atoi(argv[3])) {
 						/* delete the entry */
 						bots = lnode_get(node);
+						/* dont delete the bot if its setup as the monbot */
+						if (!strcasecmp(bots->nick, SecureServ.monbot)) {
+							prefmsg(u->nick, s_SecureServ, "Cant delete %s from botlist as its set as the monitor Bot", bots->nick);
+							return -1;
+						}
+						/* don't delete the bot if its online! */
+						if (findbot(bots->nick)) {
+							prefmsg(u->nick, s_SecureServ, "Can't delete %s from botlist as its online at the moment", bots->nick);
+							return -1;
+						}
 						list_delete(nicks, node);
 						buf = malloc(MAXHOST+1);
 						snprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
@@ -372,7 +384,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	} else if (!strcasecmp(argv[1], "checkchan")) {
 		if (UserLevel(u) < 40) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
-			chanalert(s_SecureServ, "%s tried to cycle, but Permission was denied", u->nick);
+			chanalert(s_SecureServ, "%s tried to checkchan, but Permission was denied", u->nick);
 			return -1;
 		}			
 		if (argc < 3) {
@@ -380,6 +392,34 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			return -1;
 		}
 		CheckChan(u, argv[2]);
+		return 1;
+	} else if (!strcasecmp(argv[1], "monchan")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to monchan, but Permission was denied", u->nick);
+			return -1;
+		}			
+		if (argc < 3) {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
+			return -1;
+		}
+		if (!strcasecmp(argv[2], "ADD")) {
+			if (argc < 4) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
+				return -1;
+			}
+			MonChan(u, argv[3]);
+		} else if (!strcasecmp(argv[2], "DEL")) {
+			if (argc < 4) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
+				return -1;
+			}
+			StopMon(u, argv[3]);
+		} else if (!strcasecmp(argv[2], "LIST")) {
+			ListMonChan(u);
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
+		}
 		return 1;
 	} else if (!strcasecmp(argv[1], "cycle")) {
 		if (UserLevel(u) < 40) {
@@ -427,6 +467,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 void do_set(User *u, char **av, int ac) {
 	int i, j;
 	char *buf;
+	randomnicks *nickname;
+	lnode_t *rnn;
 	if (ac < 3 ) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 		return;
@@ -720,6 +762,31 @@ void do_set(User *u, char **av, int ac) {
 		chanalert(s_SecureServ, "%s Set Cycle Time to %d Seconds (Restart Required)",u->nick,  i);
 		SetConf((void *)i, CFGINT, "CycleTime");
 		return;
+	} else if (!strcasecmp(av[2], "MONBOT")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		rnn = list_first(nicks);
+		while (rnn != NULL) {
+			nickname = lnode_get(rnn);
+			if (!strcasecmp(nickname->nick, av[3])) {
+				/* ok, got the bot ! */
+				break;
+			}
+			rnn = list_next(nicks, rnn);
+		}
+		if (rnn != NULL) {
+			SetConf((void *)av[3], CFGSTR, "MonBot");
+			snprintf(SecureServ.monbot, MAXNICK, nickname->nick);
+			prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);
+			chanalert(s_SecureServ, "%s set the Monitor bot to %s", u->nick, av[3]);
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", av[3], s_SecureServ);
+			return;
+		}
+		return;
 	} else if (!strcasecmp(av[2], "AUTOUPDATE")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -825,13 +892,14 @@ void do_set(User *u, char **av, int ac) {
 		}
 		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Check Private Channels?: %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Monitor bot to use: %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
 		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
 		prefmsg(u->nick, s_SecureServ, "NickFlood Count is %d in 10 seconds", SecureServ.nfcount);
 		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
-		prefmsg(u->nick, s_SecureServ, "Update Username and Passware are: %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
+		prefmsg(u->nick, s_SecureServ, "Update Username and Password are: %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
 		if ((UserLevel(u) > 185) & (strlen(SecureServ.updateuname))) {
 			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		}
@@ -950,6 +1018,7 @@ int Online(char **av, int ac) {
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name);
 	}
 	LoadTSConf();
+	LoadMonChans();
 	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
@@ -1179,6 +1248,26 @@ void LoadTSConf() {
 			node = lnode_create(rnicks);
 			list_prepend(nicks, node);			
 		}
+	}
+	if (GetConf((void *)&tmp, CFGSTR, "MonBot") <= 0) {
+		SecureServ.monbot[0] = '\0';
+	} else {
+		node = list_first(nicks);
+		while (node != NULL) {
+			rnicks = lnode_get(node);
+			if (!strcasecmp(rnicks->nick, tmp)) {
+				/* ok, got the bot ! */
+				break;
+			}
+			node = list_next(nicks, node);
+		}
+		if (node != NULL) {
+			snprintf(SecureServ.monbot, MAXNICK, tmp);
+		} else {
+			SecureServ.monbot[0] = '\0';
+			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in randmon bot list for monbot", tmp);
+		}
+		free(tmp);
 	}
 	free(data);
 	load_dat();
@@ -1745,6 +1834,7 @@ void _init() {
 	snprintf(SecureServ.akillinfo, 512, "You have been Akilled from this network. Please get a virus scanner and check your PC");
 	snprintf(SecureServ.nohelp, 512, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info");
 	snprintf(SecureServ.HelpChan, CHANLEN, "#nohack");
+	SecureServ.monbot[0] = '\0';
 	SecureServ.breakorcont = 1;
 	SecureServ.doakill = 1;
 	SecureServ.dosvsjoin = 1;

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.22 2003/07/23 10:45:25 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.23 2003/08/05 12:10:07 fishwaldo Exp $
 */
 
 
@@ -30,6 +30,8 @@
 #include "conf.h"
 #include "SecureServ.h"
 
+list_t *monchans;
+int SaveMonChans();
 
 unsigned hrand(unsigned upperbound, unsigned lowerbound) {
 	if ((upperbound < 1)) return -1;
@@ -298,3 +300,138 @@ int ss_kick_chan(char **argv, int ac) {
 	}
 	return 1;
 }		
+
+
+int MonChan(User *u, char *requestchan) {
+	Chans *c;
+	randomnicks *nickname = NULL;
+	lnode_t *rnn;
+	char *buf;
+	
+	c = findchan(requestchan);
+
+	if (!c) {
+		if (u) prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
+		return -1;
+	}			
+	if (strlen(SecureServ.monbot) < 1) {
+		if (u) prefmsg(u->nick, s_SecureServ, "Warning, No Monitor Bot set. /msg %s help set", s_SecureServ);
+		return -1;
+	}
+	/* check to see we are not already monitoring this chan */
+	rnn = list_first(monchans);
+	while (rnn != NULL) {
+		if (!strcasecmp(c->name,  lnode_get(rnn))) { 
+			prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	lnode_get(rnn));
+			/* XXX TODO What if we are setup to monitor this chan, but not joined? */
+			return -1;
+		}
+ 		rnn = list_next(monchans, rnn);
+	}
+
+
+
+	if (findbot(SecureServ.monbot) == NULL) {
+		/* the monbot isn't online. Initilze it */
+		rnn = list_first(nicks);
+		while (rnn != NULL) {
+			nickname = lnode_get(rnn);
+			if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+				/* its the same as last time, nope */
+				break;
+			}
+			rnn = list_next(nicks, rnn);
+		}
+		if (rnn != NULL) {
+			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
+		} else {
+			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			return -1;
+		}
+	}
+	/* restore segvinmodules */
+	strcpy(segvinmodule, "SecureServ");
+	
+	/* join the monitor bot to the new channel */
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
+	sjoin_cmd(SecureServ.monbot, c->name, 0);
+#else
+	sjoin_cmd(SecureServ.monbot, c->name);
+#endif
+	/* restore segvinmodules */
+	strcpy(segvinmodule, "SecureServ");
+
+	chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Virus's by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
+	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);
+	
+	buf = malloc(CHANLEN);
+	strncpy(buf, c->name, CHANLEN);
+	rnn = lnode_create(buf);
+	list_append(monchans, rnn);
+	SaveMonChans();
+	return 1;
+}
+
+int StopMon(User *u, char *chan) {
+	lnode_t *node, *node2;
+	int ok = 0; 
+
+	node = list_first(monchans);
+	while (node != NULL) {
+		node2 = list_next(monchans, node);
+		if (!strcasecmp(chan, lnode_get(node))) {
+			list_delete(monchans, node);
+			prefmsg(u->nick, s_SecureServ, "Deleted %s out of Monitored Channels List.", lnode_get(node));
+			spart_cmd(SecureServ.monbot, lnode_get(node));
+			free(lnode_get(node));
+			lnode_destroy(node);
+			ok = 1;
+		}
+		node = node2;			
+	}
+	if (ok == 1) {
+		SaveMonChans();
+	} else {
+		prefmsg(u->nick, s_SecureServ, "Couldn't find Channel %s in Monitored Channel list", chan);
+	}
+	return 1;
+}		
+
+int ListMonChan(User *u) {
+	lnode_t *node;
+	prefmsg(u->nick, s_SecureServ, "Monitored Channels List (%d):", list_count(monchans)); node = list_first(monchans);
+	while (node != NULL) {
+		prefmsg(u->nick, s_SecureServ, "%s", lnode_get(node));
+		node = list_next(monchans, node);
+	}
+	prefmsg(u->nick, s_SecureServ, "End of List");
+	return 1;
+}
+
+
+int LoadMonChans() {
+	int i;
+	char **chan;
+	monchans = list_create(20);
+	if (GetDir("MonChans", &chan) > 0) {
+		for (i = 0; chan[i] != NULL; i++) {
+			MonChan(NULL, chan[i]);
+		}
+	}
+	
+	return 1;
+}
+
+int SaveMonChans() {
+	lnode_t *node;
+	char buf[255];
+	DelConf("MonChans");
+	node = list_first(monchans);
+printf("about to \n");
+	while (node != NULL) {
+		snprintf(buf, 255, "MonChans/%s", (char *)lnode_get(node));
+		printf("saving %s\n", buf);
+		SetConf((void *)1, CFGINT, buf);
+		node = list_next(monchans, node);
+	}
+	return 1;
+}

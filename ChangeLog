@@ -12,7 +12,8 @@ TrojanServ Module for NeoStats Changelog.
  - Moved is_pub_chan into NeoStats core, as there is more checking than I though. BugID: 33
  - Channel Locking is implemented
  - Added a feature to enable admins to edit the botlist online
-
+ - Added the ability to assign bots to channels, to stay in there full time.
+ 
 0.9.2 - Fish - 03 June, 2003
  - Fixed the hash_insert problem that was crashing NeoStats. Was happening with NickChanges
  - Fixed a type on the set verbose on message. 

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.7 2003/08/01 13:49:46 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.8 2003/08/05 12:10:07 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -39,7 +39,8 @@ NULL
 const char *ts_help_oper[] = {
 "OPERTATOR COMMANDS:",
 "     CHECKCHAN STATUS    SET     EXCLUDE",
-"     CYCLE     LIST      UPDATE  BOTS"
+"     CYCLE     LIST      UPDATE  BOTS",
+"     MONCHAN",
 "",
 NULL
 };
@@ -125,6 +126,23 @@ const char *ts_help_exclude[] = {
 "",
 NULL
 };
+const char *ts_help_monchan[] = {
+"Usage: \2MONCHAN <LIST/ADD/DEL>\2",
+"",
+"This command lets your assign a bot to stay in Specific channels",
+"to monitor for PrivateMessage type virus's",
+"You must specify a Bot to use with /msg SecureServ set monbot <nick>",
+"See /msg SecureServ help set for more info",
+"The Options are:",
+"    \2LIST\2         - This will list the current channels that will be monitored",
+"                       Should a channel listed here not exist when you start SecureServ",
+"                       it will be automatically deleted from the channel",
+"    \2ADD <channel>\2 - This option will add a entry of <channel> to the list of Monitored channels",
+"                       The channel has to exist when you use this command.",
+"    \2DEL <channel>\2 - This will delete <channel> from the monitored channels list"
+"",
+NULL
+};
 
 const char *ts_help_bots[] = {
 "Usage: \2BOTS <LIST/ADD/DEL>\2",
@@ -175,10 +193,11 @@ const char *ts_help_set[] = {
 "    \2DOPRIVCHAN <on/off>\2	- This option tells SecureServ not to join Private Channels",
 "    \2FLOODPROT <on/off>\2     - Enable Channel Flood Protection Scanning.",
 "    \2CHANKEY <key>\2          - When Flood Protection for a Channel is active, this is the key we will use to lock the channel",
-"    \2CHANLOCKTIME <seconds>   - How long (Aprox) do we lock a Channel for. Time in seconds",
+"    \2CHANLOCKTIME <seconds>\2 - How long (Aprox) do we lock a Channel for. Time in seconds",
 "    \2UPDATEINFO <username> <password>\2",
 "                               - This Option Sets the Username and Password required for updating the SecureServ",
 "                                 Definitions file. See the Readme file for more info",
+"    \2MONBOT <bot>\2           - Assign <bot> (from /msg %S bot list) to be used for Channel Monitoring",
 "\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
 "    \2MULTICHECK <on/off>\2    - This makes SecureServ check all Patterns when a infected User is found.",
 "                                 Please Read the Readme file for important Performance information",

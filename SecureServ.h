@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.18 2003/08/01 13:49:46 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.19 2003/08/05 12:10:07 fishwaldo Exp $
 */
 
 
@@ -97,6 +97,8 @@ struct SecureServ {
 	char updatepw[255];
 	char lastchan[CHANLEN];
 	char lastnick[MAXNICK];
+	char monbot[MAXNICK];
+	char monchans[512];
 	int nfcount;
 	int doprivchan;
 	char ChanKey[CHANLEN];
@@ -167,7 +169,7 @@ hash_t *nickflood;
 
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
-#define MAX_VIRI	100
+#define MAX_VIRI	-1
 #define MAX_NICKS	100
 /* SecureServ.c */
 void gotpositive(User *u, virientry *ve, int type);
@@ -177,7 +179,12 @@ int is_exempt(User *u);
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
 int CheckChan(User *u, char *requestchan);
+int MonChan(User *u, char *requestchan);
 int ss_kick_chan(char **argv, int ac);
+int ListMonChan(User *u);
+int StopMon(User *u, char *chan);
+int LoadMonChans();
+
 
 /* FloodCheck.c */
 void ss_init_chan_hash();
@@ -198,5 +205,6 @@ extern const char *ts_help_status[];
 extern const char *ts_help_exclude[];
 extern const char *ts_help_list[];
 extern const char *ts_help_bots[];
+extern const char *ts_help_monchan[];
 
 #endif /* TS_H */

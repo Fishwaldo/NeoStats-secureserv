@@ -73,7 +73,10 @@ void datver(void *data, int status, char *ver, int versize)
 				DownLoadDat();
 			 } else
 				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
+		} else {
+			chanalert(s_SecureServ, "SecureServ is operating with the most recent Dat file. No Need to update");
 		}
+		return;
 	} else {
 		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", ver);
 		chanalert(s_SecureServ, "Virus Definition Check failed: %s", ver);

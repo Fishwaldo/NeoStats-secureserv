@@ -58,6 +58,9 @@ static void save_exempts();
 int AutoUpdate();
 int CleanNickFlood();
 
+#define URL_BUF_SIZE 255
+static char url_buf[URL_BUF_SIZE];
+
 ModuleInfo __module_info = {
 	"SecureServ",
 	"A Trojan Scanning Bot",
@@ -1670,7 +1673,7 @@ static int CheckNick(char **av, int ac) {
 	virientry *viridetails;
 	int rc;
 	
-	if (SecureServ.inited != 1) {
+	if (!SecureServ.inited) {
 		return 1;
 	}
 	
@@ -2144,14 +2147,14 @@ void datver(HTTP_Response *response) {
 		return;
 	}
 }
-void DownLoadDat() {
-	char url[255];
+void DownLoadDat() 
+{
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
 		SecureServ.doUpdate = 2;
-		snprintf(url, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(url, 2, HFLAG_NONE, datdownload);
+		snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(url_buf, 2, HFLAG_NONE, datdownload);
 	} 
 	return;
 }
@@ -2161,7 +2164,7 @@ void DownLoadDat() {
 */
 
 void datdownload(HTTP_Response *response) {
-	char tmpname[255];
+	char tmpname[32];
 	char *tmp, *tmp1;
 	int i;
 	
@@ -2186,7 +2189,7 @@ void datdownload(HTTP_Response *response) {
 		
 	
 		/* make a temp file and write the contents to it */
-		strncpy(tmpname, "viriXXXXXX", 255);
+		strncpy(tmpname, "viriXXXXXX", 32);
 		i = mkstemp(tmpname);
 		write(i, response->pData, response->lSize);
 		close(i);
@@ -2214,7 +2217,6 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
         char *show;
         int i, len, ri;
 	char url[255];
-	char url2[255];                
 
 	adns_rr_info(a->type, 0, 0, &len, 0, 0);
         for(i = 0; i < a->nrrs;  i++) {
@@ -2231,8 +2233,8 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 			strncpy(SecureServ.updateurl, url, 255);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
-				snprintf(url2, 255, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-				http_request(url2, 2, HFLAG_NONE, datver); 
+				snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+				http_request(url_buf, 2, HFLAG_NONE, datver); 
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
 				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
 			} else {
@@ -2248,12 +2250,11 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 	}
 }
 
-int AutoUpdate() {
-	char url2[255];                
-
+int AutoUpdate() 
+{
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
-		snprintf(url2, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(url2, 2, HFLAG_NONE, datver); 
+		snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(url_buf, 2, HFLAG_NONE, datver); 
 	}
 	return 0;
 }	

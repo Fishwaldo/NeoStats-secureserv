@@ -62,7 +62,9 @@ int ss_join_chan(char **av, int ac) {
 	
 
 	/* if we not even inited, exit this */
-	if (SecureServ.inited != 1) return -1;
+	if (!SecureServ.inited) {
+		return -1;
+	}
 
 	/* find the chan in the Core */
 	c = findchan(av[0]);

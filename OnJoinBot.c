@@ -326,9 +326,9 @@ int CheckOnjoinBotKick(char **argv, int ac)
 				/* restore segvinmodules */
 				SET_SEGV_INMODULE("SecureServ");
 				if (SecureServ.verbose) {
-					chanalert(s_SecureServ, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
+					chanalert(s_SecureServ, "%s was kicked out of Monitored Channel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
 				}
-				nlog(LOG_NOTICE, LOG_MOD, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
+				nlog(LOG_NOTICE, LOG_MOD, "%s was kicked out of Monitored Channel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
 				return 1;
 			}
 			mn = list_next(monchans, mn);

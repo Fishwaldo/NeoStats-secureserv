@@ -281,7 +281,7 @@ const char *ts_help_set[] = {
 	"                               - Sets the Username and Password required for updating the SecureServ",
 	"                                 Definitions file. See the Readme file for more info",
 	"    \2MONBOT <bot>\2           - Assign <bot> (from /msg SecureServ bots list) to be used for Channel Monitoring",
-	"    \2BOTECHO <on/off>\2       - Make the onjoin bots echo messages recieved to the services channel regardless of the verbose setting",
+	"    \2BOTECHO <on/off>\2       - Make the onjoin bots echo messages received to the services channel regardless of the verbose setting",
 	"\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
 	"    \2REPORT <on/off>\2        - Enable Reporting to Secure.irc-chat.net of infected users.",
 	"    \2AUTOSIGNOUT <on/off>\2   - Automatically sign out helpers if they set away.",

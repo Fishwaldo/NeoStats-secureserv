@@ -98,7 +98,6 @@ typedef struct ChannelDetail {
 #define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
-	int isonline;
 	int timedif;
 	int doscan;
 	int viriversion;
@@ -159,7 +158,8 @@ int AutoUpdate(void);
 
 /* OnJoin.c */
 int JoinNewChan(void);
-void OnJoinBotMsg(Client *u, char *botname, char *msg);
+int OnJoinBotMsg (CmdParams *cmdparams);
+int OnJoinBotVersionRequest (CmdParams *cmdparams);
 int ListMonChan(Client *u);
 int LoadMonChans();
 int MonChanCount(void);

@@ -366,33 +366,28 @@ static int CheckChan(Client *u, char *requestchan)
 	return 1;
 }
 
-void OnJoinBotMsg(Client *u, char *botname, char *msg)
+
+int OnJoinBotVersionRequest (CmdParams *cmdparams)
+{
+	nlog (LOG_NORMAL, "Received version request from %s to OnJoin Bot %s", cmdparams->source->name, cmdparams->bot->name);
+	irc_notice (cmdparams->bot, cmdparams->source, "\1VERSION %s\1", SecureServ.sampleversion);
+	return NS_SUCCESS;
+}
+
+int OnJoinBotMsg (CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-
-	if (!u) {
-		return;
-	}
-	
-	if (!strncasecmp(msg, "\1version\1", sizeof("\1version\1"))) {
-		/* its a version request */
-		nlog (LOG_NORMAL, "Received version request from %s to OnJoin Bot %s", u->name, botname);
-		irc_notice (find_bot(botname), u, "\1VERSION %s\1", SecureServ.sampleversion);
-		return;
-	}	
-
 	/* check if this user is exempt */
-	if (SS_IsUserExempt(u) > 0) {
-		dlog (DEBUG1, "User %s is exempt from Message Checking", u->name);
-		return;
+	if (SS_IsUserExempt(cmdparams->source) > 0) {
+		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source->name);
+		return NS_SUCCESS;
 	}
-
-	nlog (LOG_NORMAL, "Received message from %s to OnJoin Bot %s: %s", u->name, botname, msg);
+	nlog (LOG_NORMAL, "Received message from %s to OnJoin Bot %s: %s", cmdparams->source->name, cmdparams->bot->name, cmdparams->param);
 	if (SecureServ.verbose||SecureServ.BotEcho) {
-		irc_chanalert (ss_bot, "OnJoin Bot %s Received Private Message from %s: %s", botname, u->name, msg);
+		irc_chanalert (ss_bot, "OnJoin Bot %s Received Private Message from %s: %s", cmdparams->bot->name, cmdparams->source->name, cmdparams->param);
 	}
-
-	ScanMsg(u, msg, 0);
+	ScanMsg(cmdparams->source, cmdparams->param, 0);
+	return NS_SUCCESS;
 }				
 
 int CheckOnjoinBotKick(CmdParams *cmdparams) 

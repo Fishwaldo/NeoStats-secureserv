@@ -35,13 +35,13 @@
 #include "neostats.h"
 #include "SecureServ.h"
 
-static int ScanNick(CmdParams *cmdparams);
-static int event_version_reply(CmdParams *cmdparams);
-static int do_status(CmdParams *cmdparams);
-static int NickChange(CmdParams *cmdparams);
-static int DelNick(CmdParams *cmdparams);
-static int ss_kick_chan(CmdParams *cmdparams);
-static int do_viriversion(CmdParams *cmdparams);
+static int ScanNick (CmdParams *cmdparams);
+static int event_version_reply (CmdParams *cmdparams);
+static int do_status (CmdParams *cmdparams);
+static int NickChange (CmdParams *cmdparams);
+static int DelNick (CmdParams *cmdparams);
+static int ss_kick_chan (CmdParams *cmdparams);
+static int do_viriversion (CmdParams *cmdparams);
 
 static int do_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_monchancycletime (CmdParams *cmdparams, SET_REASON reason);
@@ -49,7 +49,6 @@ static int do_set_cycletime (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_autoupdate (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_sampletime (CmdParams *cmdparams, SET_REASON reason);
 static int do_set_updateinfo (CmdParams *cmdparams, SET_REASON reason);
-
 
 Bot *ss_bot;
 
@@ -157,8 +156,8 @@ static int do_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	}
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
-		if (strlen(SecureServ.updateuname)) {
+		irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", SecureServ.updateuname[0] ? "Set" : "Not Set");
+		if (SecureServ.updateuname[0]) {
 			irc_prefmsg (ss_bot, cmdparams->source, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		}
 		return NS_SUCCESS;
@@ -245,7 +244,7 @@ static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	}			
 	if ((!strcasecmp(cmdparams->av[1], "YES")) || (!strcasecmp(cmdparams->av[1], "ON"))) {
-		if ((strlen(SecureServ.updateuname) > 0) && (strlen(SecureServ.updatepw) > 0)) {
+		if ((SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
 			irc_prefmsg (ss_bot, cmdparams->source, "AutoUpdate Mode is now enabled");
 			irc_chanalert (ss_bot, "%s enabled AutoUpdate Mode", cmdparams->source);
 			SetConf((void *)1, CFGINT, "AutoUpdate");
@@ -344,7 +343,7 @@ static int do_status(CmdParams *cmdparams)
 	irc_prefmsg (ss_bot, cmdparams->source, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);
 	irc_prefmsg (ss_bot, cmdparams->source, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
 	irc_prefmsg (ss_bot, cmdparams->source, "Current Top AJPP: %d (in %d Seconds): %s", SecureServ.MaxAJPP, SecureServ.sampletime, SecureServ.MaxAJPPChan);
-	if (strlen(SecureServ.lastchan) > 0) 
+	if (SecureServ.lastchan[0]) 
 		irc_prefmsg (ss_bot, cmdparams->source, "Currently Checking %s with %s", SecureServ.lastchan, SecureServ.lastnick);
 	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
 	
@@ -368,10 +367,6 @@ int ss_join_chan(CmdParams *cmdparams)
 	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
-	/* if we are not online, exit this */
-	if (!SecureServ.isonline) {
-		return -1;
-	}
 	/* is it exempt? */
 	if (SS_IsChanExempt(cmdparams->channel) > 0) {
 		return -1;
@@ -442,37 +437,7 @@ int ss_user_away(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static int event_private(CmdParams *cmdparams) 
-{
-	SET_SEGV_LOCATION();
-	OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
-	return NS_SUCCESS;
-}
-
-static int event_notice(CmdParams *cmdparams) 
-{
-	SET_SEGV_LOCATION();
-	OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
-	return NS_SUCCESS;
-}
-
-static int event_cprivate(CmdParams *cmdparams) 
-{
-	SET_SEGV_LOCATION();
-	/* first, if its the services channel, just ignore it */
-	if (!strcasecmp(cmdparams->channel->name, me.serviceschan)) {
-		return -1;
-	}
-	if (SS_IsUserExempt(cmdparams->source) > 0) {
-		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
-		return -1;
-	}
-	/* otherwise, just pass it to the ScanMsg function */
-	ScanMsg(cmdparams->source, cmdparams->param, 1);
-	return NS_SUCCESS;
-}
-
-static int event_cnotice(CmdParams *cmdparams) 
+static int channel_message (CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	/* first, if its the services channel, just ignore it */
@@ -510,12 +475,13 @@ ModuleEvent module_events[] = {
 	{ EVENT_KICK,		ss_kick_chan},
 	{ EVENT_AWAY, 		ss_user_away},
 	{ EVENT_NEWCHAN,	ss_new_chan},
-	{ EVENT_PRIVATE, 	event_private},
-	{ EVENT_NOTICE, 	event_notice},
-	{ EVENT_CPRIVATE, 	event_cprivate},
-	{ EVENT_CNOTICE, 	event_cnotice},
+	{ EVENT_PRIVATE, 	OnJoinBotMsg},
+	{ EVENT_NOTICE, 	OnJoinBotMsg},
+	{ EVENT_CPRIVATE, 	channel_message},
+	{ EVENT_CNOTICE, 	channel_message},
 	{ EVENT_BOTKILL, 	event_botkill},
 	{ EVENT_CTCPVERSIONRPL, event_version_reply},	
+	{ EVENT_CTCPVERSIONREQ, OnJoinBotVersionRequest},	
 	{ EVENT_NULL, 			NULL}
 };
 
@@ -531,10 +497,6 @@ static int DelNick(CmdParams *cmdparams)
 static int NickChange(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	if (!SecureServ.isonline) {
-		return NS_SUCCESS;
-	}
-
 	/* Possible memory leak here if a helper changes nick? */
 	ClearUserModValue (cmdparams->source);
 	
@@ -557,14 +519,15 @@ static int NickChange(CmdParams *cmdparams)
 static int ScanNick(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	/* don't do anything if NeoStats hasn't told us we are online yet */
-	if (!SecureServ.isonline)
-		return NS_SUCCESS;						
+	if (SecureServ.doscan == 0) 
+		return -1;
+	if (cmdparams->source->flags && NS_FLAGS_NETJOIN)
+		return -1;
 	if (SS_IsUserExempt(cmdparams->source) > 0) {
 		return -1;
 	}
 	/* fizzer scan */
-	if (SecureServ.dofizzer == 1) {
+	if (SecureServ.dofizzer) {
 		if(ScanFizzer(cmdparams->source)) {
 			return NS_SUCCESS;
 		}
@@ -573,10 +536,6 @@ static int ScanNick(CmdParams *cmdparams)
 	if(ScanUser(cmdparams->source, SCAN_NICK|SCAN_IDENT|SCAN_REALNAME)) {
 		return NS_SUCCESS;
 	}
-	if (SecureServ.doscan == 0) 
-		return -1;
-	if (cmdparams->source->flags && NS_FLAGS_NETJOIN)
-		return -1;
 	return NS_SUCCESS;
 }
 
@@ -658,7 +617,6 @@ int ModSynch (void)
 	add_timer (TIMER_TYPE_INTERVAL, CleanNickFlood, "CleanNickFlood", 60);
 	add_timer (TIMER_TYPE_INTERVAL, CheckLockChan, "CheckLockChan", 60);
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
-	SecureServ.isonline = 1;
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {
 		add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);

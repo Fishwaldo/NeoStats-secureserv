@@ -122,6 +122,7 @@ struct SecureServ {
 	char lastchan[CHANLEN];
 	char lastnick[MAXNICK];
 	char monbot[MAXNICK];
+	char botquitmsg[BUFSIZE];
 	int nfcount;
 	int doprivchan;
 	char ChanKey[CHANLEN];

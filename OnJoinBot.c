@@ -576,13 +576,13 @@ int ExitOnJoinBots(void)
 		if (SecureServ.lastchan[0] != 0) {
 			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
 		}
-		del_bot(SecureServ.lastnick, "Leaving");
+		del_bot(SecureServ.lastnick, "Client quit");
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
 	}
 	if (SecureServ.monbot[0] != 0) {
 		chanalert(s_SecureServ, "SecureServ is unloading, monitor bot %s leaving", SecureServ.monbot);
-		del_bot(SecureServ.monbot, "Leaving");
+		del_bot(SecureServ.monbot, "Client quit");
 		return -1;
 	}
 	return 1;

@@ -650,6 +650,17 @@ int do_set(User *u, char **av, int ac)
 		chanalert(s_SecureServ, "%s set the Signon Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "SignOnMsg");
 		free(buf);
+	} else if (!strcasecmp(av[2], "BOTQUITMSG")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return 1;
+		}
+		buf = joinbuf(av, ac, 3);			
+		strlcpy(SecureServ.botquitmsg, buf, BUFSIZE);
+		prefmsg(u->nick, s_SecureServ, "Bot quit message is now set to %s", buf);
+		chanalert(s_SecureServ, "%s set the bot quit message to %s", u->nick, buf);
+		SetConf((void *)buf, CFGSTR, "BotQuitMsg");
+		free(buf);
 	} else if (!strcasecmp(av[2], "AKILLMSG")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -715,6 +726,7 @@ int do_set(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "REPORT:       %s", SecureServ.report ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "AUTOSIGNOUT:  %s", SecureServ.signoutaway ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "JOINHELPCHAN: %s", SecureServ.joinhelpchan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "BOTQUITMSG:   %s", SecureServ.botquitmsg);
 		prefmsg(u->nick, s_SecureServ, "SIGNONMSG:    %s", SecureServ.signonscanmsg);
 		prefmsg(u->nick, s_SecureServ, "AKILLMSG:     %s", SecureServ.akillinfo);
 		prefmsg(u->nick, s_SecureServ, "NOHELPMSG:    %s", SecureServ.nohelp);
@@ -912,6 +924,12 @@ void LoadConfig(void)
 		ircsnprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
 	} else {
 		strlcpy(SecureServ.signonscanmsg, tmp, BUFSIZE);
+		free(tmp);
+	}
+	if (GetConf((void *)&tmp, CFGSTR, "BotQuitMsg") <= 0) {
+		ircsnprintf(SecureServ.botquitmsg, BUFSIZE, "Client quit");
+	} else {
+		strlcpy(SecureServ.botquitmsg, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "NoHelpMsg") <= 0) {

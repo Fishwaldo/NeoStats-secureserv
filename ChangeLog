@@ -30,6 +30,7 @@ SecureServ Module for NeoStats Changelog.
  - Add system to report/log which onjoin bot received a given message (M)
  - Added more SET_SEGV_LOCATION entries since we seem to have a lot of users without backtrace (M)
  - Change onjoinbot/monbot quit message so it does not display "Module unloaded" (M)
+ - Make bot quit message configurable (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

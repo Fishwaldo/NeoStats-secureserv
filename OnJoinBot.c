@@ -34,7 +34,6 @@ static int SaveMonChans();
 /* this is the list of random nicknames */
 static list_t *nicks;
 char onjoinbot_modes[MODESIZE] = "+";
-static lnode_t *lastmonchan;
 static Bot *monbotptr;
 static Bot *ojbotptr;
 
@@ -212,27 +211,6 @@ int MonBotCycle()
 		return NS_SUCCESS;
 	}
 	if (SecureServ.monchancycle > 0) {
-	/* this is broken, so lets just do something simple for the meantime */
-#if 0
-		if (lastmonchan == NULL) {
-			/* its brand new */
-			mcnode = list_first(monchans);	
-		} else {
-			mcnode = list_next(monchans, lastmonchan);
-			if (mcnode == NULL) {
-				/* we have moved through all teh chans, start from scratch */
-				mcnode = list_first(monchans);
-			}
-		}
-		if (mcnode == NULL) {
-			/* No MonChans so abort */
-			return NS_SUCCESS;
-		}
-		/* check the channel is active, if not, just bail out */
-		if (!find_channel(lnode_get(mcnode))) {
-			return NS_SUCCESS;
-		}	
-#else
 		mcnode = list_first(monchans);
 		while (mcnode != NULL) {
 			chan = lnode_get(mcnode);
@@ -253,8 +231,6 @@ int MonBotCycle()
 			irc_join (find_bot(SecureServ.monbot), c->name, 0);
 			mcnode = list_next(monchans, mcnode);
 		}
-#endif
-			
 	}
 	return NS_SUCCESS;
 }
@@ -612,7 +588,6 @@ int LoadMonChans()
 		}
 	}
 	ns_free (chan);	
-	lastmonchan = NULL;
 	return 1;
 }
 

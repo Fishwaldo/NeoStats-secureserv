@@ -529,11 +529,12 @@ int ScanChan(Client* u, Channel *c)
 
 void gotpositive(Client *u, virientry *ve, int type) 
 {
-	char chan[MAXCHANLEN];
+#ifndef WIN32
 	char buf[1400];
 	char buf2[3];
-	UserDetail *ud;
 	int i;
+#endif
+	UserDetail *ud;
 
 	SET_SEGV_LOCATION();
 	if (!u) /* User not found */
@@ -580,11 +581,10 @@ void gotpositive(Client *u, virientry *ve, int type)
 						irc_svsjoin (ss_bot, u, SecureServ.HelpChan);
 					}
 					nlog (LOG_NOTICE, "SVSJoining %s to %s for Virus %s", u->name, SecureServ.HelpChan, ve->name);
-					ircsnprintf(chan, MAXCHANLEN, "@%s", SecureServ.HelpChan);
 					if(ve->iscustom) {
-						irc_chanprivmsg (ss_bot, chan, "%s is infected with %s.", u->name, ve->name);
+						irc_chanprivmsg (ss_bot, SecureServ.HelpChan, "%s is infected with %s.", u->name, ve->name);
 					} else {
-						irc_chanprivmsg (ss_bot, chan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
+						irc_chanprivmsg (ss_bot, SecureServ.HelpChan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
 					}
 					break;
 				} else {
@@ -631,11 +631,10 @@ void gotpositive(Client *u, virientry *ve, int type)
 				irc_globops (ss_bot, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->name, ve->name, ve->name);
 			}
 			if (SecureServ.helpcount > 0) {
-				ircsnprintf(chan, MAXCHANLEN, "@%s", SecureServ.HelpChan);
 				if(ve->iscustom) {
-					irc_chanprivmsg (ss_bot, chan, "%s is infected with %s.", u->name, ve->name);
+					irc_chanprivmsg (ss_bot, SecureServ.HelpChan, "%s is infected with %s.", u->name, ve->name);
 				} else {
-					irc_chanprivmsg (ss_bot, chan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
+					irc_chanprivmsg (ss_bot, SecureServ.HelpChan, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->name, ve->name, ve->name);
 				}
 			}
 			nlog (LOG_NOTICE, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);

@@ -243,10 +243,11 @@ const char *ts_help_set_updateinfo[] = {
 	NULL
 };
 
-const char *ts_help_set_splittime[] = {
-	"\2SPLITTIME <time>\2 - ",
+const char *ts_help_set_helpers[] = {
+	"\2HELPERS <ON|OFF>\2 - ",
 	NULL
 };
+
 const char *ts_help_set_version[] = {
 	"\2VERSION <on/off>\2 - Whether to use CTCP version checking",
 	NULL
@@ -305,7 +306,7 @@ const char *ts_help_set_akilltime[] = {
 	NULL
 };
 const char *ts_help_set_dojoin[] = {
-	"\2DOJOIN <on/off>\2 - Whether SecureServ will issue a SVSJOIN. If disabled, the user is akilled instead",
+	"\2SVSJOIN <on/off>\2 - Whether SecureServ will issue a SVSJOIN. If disabled, the user is akilled instead",
 	NULL
 };
 const char *ts_help_set_doonjoin[] = {

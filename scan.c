@@ -50,17 +50,17 @@ void InitScanner(void)
 void ScanStatus (CmdParams *cmdparams)
 {
 	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns Loaded: %d", ViriCount());
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Messages Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Messages Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
-	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Definitions: %d", SecureServ.definitions[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
+	irc_prefmsg (ss_bot, cmdparams->source, "CTCP Version Definitions: %d", SecureServ.definitions[DET_CTCP]);
 	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Received: %d", SecureServ.trigcounts[DET_MSG]);
 	irc_prefmsg (ss_bot, cmdparams->source, "Private Messages Acted on: %d", SecureServ.actioncounts[DET_MSG]);
 	irc_prefmsg (ss_bot, cmdparams->source, "Private Message Definitions: %d", SecureServ.definitions[DET_MSG]);
 	irc_prefmsg (ss_bot, cmdparams->source, "NickNames Checked: %d", SecureServ.trigcounts[DET_NICK]);
 	irc_prefmsg (ss_bot, cmdparams->source, "NickName Acted on: %d", SecureServ.actioncounts[DET_NICK]);
 	irc_prefmsg (ss_bot, cmdparams->source, "NickName Definitions: %d", SecureServ.definitions[DET_NICK]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Ident's Checked: %d", SecureServ.trigcounts[DET_IDENT]);
-	irc_prefmsg (ss_bot, cmdparams->source, "Ident's Acted on: %d", SecureServ.actioncounts[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Idents Checked: %d", SecureServ.trigcounts[DET_IDENT]);
+	irc_prefmsg (ss_bot, cmdparams->source, "Idents Acted on: %d", SecureServ.actioncounts[DET_IDENT]);
 	irc_prefmsg (ss_bot, cmdparams->source, "Ident Definitions: %d", SecureServ.definitions[DET_IDENT]);
 	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Checked: %d", SecureServ.trigcounts[DET_REALNAME]);
 	irc_prefmsg (ss_bot, cmdparams->source, "RealNames Acted on: %d", SecureServ.actioncounts[DET_REALNAME]);
@@ -179,7 +179,7 @@ void load_dat(void)
 			{
 				/* first fgets always returns the version number */
 				fgets(buf, BUFSIZE, fp);
-				SecureServ.viriversion = atoi(buf);
+				SecureServ.ss_cmd_viriversion = atoi(buf);
 			}
 			while (fgets(buf, BUFSIZE, fp)) {
 				if (list_isfull(viri))
@@ -232,7 +232,7 @@ void load_dat(void)
 	}	
 }
 
-int do_reload(CmdParams *cmdparams)
+int ss_cmd_reload(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
@@ -241,7 +241,7 @@ int do_reload(CmdParams *cmdparams)
 	return 1;
 }
 
-int do_list(CmdParams *cmdparams) 
+int ss_cmd_list(CmdParams *cmdparams) 
 {
 	lnode_t *node;
 	virientry *ve;
@@ -527,13 +527,24 @@ int ScanChan(Client* u, Channel *c)
 	return positive;
 }
 
-void gotpositive(Client *u, virientry *ve, int type) 
-{
 #ifndef WIN32
+static void report_positive (Client *u, virientry *ve)
+{
 	char buf[1400];
 	char buf2[3];
 	int i;
+
+	/* send an update to secure.irc-chat.net */
+	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
+		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
+		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->user->hostname, "TODO", SecureServ.ss_cmd_viriversion);
+		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
+	}	
+}
 #endif
+
+void gotpositive(Client *u, virientry *ve, int type) 
+{
 	UserDetail *ud;
 
 	SET_SEGV_LOCATION();
@@ -645,11 +656,6 @@ void gotpositive(Client *u, virientry *ve, int type)
 			break;
 	}
 #ifndef WIN32
-	/* send an update to secure.irc-chat.net */
-	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
-		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->user->hostname, "TODO", SecureServ.viriversion);
-		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
-	}	
+	report_positive (u, ve);
 #endif
 }

@@ -1,8 +1,14 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
 3.0prealpha1 - Mark (M)
- - Remove flood check code, this is now handled by a new module FloodServ
- - Port to 3.0 API and Win32
+ - Removed splittime setting which is now handled by core. (M)
+ - Move GetRandomChan function to core. (M)
+ - Move hrand function to core. (M)
+ - Optimise onjoin and mon bots to store and use a bot pointer (M)
+ - Make helper system optional (M)
+ - Optimise helper system based on moddata (M)
+ - Remove flood check code, this is now handled by a new module FloodServ (M)
+ - Port to 3.0 API and Win32 (M)
 
 1.3 - Fish (F) and Mark (M) - 27 Aug, 2004
  - Fix bug 183 - secureserv echoing messages for other module bots. (M)

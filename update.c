@@ -86,8 +86,8 @@ void datver(void *data, int status, char *ver, int versize)
 			printf("%d\n", (unsigned int) atoi(ver));
 			return;
 		}			
-		dlog (DEBUG1, "LocalDat Version %d, WebSite %d", SecureServ.viriversion, myversion);
-		if (myversion > SecureServ.viriversion) {
+		dlog (DEBUG1, "LocalDat Version %d, WebSite %d", SecureServ.ss_cmd_viriversion, myversion);
+		if (myversion > SecureServ.ss_cmd_viriversion) {
 			if (SecureServ.autoupgrade > 0 || u) {
 				SecureServ.doUpdate = 1;
 				DownLoadDat();
@@ -173,8 +173,8 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 		rename(tmpname, VIRI_DAT_NAME);
 		/* reload the dat file */
 		load_dat();
-		nlog (LOG_NOTICE, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);
-		irc_chanalert (ss_bot, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
+		nlog (LOG_NOTICE, "Successfully Downloaded DatFile Version %d", SecureServ.ss_cmd_viriversion);
+		irc_chanalert (ss_bot, "DatFile Version %d has been downloaded and installed", SecureServ.ss_cmd_viriversion);
 	} else {
 		dlog (DEBUG1, "Virus Definition Download Failed. %s", data);
 		irc_chanalert (ss_bot, "Virus Definition Download Failed. %s", data);
@@ -229,7 +229,7 @@ int AutoUpdate(void)
 	return NS_SUCCESS;
 }	
 
-int do_update(CmdParams *cmdparams)
+int ss_cmd_update(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	os_memset (ss_buf, 0, SS_BUF_SIZE);

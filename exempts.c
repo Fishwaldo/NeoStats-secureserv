@@ -46,86 +46,29 @@ typedef struct exemptinfo {
 	char reason[MAXREASON];
 }exemptinfo;
 
-static char confbuf[CONFBUFSIZE];
 static char ss_buf[SS_BUF_SIZE];
 /* this is the list of exempted hosts/servers */
 static list_t *exempt;
 
-static void SS_load_exempts(void);
+static void new_exempt (void *data)
+{
+	lnode_t *node;
+	exemptinfo *exempts;
 
-int SS_InitExempts(void)
+	exempts = malloc(sizeof(exemptinfo));
+	os_memcpy (exempts, data, sizeof(exemptinfo));
+	node = lnode_create(exempts);
+	list_prepend(exempt, node);			
+	dlog (DEBUG2, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
+}
+
+int SSInitExempts(void)
 {
 	SET_SEGV_LOCATION();
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
-	SS_load_exempts();
+	DBAFetchRows ("Exempt", new_exempt);
 	return NS_SUCCESS;
-}
-
-static void SS_save_exempts() 
-{
-	lnode_t *node;
-	exemptinfo *exempts = NULL;
-	int i;
-
-	SET_SEGV_LOCATION();
-	node = list_first(exempt);
-	i = 1;
-	while (node) {
-		exempts = lnode_get(node);
-		dlog (DEBUG1, "Saving Exempt List %s", exempts->host);
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Who", exempts->host);
-		SetConf((void *)exempts->who, CFGSTR, ss_buf);
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Reason", exempts->host);
-		SetConf((void *)exempts->reason, CFGSTR, ss_buf);
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Server", exempts->host);
-		SetConf((void *)exempts->server, CFGINT, ss_buf);
-		node = list_next(exempt, node);
-	}
-}
-
-static void SS_load_exempts(void)
-{
-	exemptinfo *exempts = NULL;
-	lnode_t *node;
-	int i;
-	char *tmp;
-	char **data;
-
-	SET_SEGV_LOCATION();
-	if (GetDir("Exempt", &data) > 0) {
-		/* try */
-		for (i = 0; data[i] != NULL; i++) {
-			exempts = ns_malloc (sizeof(exemptinfo));
-			strlcpy(exempts->host, data[i], MAXHOST);
-	
-			ircsnprintf(confbuf, CONFBUFSIZE, "Exempt/%s/Who", data[i]);
-			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
-				ns_free (exempts);
-				continue;
-			} else {
-				strlcpy(exempts->who, tmp, MAXNICK);
-				ns_free (tmp);
-			}
-			ircsnprintf(confbuf, CONFBUFSIZE, "Exempt/%s/Reason", data[i]);
-			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
-				ns_free (exempts);
-				continue;
-			} else {
-				strlcpy(exempts->reason, tmp, MAXREASON);
-				ns_free (tmp);
-			}
-			ircsnprintf(confbuf, CONFBUFSIZE, "Exempt/%s/Server", data[i]);
-			if (GetConf((void *)&exempts->server, CFGINT, confbuf) <= 0) {
-				ns_free (exempts);
-				continue;
-			}			
-			dlog (DEBUG2, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
-			node = lnode_create(exempts);
-			list_prepend(exempt, node);			
-		}
-		ns_free (data);
-	}
 }
 
 int SS_IsUserExempt(Client *u) 
@@ -167,7 +110,7 @@ int SS_IsChanExempt(Channel *c)
 	exemptinfo *exempts;
 
 	SET_SEGV_LOCATION();
-	if (!strcasecmp(c->name, me.serviceschan)) {
+	if (IsServicesChannel( c )) {
 		dlog (DEBUG1, "SecureServ: Channel %s Exempt. its Mine!", c->name);
 		return NS_SUCCESS;
 	}
@@ -188,7 +131,7 @@ int SS_IsChanExempt(Channel *c)
 	return -1;
 }
 
-static int SS_do_exempt_list(CmdParams *cmdparams)
+static int ss_cmd_exempt_list(CmdParams *cmdparams)
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
@@ -222,7 +165,7 @@ static int SS_do_exempt_list(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static int SS_do_exempt_add(CmdParams *cmdparams)
+static int ss_cmd_exempt_add(CmdParams *cmdparams)
 {
 	char *buf;
 	lnode_t *node;
@@ -273,13 +216,12 @@ static int SS_do_exempt_add(CmdParams *cmdparams)
 	}
 	irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s) exception to list", exempts->host, ss_buf);
 	irc_chanalert (ss_bot, "%s added %s (%s) exception to list", cmdparams->source->name, exempts->host, ss_buf);
-	SS_save_exempts();
+	DBAStore ("Exempt", exempts->host, exempts, sizeof(exemptinfo));
 	return NS_SUCCESS;
 }
 
-static int SS_do_exempt_del(CmdParams *cmdparams)
+static int ss_cmd_exempt_del(CmdParams *cmdparams)
 {
-	char *buf;
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 	int i;
@@ -313,11 +255,8 @@ static int SS_do_exempt_del(CmdParams *cmdparams)
 				}
 				irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s %s out of exception list", exempts->host, ss_buf);
 				irc_chanalert (ss_bot, "%s deleted %s %s out of exception list", cmdparams->source->name, exempts->host, ss_buf);
-				buf = ns_malloc (CONFBUFSIZE);
-				ircsnprintf(buf, CONFBUFSIZE, "Exempt/%s", exempts->host);
-				DelConf(buf);
+				DBADelete ("Exempt", exempts->host);
 				ns_free (exempts);
-				SS_save_exempts();
 				return NS_SUCCESS;
 			}
 			++i;
@@ -333,17 +272,17 @@ static int SS_do_exempt_del(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int SS_do_exempt(CmdParams *cmdparams)
+int ss_cmd_exempt(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		SS_do_exempt_list(cmdparams);
+		ss_cmd_exempt_list(cmdparams);
 		return NS_SUCCESS;
 	} else if (!strcasecmp(cmdparams->av[0], "ADD")) {
-		SS_do_exempt_add(cmdparams);
+		ss_cmd_exempt_add(cmdparams);
 		return NS_SUCCESS;
 	} else if (!strcasecmp(cmdparams->av[0], "DEL")) {
-		SS_do_exempt_del(cmdparams);
+		ss_cmd_exempt_del(cmdparams);
 		return NS_SUCCESS;
 	}
     irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);

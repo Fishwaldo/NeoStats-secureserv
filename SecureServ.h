@@ -100,7 +100,7 @@ typedef struct ChannelDetail {
 struct SecureServ {
 	int timedif;
 	int doscan;
-	int viriversion;
+	int ss_cmd_viriversion;
 	char akillinfo[BUFSIZE];
 	char nohelp[BUFSIZE];
 	char HelpChan[MAXCHANLEN];
@@ -117,6 +117,7 @@ struct SecureServ {
 	int dofizzer;
 	int DoOnJoin;
 	int BotEcho;
+	int helpers;
 	int trigcounts[MAX_PATTERN_TYPES];
 	int actioncounts[MAX_PATTERN_TYPES];
 	int definitions[MAX_PATTERN_TYPES];
@@ -142,15 +143,15 @@ struct SecureServ {
 /* SecureServ.c */
 
 /* update.c */
-int do_update(CmdParams *cmdparams);
+int ss_cmd_update(CmdParams *cmdparams);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
 
 /* OnJoin.c */
 int JoinNewChan(void);
 void OnJoinBotStatus (CmdParams *cmdparams);
-int OnJoinBotMsg (CmdParams *cmdparams);
-int OnJoinBotVersionRequest (CmdParams *cmdparams);
+int ss_event_message (CmdParams *cmdparams);
+int ss_event_versionrequest (CmdParams *cmdparams);
 int ListMonChan(Client *u);
 int LoadMonChans();
 int MonChanCount(void);
@@ -158,15 +159,15 @@ int OnJoinBotConf(void);
 int ViriCount(void);
 int InitOnJoinBots(void);
 int ExitOnJoinBots(void);
-int do_bots(CmdParams *cmdparams);
-int do_checkchan(CmdParams *cmdparams);
-int do_monchan(CmdParams *cmdparams);
-int do_cycle(CmdParams *cmdparams);
+int ss_cmd_bots(CmdParams *cmdparams);
+int ss_cmd_checkchan(CmdParams *cmdparams);
+int ss_cmd_monchan(CmdParams *cmdparams);
+int ss_cmd_cycle(CmdParams *cmdparams);
 int do_set_monbot (CmdParams *cmdparams, SET_REASON reason);
-int CheckOnJoinBotKick(CmdParams *cmdparams);
-int CheckOnJoinEmptyChannel(CmdParams *cmdparams);
+int ss_event_kickbot(CmdParams *cmdparams);
+int ss_event_emptychan(CmdParams *cmdparams);
 int MonJoin(Channel *c);
-int CheckMonBotKill(char* nick);
+int CheckMonBotKill(CmdParams *cmdparams);
 int MonBotCycle(void);
 
 /* scan.c */
@@ -176,26 +177,27 @@ int ScanChan(Client* u, Channel *c);
 int ScanUser(Client *u, unsigned flags);
 int ScanMsg(Client *u, char* buf, int chanmsg);
 int ScanCTCP(Client *u, char* buf);
-int do_list(CmdParams *cmdparams);
-int do_reload(CmdParams *cmdparams);
+int ss_cmd_list(CmdParams *cmdparams);
+int ss_cmd_reload(CmdParams *cmdparams);
 void InitScanner(void);
 void load_dat(void);
 
 /* exempts.c */
 int SS_IsChanExempt(Channel *c);
 int SS_IsUserExempt(Client *u);
-int SS_do_exempt(CmdParams *cmdparams);
-int SS_InitExempts(void);
+int ss_cmd_exempt(CmdParams *cmdparams);
+int SSInitExempts(void);
 
 /* Helpers.c */
-int HelpersInit(void);
-int HelpersLogin(CmdParams *cmdparams);
-int HelpersLogout(CmdParams *cmdparams);
+int InitHelpers(void);
+void FiniHelpers(void);
+int ss_cmd_login(CmdParams *cmdparams);
+int ss_cmd_logout(CmdParams *cmdparams);
+int ss_cmd_assist(CmdParams *cmdparams);
+int ss_cmd_helpers(CmdParams *cmdparams);
+int ss_cmd_chpass(CmdParams *cmdparams);
 int HelpersSignoff(CmdParams *cmdparams);
 int HelpersAway(CmdParams *cmdparams);
-int HelpersAssist(CmdParams *cmdparams);
-int do_helpers(CmdParams *cmdparams);
-int HelpersChpass(CmdParams *cmdparams);
 void HelpersStatus (CmdParams *cmdparams);
 
 
@@ -231,7 +233,7 @@ extern const char ts_help_helpers_oneline[];
 extern const char ts_help_reload_oneline[];
 
 extern const char *ts_help_set_version[];
-extern const char *ts_help_set_splittime[];
+extern const char *ts_help_set_helpers[];
 extern const char *ts_help_set_signonmsg[];
 extern const char *ts_help_set_botquitmsg[];
 extern const char *ts_help_set_akillmsg[];
@@ -261,5 +263,6 @@ extern const char *ts_help_set_onjoinbotmodes[];
 extern char onjoinbot_modes[MODESIZE];
 
 int is_monchan(char* chan);
+int do_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason);
 
 #endif /* SECURESERV_H */

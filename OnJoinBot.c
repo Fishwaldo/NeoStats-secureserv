@@ -21,14 +21,12 @@
 ** $Id$
 */
 
-#include <stdio.h>
 #include "neostats.h"
 #include "SecureServ.h"
 
 #define MAX_NICKS	100
 #define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
 
-static char confbuf[CONFBUFSIZE];
 static list_t *monchans;
 static int SaveMonChans();
 /* this is the list of random nicknames */
@@ -43,14 +41,6 @@ void OnJoinBotStatus (CmdParams *cmdparams)
 		irc_prefmsg (ss_bot, cmdparams->source, "Currently Checking %s with %s", SecureServ.lastchan, SecureServ.lastnick);
 }
 
-static unsigned hrand(unsigned upperbound, unsigned lowerbound) 
-{
-	if ((upperbound < 1)) {
-		return -1;
-	}
-	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
-}
-  
 static int chkmonchan (const void *key1, const void *key2) 
 {
 	char *chan = (char *)key1;
@@ -58,7 +48,7 @@ static int chkmonchan (const void *key1, const void *key2)
 	return (strcasecmp(chan, chk));
 }
 
-int is_monchan(char* chan)
+int is_monchan(char *chan)
 {
 	if (list_find(monchans, chan, chkmonchan)) {
 		return(1);
@@ -66,29 +56,7 @@ int is_monchan(char* chan)
 	return(0);
 }
 
-static Channel *GetRandomChan() 
-{
-	hscan_t cs;
-	hnode_t *cn;
-	int randno, curno;
-	
-	curno = 0;
-	randno = hrand(hash_count(GetChannelHash()), 1);	
-	if (randno == -1) {
-		return NULL;
-	}
-	hash_scan_begin(&cs, GetChannelHash());
-	while ((cn = hash_scan_next(&cs)) != NULL) {
-		if (curno == randno) {
-			return((Channel *)hnode_get(cn));
-		}
-		curno++;
-	}
-	nlog (LOG_WARNING, "GetRandomChan() ran out of channels?");
-	return NULL;
-}
-
-static Channel * GetNewChan () 
+static Channel *GetNewChan () 
 {
 	Channel *c;
 	int i;
@@ -104,7 +72,7 @@ static Channel * GetNewChan ()
 				continue;
 			}
 
-			if (!strcasecmp(me.serviceschan, c->name)) {
+			if (IsServicesChannel( c )) {
 				/* this was the last channel we joined, don't join it again */
 				dlog (DEBUG1, "Not Scanning %s, as this is the services channel", c->name);
 				continue;
@@ -139,7 +107,7 @@ static Channel * GetNewChan ()
 	return NULL;
 }
 
-static BotInfo * GetNewBot(int resetflag)
+static BotInfo *GetNewBot(int resetflag)
 {
 	BotInfo *nickname = NULL;
 	lnode_t *rnn;
@@ -226,9 +194,9 @@ int MonBotCycle()
 				continue;
 			}
 			if (IsChannelMember(c, find_user(SecureServ.monbot))) {
-				irc_part (find_bot(SecureServ.monbot), c->name);
+				irc_part (monbotptr, c->name);
 			}
-			irc_join (find_bot(SecureServ.monbot), c->name, 0);
+			irc_join (monbotptr, c->name, 0);
 			mcnode = list_next(monchans, mcnode);
 		}
 	}
@@ -246,9 +214,9 @@ int JoinNewChan()
 	if (SecureServ.lastnick[0] != 0) {
 		if (find_user(SecureServ.lastnick)) {
 			if (SecureServ.lastchan[0] != 0) {
-				irc_part (find_bot(SecureServ.lastnick), SecureServ.lastchan);
+				irc_part (ojbotptr, SecureServ.lastchan);
 			}
-			irc_quit ( find_bot(SecureServ.lastnick), "Finished Scanning");
+			irc_quit ( ojbotptr, "Finished Scanning");
 			SecureServ.lastchan[0] = 0;
 			SecureServ.lastnick[0] = 0;
 		}
@@ -283,8 +251,8 @@ int JoinNewChan()
 		nlog (LOG_WARNING, "init_bot reported nick was in use. How? Dunno");
 		return NS_SUCCESS;
 	}
-	irc_cloakhost (find_bot(nickname->nick));
-	irc_join (find_bot(nickname->nick), c->name, 0);
+	irc_cloakhost (ojbotptr);
+	irc_join (ojbotptr, c->name, 0);
 
 	if (SecureServ.verbose) {
 		irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
@@ -328,8 +296,8 @@ static int CheckChan(Client *u, char *requestchan)
 	}
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (SecureServ.lastchan[0] != 0) {
-		irc_part (find_bot(SecureServ.lastnick), SecureServ.lastchan);
-		irc_quit ( find_bot(SecureServ.lastnick), "Finished Scanning");
+		irc_part ( ojbotptr, SecureServ.lastchan);
+		irc_quit ( ojbotptr, "Finished Scanning");
 	}
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 	strlcpy(SecureServ.lastchan, c->name, MAXCHANLEN);
@@ -341,8 +309,8 @@ static int CheckChan(Client *u, char *requestchan)
 		SecureServ.lastnick[0] = 0;
 		return 1;
 	}
-	irc_cloakhost (find_bot(nickname->nick));
-	irc_join (find_bot(nickname->nick), c->name, 0);
+	irc_cloakhost (ojbotptr);
+	irc_join (ojbotptr, c->name, 0);
 
 	irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->name);
 	irc_prefmsg (ss_bot, u, "Scanning %s with %s", c->name, nickname->nick);
@@ -350,14 +318,14 @@ static int CheckChan(Client *u, char *requestchan)
 }
 
 
-int OnJoinBotVersionRequest (CmdParams *cmdparams)
+int ss_event_versionrequest (CmdParams *cmdparams)
 {
 	nlog (LOG_NORMAL, "Received version request from %s to OnJoin Bot %s", cmdparams->source->name, cmdparams->bot->name);
 	irc_notice (cmdparams->bot, cmdparams->source, "\1VERSION %s\1", SecureServ.sampleversion);
 	return NS_SUCCESS;
 }
 
-int OnJoinBotMsg (CmdParams *cmdparams)
+int ss_event_message (CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* check if this user is exempt */
@@ -373,7 +341,7 @@ int OnJoinBotMsg (CmdParams *cmdparams)
 	return NS_SUCCESS;
 }				
 
-int CheckOnJoinBotKick(CmdParams *cmdparams) 
+int ss_event_kickbot(CmdParams *cmdparams) 
 {
 	lnode_t *mn;
 	
@@ -393,7 +361,7 @@ int CheckOnJoinBotKick(CmdParams *cmdparams)
 		while (mn != NULL) {
 			if (!strcasecmp(cmdparams->channel->name, lnode_get(mn))) {
 				/* rejoin the monitor bot to the channel */
-				irc_join (find_bot(SecureServ.monbot), cmdparams->channel->name, 0);
+				irc_join (monbotptr, cmdparams->channel->name, 0);
 				if (SecureServ.verbose) {
 					irc_chanalert (ss_bot, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
 				}
@@ -417,7 +385,7 @@ int MonJoin(Channel *c) {
 	mn = list_first(monchans);
 	while (mn != NULL) {
 		if (!strcasecmp(c->name, lnode_get(mn))) {
-			if (find_bot(SecureServ.monbot) == NULL) {
+			if (monbotptr == NULL) {
 				/* the monbot isn't online. Initilze it */
 				rnn = list_first(nicks);
 				while (rnn != NULL) {
@@ -497,7 +465,7 @@ static int MonChan(Client *u, char *requestchan)
 		return -1;
 	}
 
-	if (find_bot(SecureServ.monbot) == NULL) {
+	if (monbotptr == NULL) {
 		/* the monbot isn't online. Initilze it */
 		rnn = list_first(nicks);
 		while (rnn != NULL) {
@@ -513,7 +481,7 @@ static int MonChan(Client *u, char *requestchan)
 			if (!monbotptr) {
 				return 1;
 			}
-			irc_cloakhost (find_bot(nickname->nick));
+			irc_cloakhost (monbotptr);
 		} else {
 			nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
 			return -1;
@@ -525,7 +493,7 @@ static int MonChan(Client *u, char *requestchan)
 	rnn = lnode_create(buf);
 	list_append(monchans, rnn);
 	/* join the monitor bot to the new channel */
-	irc_join (find_bot(SecureServ.monbot), c->name, 0);
+	irc_join (monbotptr, c->name, 0);
 	if (SecureServ.verbose) irc_chanalert (ss_bot, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->name : ss_bot->name);
 	if (u) irc_prefmsg (ss_bot, u, "Monitoring %s with %s", c->name, SecureServ.monbot);
 	
@@ -544,7 +512,7 @@ static int StopMon(Client *u, char *chan)
 		if (!strcasecmp(chan, lnode_get(node))) {
 			list_delete(monchans, node);
 			irc_prefmsg (ss_bot, u, "Deleted %s out of Monitored Channels List.", (char*)lnode_get(node));
-			irc_part (find_bot(SecureServ.monbot), lnode_get(node));
+			irc_part (monbotptr, lnode_get(node));
 			ns_free (lnode_get(node));
 			lnode_destroy(node);
 			ok = 1;
@@ -574,34 +542,29 @@ int ListMonChan(Client *u)
 	return 1;
 }
 
+void LoadMonChan(void *data) 
+{
+	MonChan(NULL, (char *)data);
+}
 
 int LoadMonChans() 
 {
-	int i;
-	char **chan;
-
 	SET_SEGV_LOCATION();
 	monchans = list_create(20);
-	if (GetDir("MonChans", &chan) > 0) {
-		for (i = 0; chan[i] != NULL; i++) {
-			MonChan(NULL, chan[i]);
-		}
-	}
-	ns_free (chan);	
+	DBAFetchRows ("monchans", LoadMonChan);
 	return 1;
 }
 
 int SaveMonChans() 
 {
+	char *chan;
 	lnode_t *node;
-	char buf[CONFBUFSIZE];
 
 	SET_SEGV_LOCATION();
-	DelConf("MonChans");
 	node = list_first(monchans);
 	while (node != NULL) {
-		ircsnprintf(buf, CONFBUFSIZE, "MonChans/%s", (char *)lnode_get(node));
-		SetConf((void *)1, CFGINT, buf);
+		chan = (char *)lnode_get(node);
+		DBAStoreStr ("monchans", chan, chan, MAXCHANLEN);
 		node = list_next(monchans, node);
 	}
 	return 1;
@@ -612,70 +575,42 @@ int MonChanCount(void)
 	return (list_count(monchans));
 }
 
+void LoadRandomNick (void *data)
+{
+	BotInfo *rnicks;
+	lnode_t *node;
+
+	rnicks = ns_calloc (sizeof(BotInfo));
+	os_memcpy (rnicks, data, sizeof(BotInfo));
+	dlog (DEBUG2, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
+	node = lnode_create(rnicks);
+	list_prepend(nicks, node);			
+}
+
 int OnJoinBotConf(void)
 {
 	BotInfo *rnicks;
 	lnode_t *node;
-	int i;
-	char **data;
-	char *tmp;
 
 	SET_SEGV_LOCATION();
 	/* get Random Nicknames */
-	if (GetDir("RandomNicks", &data) > 0) {
-		/* try */
-		for (i = 0; data[i] != NULL; i++) {
-			rnicks = ns_calloc (sizeof(BotInfo));
-			strlcpy(rnicks->nick, data[i], MAXNICK);
-	
-			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/User", data[i]);
-			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
-				ns_free (rnicks);
-				continue;
-			} else {
-				strlcpy(rnicks->user, tmp, MAXUSER);
-				ns_free (tmp);
-			}
-			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/Host", data[i]);
-			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
-				ns_free (rnicks);
-				continue;
-			} else {
-				strlcpy(rnicks->host, tmp, MAXHOST);
-				ns_free (tmp);
-			}
-			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/RealName", data[i]);
-			if (GetConf((void *)&tmp, CFGSTR, confbuf) <= 0) {
-				ns_free (rnicks);
-				continue;
-			} else {
-				strlcpy(rnicks->realname, tmp, MAXREALNAME);
-				ns_free (tmp);
-			}			
-			dlog (DEBUG2, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->realname);
-			node = lnode_create(rnicks);
-			list_prepend(nicks, node);			
-		}
-	}
-	if (GetConf((void *)&tmp, CFGSTR, "MonBot") <= 0) {
+	DBAFetchRows ("randomnicks", LoadRandomNick);
+	if (DBAFetchConfigStr ("MonBot", SecureServ.monbot, MAXNICK) != NS_SUCCESS) {
 		SecureServ.monbot[0] = '\0';
 	} else {
 		node = list_first(nicks);
 		while (node != NULL) {
 			rnicks = lnode_get(node);
-			if (!strcasecmp(rnicks->nick, tmp)) {
+			if (!strcasecmp(rnicks->nick, SecureServ.monbot)) {
 				/* ok, got the bot ! */
 				break;
 			}
 			node = list_next(nicks, node);
 		}
-		if (node != NULL) {
-			strlcpy(SecureServ.monbot, tmp, MAXNICK);
-		} else {
+		if (node == NULL) {
+			dlog (DEBUG2, "Warning, Cant find nick %s in random bot list for monbot", SecureServ.monbot);
 			SecureServ.monbot[0] = '\0';
-			dlog (DEBUG2, "Warning, Cant find nick %s in random bot list for monbot", tmp);
 		}
-		ns_free (tmp);
 	}
 	return 1;
 }
@@ -694,29 +629,29 @@ int InitOnJoinBots(void)
 int ExitOnJoinBots(void)
 {
 	SET_SEGV_LOCATION();
-	if (find_user(SecureServ.lastnick)) {
+	if (ojbotptr) {
 		irc_chanalert (ss_bot, "SecureServ is unloading, OnJoinBot %s leaving", SecureServ.lastnick);
 		if (SecureServ.lastchan[0] != 0) {
-			irc_part (find_bot(SecureServ.lastnick), SecureServ.lastchan);
+			irc_part (ojbotptr, SecureServ.lastchan);
 		}
-		irc_quit ( find_bot(SecureServ.lastnick), SecureServ.botquitmsg);
+		irc_quit ( ojbotptr, SecureServ.botquitmsg);
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
 	}
 	if (SecureServ.monbot[0] != 0) {
 		irc_chanalert (ss_bot, "SecureServ is unloading, monitor bot %s leaving", SecureServ.monbot);
-		irc_quit ( find_bot(SecureServ.monbot), SecureServ.botquitmsg);
+		irc_quit ( monbotptr, SecureServ.botquitmsg);
 		return -1;
 	}
 	return 1;
 }
 
-int do_bots(CmdParams *cmdparams)
+int ss_cmd_bots(CmdParams *cmdparams)
 {
 	int i;
 	lnode_t *node;
 	BotInfo *bots;
-	char *buf, *buf2;
+	char *buf2;
 
 	SET_SEGV_LOCATION();
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
@@ -740,23 +675,16 @@ int do_bots(CmdParams *cmdparams)
 			irc_prefmsg (ss_bot, cmdparams->source, "Error, Bot list is full");
 			return 0;
 		}
-		buf = ns_calloc (CONFBUFSIZE);
-		ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/User", cmdparams->av[1]);
-		SetConf((void *)cmdparams->av[2], CFGSTR, buf);
-		ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/Host", cmdparams->av[1]);
-		SetConf((void *)cmdparams->av[3], CFGSTR, buf);
-		ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/RealName", cmdparams->av[1]);
-		buf2 = joinbuf(cmdparams->av, cmdparams->ac, 4);			
-		SetConf((void *)buf2, CFGSTR, buf);
-		ns_free (buf);
 		bots = ns_calloc (sizeof(BotInfo));
 		strlcpy(bots->nick, cmdparams->av[1], MAXNICK);
 		strlcpy(bots->user, cmdparams->av[2], MAXUSER);
 		strlcpy(bots->host, cmdparams->av[3], MAXHOST);
+		buf2 = joinbuf(cmdparams->av, cmdparams->ac, 3);
 		strlcpy(bots->realname, buf2, MAXREALNAME);
 		ns_free (buf2);
 		node = lnode_create(bots);
 		list_append(nicks, node);
+		DBAStore ("randomnicks", cmdparams->av[1], bots, sizeof(BotInfo));
 		irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->realname);
 		irc_chanalert (ss_bot, "%s added %s (%s@%s - %s) Bot to Bot list", cmdparams->source->name, bots->nick, bots->user, bots->host, bots->realname);
 		return 1;
@@ -783,10 +711,7 @@ int do_bots(CmdParams *cmdparams)
 						return -1;
 					}
 					list_delete(nicks, node);
-					buf = ns_calloc (CONFBUFSIZE);
-					ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s", bots->nick);
-					DelConf(buf);
-					ns_free (buf);
+					DBADelete ("randomnicks", bots->nick);				
 					irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s out of Bot list", bots->nick);
 					irc_chanalert (ss_bot, "%s deleted %s out of bot list", cmdparams->source->name, bots->nick);
 					lnode_destroy(node);
@@ -810,14 +735,14 @@ int do_bots(CmdParams *cmdparams)
 	return 0;
 }
 
-int do_checkchan(CmdParams *cmdparams)
+int ss_cmd_checkchan(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	CheckChan(cmdparams->source, cmdparams->channel->name);
 	return 1;
 }
 
-int do_monchan(CmdParams *cmdparams)
+int ss_cmd_monchan(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (!strcasecmp(cmdparams->av[0], "ADD")) {
@@ -842,7 +767,7 @@ int do_monchan(CmdParams *cmdparams)
 	return 1;
 }
 
-int do_cycle(CmdParams *cmdparams)
+int ss_cmd_cycle(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	JoinNewChan();
@@ -860,9 +785,8 @@ int do_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 		irc_prefmsg (ss_bot, cmdparams->source, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
 		return 1;
 	}
-	if (cmdparams->ac < 4) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
-		return 1;
+	if (cmdparams->ac < 2) {
+		return NS_ERR_NEED_MORE_PARAMS;
 	}			
 	/* Do not allow overwrite of the monbot if one is already 
 		* assigned and we have monchans. 
@@ -891,8 +815,8 @@ int do_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 			irc_prefmsg (ss_bot, cmdparams->source, "Can not assign a Monitor Bot while it is online as a Onjoin Bot. Please try again in a couple of minutes");
 			return 1;
 		}
-		SetConf((void *)cmdparams->av[1], CFGSTR, "MonBot");
 		strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
+		DBAStoreConfigStr ("MonBot", SecureServ.monbot, MAXNICK);
 		irc_prefmsg (ss_bot, cmdparams->source, "Monitoring Bot set to %s", cmdparams->av[1]);
 		irc_chanalert (ss_bot, "%s set the Monitor bot to %s", cmdparams->source->name, cmdparams->av[1]);
 		return 1;
@@ -901,7 +825,7 @@ int do_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	return 1;
 }
 
-int CheckMonBotKill(char* nick)
+int CheckMonBotKill(CmdParams *cmdparams)
 {
 	BotInfo *nickname = NULL;
 	lnode_t *rnn;
@@ -912,7 +836,7 @@ int CheckMonBotKill(char* nick)
 	if (SecureServ.monbot[0] == 0) {
 		return 0;
 	}
-	if (strcasecmp(nick, SecureServ.monbot)) {
+	if (cmdparams->bot != monbotptr) {
 		return 0;
 	}
 	rnn = list_first(nicks);
@@ -924,16 +848,15 @@ int CheckMonBotKill(char* nick)
 		}
 		rnn = list_next(nicks, rnn);
 	}
-	if (rnn != NULL) {
-		monbotptr = AddBot(nickname);
-		if (!monbotptr) {
-			return 1;
-		}
-		irc_cloakhost (find_bot(nickname->nick));
-	} else {
+	if (rnn == NULL) {
 		nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
 		return -1;
 	}
+	monbotptr = AddBot(nickname);
+	if (!monbotptr) {
+		return 1;
+	}
+	irc_cloakhost (monbotptr);
 	mcnode = list_first(monchans);
 	while (mcnode != NULL) {
 		chan = lnode_get(mcnode);
@@ -948,13 +871,13 @@ int CheckMonBotKill(char* nick)
 			mcnode = list_next(monchans, mcnode);
 			continue;
 		}
-		irc_join (find_bot(SecureServ.monbot), c->name, 0);
+		irc_join (monbotptr, c->name, 0);
 		mcnode = list_next(monchans, mcnode);		
 	}
 	return 1;
 }
 
-int CheckOnJoinEmptyChannel(CmdParams *cmdparams)
+int ss_event_emptychan(CmdParams *cmdparams)
 {
 	if (monbotptr && cmdparams->bot == monbotptr)
 	{

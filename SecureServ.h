@@ -105,6 +105,7 @@ struct SecureServ {
 	int helpcount;
 	int verbose;
 	int stayinchantime;
+	int monchancycletime;
 	int sampletime;
 	int JoinThreshold;
 	int autoupgrade;
@@ -162,6 +163,9 @@ int do_monchan(User* u, char **argv, int argc);
 int do_cycle(User* u, char **argv, int argc);
 int do_set_monbot(User* u, char **argv, int argc);
 int CheckOnjoinBotKick(char **argv, int ac);
+int MonJoin(Chans *c);
+int MonBotDelChan(Chans *);
+
 
 /* scan.c */
 int ScanFizzer(User *u);

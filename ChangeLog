@@ -35,6 +35,9 @@ SecureServ Module for NeoStats Changelog.
  - Change misnamed is_pub_chan check to is_priv_chan (M)
  - Cycle MONCHANS option (F)
  - New Option to also scan channel messages (F)
+ - New Set option to specify how many interval for monbots to cycle channels if enabled (F)
+ - MonBots will now Join/Part Monchans as they become active on the network (F)
+
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

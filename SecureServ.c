@@ -608,6 +608,23 @@ static int do_set(User *u, char **av, int ac)
 			SecureServ.monchancycle = 0;
 			return 1;
 		}
+	} else if (!strcasecmp(av[2], "MONCHANCYCLETIME")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return 1;
+		}			
+		i = atoi(av[3]);	
+		if ((i <= 0) || (i > 10000)) {
+			prefmsg(u->nick, s_SecureServ, "Value out of Range.");
+			return 1;
+		}
+		/* if we get here, all is ok */
+		SecureServ.monchancycletime = i;
+		change_mod_timer_interval ("MonitorBotCycle", i);
+		prefmsg(u->nick, s_SecureServ, "Monitor Channel Cycle Time is set to %d Seconds", i);
+		chanalert(s_SecureServ, "%s Set Monitor Channel Cycle Time to %d Seconds",u->nick,  i);
+		SetConf((void *)i, CFGINT, "MonCycleTime");
+		return 1;
 	} else if (!strcasecmp(av[2], "CYCLETIME")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -748,6 +765,9 @@ static int do_set(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "DOPRIVCHAN:   %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
 		prefmsg(u->nick, s_SecureServ, "MONCHANCYCLE: %s", SecureServ.monchancycle ? "Enabled" : "Disabled");
+		if (SecureServ.monchancycle) {
+			prefmsg(u->nick, s_SecureServ, "MONCHANCYCLETIME: %d", SecureServ.monchancycletime);
+		}
 		prefmsg(u->nick, s_SecureServ, "AKILL:        %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "AKILLTIME:    %d", SecureServ.akilltime);
 		prefmsg(u->nick, s_SecureServ, "NFCOUNT       %d in 10 seconds", SecureServ.nfcount);
@@ -836,6 +856,7 @@ static int Online(char **av, int ac)
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", __module_info.module_name, SecureServ.stayinchantime);
+	add_mod_timer("MonBotCycle", "MonitorBotCycle", __module_info.module_name, SecureServ.monchancycletime);
 	/* start cleaning the nickflood list now */
 	/* every sixty seconds should keep the list small, and not put *too* much load on NeoStats */
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
@@ -902,6 +923,10 @@ static int LoadConfig(void)
 	if (GetConf((void *)&SecureServ.stayinchantime, CFGINT, "CycleTime") <= 0) {
 		/* 60 seconds */
 		SecureServ.stayinchantime = 60;
+	}
+	if (GetConf((void *)&SecureServ.monchancycletime, CFGINT, "MonCycleTime") <= 0) {
+		/* 30 min cycle time */
+		SecureServ.monchancycletime = 1800;
 	}
 	if (GetConf((void *)&SecureServ.nfcount, CFGINT, "NFCount") <= 0) {
 		/* 5 in 10 seconds */
@@ -1013,7 +1038,7 @@ int ss_join_chan(char **av, int ac)
 		nlog(LOG_WARNING, LOG_MOD, "joinchan: Can't Find Channel %s", av[0]);
 		return -1;
 	}
-
+	
 	/* is it exempt? */
 	if (IsChanExempt(c) > 0) {
 		return -1;
@@ -1025,18 +1050,35 @@ int ss_join_chan(char **av, int ac)
 		return -1;
 	}
 	
+	/* check if its a monchan and we are not in place */
+	if (c->cur_users == 1) 
+		MonJoin(c);
+	
 	/* how about the user, is he exempt? */
 	if (IsUserExempt(u) > 0) {
 		return -1;
 	}
 	
-	/* first, check if this is a *bad* channel */
-	if(ScanChan(u, c))
-		return 1;
+	/* first, check if this is a *bad* channel only if its the first person to join.*/
+	if(c->cur_users == 1)
+		ScanChan(u, c);
 
 	if(JoinFloodJoinChan(u, c))
 		return 1;
 
+	
+	return 1;
+}
+int ss_part_chan(char **av, int ac) 
+{
+	Chans *c;
+	
+	SET_SEGV_LOCATION();
+	c = findchan(av[0]);
+	if (!c) {
+		return -1;
+	}
+	MonBotDelChan(c);
 	return 1;
 }
 
@@ -1071,6 +1113,7 @@ EventFnList __module_events[] = {
 	{ EVENT_KILL, 		DelNick},
 	{ EVENT_JOINCHAN, 	ss_join_chan},
 	{ EVENT_DELCHAN,	ss_del_chan},
+	{ EVENT_PARTCHAN,	ss_part_chan},
 	{ EVENT_NICKCHANGE, NickChange},
 	{ EVENT_KICK,		ss_kick_chan},
 	{ EVENT_AWAY, 		ss_user_away},

@@ -200,11 +200,40 @@ static randomnicks * GetNewBot(int resetflag)
 	return NULL;
 }
 
+void MonBotCycle()
+{
+	lnode_t *mcnode;
+	/* cycle one of hte monchans, if configured to */
+	if (SecureServ.monbot[0] == 0) {
+		return;
+	}
+	if (SecureServ.monchancycle > 0) {
+		if (lastmonchan == NULL) {
+			/* its brand new */
+			mcnode = list_first(monchans);	
+		} else {
+			mcnode = list_next(monchans, lastmonchan);
+			if (mcnode == NULL) {
+				/* we have moved through all teh chans, start from scratch */
+				mcnode = list_first(monchans);
+			}
+		}
+		/* check the channel is active, if not, just bail out */
+		if (!findchan(lnode_get(mcnode))) {
+			return;
+		}	
+		
+		/* ok, if we are here mcnode == the channel to cycle */
+		spart_cmd(SecureServ.monbot, lnode_get(mcnode));
+		join_bot_to_chan(SecureServ.monbot, lnode_get(mcnode), 0);
+		lastmonchan = mcnode;
+	}
+}
+
 void JoinNewChan() 
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
-	lnode_t *mcnode;
 
 	SET_SEGV_LOCATION();
 
@@ -257,26 +286,6 @@ void JoinNewChan()
 		chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
 	}
 
-	/* cycle one of hte monchans, if configured to */
-	if (SecureServ.monbot[0] == 0) {
-		return;
-	}
-	if (SecureServ.monchancycle > 0) {
-		if (lastmonchan == NULL) {
-			/* its brand new */
-			mcnode = list_first(monchans);	
-		} else {
-			mcnode = list_next(monchans, lastmonchan);
-			if (mcnode == NULL) {
-				/* we have moved through all teh chans, start from scratch */
-				mcnode = list_first(monchans);
-			}
-		}
-		/* ok, if we are here mcnode == the channel to cycle */
-		spart_cmd(SecureServ.monbot, lnode_get(mcnode));
-		join_bot_to_chan(SecureServ.monbot, lnode_get(mcnode), 0);
-		lastmonchan = mcnode;
-	}
 }
 
 static int CheckChan(User *u, char *requestchan) 
@@ -385,6 +394,61 @@ int CheckOnjoinBotKick(char **argv, int ac)
 	}					
 	return 0;
 }		
+int MonJoin(Chans *c) {
+	randomnicks *nickname = NULL;
+	lnode_t *rnn;
+	char *buf;
+
+	if (SecureServ.monbot[0] == 0) {
+		return -1;
+	}
+
+	if (findbot(SecureServ.monbot) == NULL) {
+		/* the monbot isn't online. Initilze it */
+		rnn = list_first(nicks);
+		while (rnn != NULL) {
+			nickname = lnode_get(rnn);
+			if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+				/* its our bot */
+				break;
+			}
+			rnn = list_next(nicks, rnn);
+		}
+		if (rnn != NULL) {
+			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+			CloakHost(findbot(nickname->nick));
+		} else {
+			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
+			return -1;
+		}
+	}
+	/* restore segvinmodules */
+	SET_SEGV_INMODULE("SecureServ");
+
+	/* if they the monbot is not a member of the channel, join it. */
+	if (!IsChanMember(c, finduser(SecureServ.monbot))) {
+		/* join the monitor bot to the new channel */
+		join_bot_to_chan (SecureServ.monbot, c->name, 0);
+		/* restore segvinmodules */
+		SET_SEGV_INMODULE("SecureServ");
+	}	
+	return 1;
+}	
+int MonBotDelChan(Chans *c) 
+{
+	if (c->cur_users != 2) {
+		return -1;
+	}
+	if (SecureServ.monbot[0] == 0) {
+		return -1;
+	}
+	/* really easy way to tell if this is our monitored channel */
+	if (IsChanMember(c, finduser(SecureServ.monbot))) {
+		/* yep, its us just part the channel */
+		spart_cmd(SecureServ.monbot, c->name);
+	}				
+	return 1;
+}
 
 static int MonChan(User *u, char *requestchan) 
 {
@@ -394,28 +458,40 @@ static int MonChan(User *u, char *requestchan)
 	char *buf;
 	
 	SET_SEGV_LOCATION();
+
+	if (list_isfull(monchans)) {
+		if (u) prefmsg(u->nick, s_SecureServ, "Can not monitor any additional channels");
+		nlog(LOG_WARNING, LOG_MOD, "MonChan List is full. Not Monitoring %s", requestchan);
+		return -1;
+	}
+
+
+	/* append it to the list */
+	buf = malloc(CHANLEN);
+	strlcpy(buf, requestchan, CHANLEN);
+	rnn = lnode_create(buf);
+	list_append(monchans, rnn);
+
+
 	c = findchan(requestchan);
 
 	if (!c) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
 		return -1;
 	}			
+	/* dont allow excepted channels */
+	if (IsChanExempt(c) > 0) {
+		if (u) prefmsg(u->nick, s_SecureServ, "Can not monitor a channel listed as a Exempt Channel");
+		return -1;
+	}
+
+
 	if (SecureServ.monbot[0] == 0) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Warning, No Monitor Bot set. /msg %s help set", s_SecureServ);
 		return -1;
 	}
-	/* check to see we are not already monitoring this chan */
-	rnn = list_first(monchans);
-	while (rnn != NULL) {
-		if (!strcasecmp(c->name,  lnode_get(rnn))) { 
-			prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	(char*)lnode_get(rnn));
-			/* XXX TODO What if we are setup to monitor this chan, but not joined? */
-			return -1;
-		}
- 		rnn = list_next(monchans, rnn);
-	}
-	if (list_isfull(monchans)) {
-		prefmsg(u->nick, s_SecureServ, "Can not monitor any additional channels");
+	if (IsChanMember(c, finduser(SecureServ.monbot))) {
+		if (u) prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	(char*)lnode_get(rnn));
 		return -1;
 	}
 
@@ -450,11 +526,6 @@ static int MonChan(User *u, char *requestchan)
 	if (SecureServ.verbose) chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
 	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);
 	
-	buf = malloc(CHANLEN);
-	strlcpy(buf, c->name, CHANLEN);
-	rnn = lnode_create(buf);
-	list_append(monchans, rnn);
-	SaveMonChans();
 	return 1;
 }
 
@@ -780,6 +851,8 @@ int do_monchan(User* u, char **argv, int argc)
 			return -1;
 		}
 		MonChan(u, argv[3]);
+		/* dont save in MonChan, as thats also called by LoadChan */
+		SaveMonChans();
 	} else if (!strcasecmp(argv[2], "DEL")) {
 		if (argc < 4) {
 			prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help monchan", s_SecureServ);
@@ -824,6 +897,11 @@ int do_set_monbot(User* u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
 		return 1;
 	}
+	/* don't allow a monitor bot to be assigned if we don't have enough onjoin bots */
+	if (list_count(nicks) <= 2) {
+		prefmsg(u->nick, s_SecureServ, "Not enough Onjoin bots would be left if you assign a MonBot. Please create more Onjoin Bots");
+		return 1;
+	}
 	rnn = list_first(nicks);
 	while (rnn != NULL) {
 		nickname = lnode_get(rnn);
@@ -834,6 +912,11 @@ int do_set_monbot(User* u, char **av, int ac)
 		rnn = list_next(nicks, rnn);
 	}
 	if (rnn != NULL) {
+		/* Do not allow monbot to be assigned if its online as a Onjoin bot atm */
+		if (finduser(nickname->nick)) {
+			prefmsg(u->nick, s_SecureServ, "Can not assign a Monitor Bot while it is online as a Onjoin Bot. Please try again in a couple of minutes");
+			return 1;
+		}
 		SetConf((void *)av[3], CFGSTR, "MonBot");
 		strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
 		prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);

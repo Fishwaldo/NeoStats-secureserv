@@ -55,7 +55,7 @@ void HelpersStatus (CmdParams *cmdparams)
 	irc_prefmsg (ss_bot, cmdparams->source, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
 }
 
-void LoadHelper (void *data)
+int LoadHelper (void *data)
 {
 	Helper *helper;
 
@@ -63,6 +63,7 @@ void LoadHelper (void *data)
 	os_memcpy (helper, data, sizeof(Helper));
 	helper->u = NULL;
 	hnode_create_insert (helperhash, helper, helper->nick);
+	return NS_FALSE;
 }
 
 int InitHelpers(void) 

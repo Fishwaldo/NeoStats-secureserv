@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: http.c,v 1.7 2003/08/19 13:20:24 fishwaldo Exp $
+** $Id: http.c,v 1.8 2003/08/19 14:16:35 fishwaldo Exp $
 */
 /***************************************************************************
  *
@@ -310,7 +310,7 @@ int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, v
     if( (proxy = getenv( "http_proxy" )) == NULL )
     {
         path = parse_url( in_URL, scheme, host, &port );
-	if (path) free(path);
+//	if (path) free(path);
         //  check for http scheme to be safe.
         if( strcasecmp(scheme, "http") != 0 )
         {
@@ -326,7 +326,7 @@ int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, v
     else
     {
         path = parse_url( proxy, scheme, host, &port );
-	if( path ) free( path );            // 	free it, in_URL will be assigned to it
+//	if( path ) free( path );            // 	free it, in_URL will be assigned to it
         // add jjsa 2/17/2002
 	path = (char *)calloc( 1, strlen( in_URL) + 1 );
 	if( path == NULL )

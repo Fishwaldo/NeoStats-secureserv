@@ -36,7 +36,6 @@ static int ss_event_nick (CmdParams *cmdparams);
 static int ss_event_quit (CmdParams *cmdparams);
 static int ss_cmd_viriversion (CmdParams *cmdparams);
 
-static int ss_cmd_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
 static int ss_cmd_set_monchancycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 static int ss_cmd_set_cycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason );
@@ -104,7 +103,9 @@ static bot_setting ss_settings[]=
 	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	20736000,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_akilltime, NULL, (void *)3600 },
 	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
 	{"SVSJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_dojoin, NULL, (void *)1 },
-	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_CUSTOM,0,0,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_treatchanmsgaspm, ss_cmd_set_treatchanmsgaspm, (void *)0 },
+#ifdef TREATCHANMSGASPM
+	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_BOOLEAN,0,0,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_treatchanmsgaspm, NULL, (void *)0 },
+#endif /* TREATCHANMSGASPM */ 
 	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_doonjoin, NULL, (void *)1 },
 	{"VERBOSE",		&SecureServ.verbose,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_verbose, NULL, (void *)1 },
 	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_botecho, NULL, (void *)0 },
@@ -134,47 +135,6 @@ BotInfo ss_botinfo =
 	ss_settings,
 };
 
-static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason) 
-{
-	switch( reason )
-	{
-		case SET_LOAD:
-			break;
-		case SET_LIST:
-			irc_prefmsg (ss_bot, cmdparams->source, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
-			break;
-		case SET_CHANGE:
-			if (cmdparams->ac < 2) {
-				return NS_ERR_NEED_MORE_PARAMS;
-			}			
-			if ((!ircstrcasecmp(cmdparams->av[1], "ON"))) {
-				irc_prefmsg (ss_bot, cmdparams->source, "\2Warning:\2");
-				irc_prefmsg (ss_bot, cmdparams->source, "This option can consume a \2LOT\2 of CPU");
-				irc_prefmsg (ss_bot, cmdparams->source, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
-				irc_prefmsg (ss_bot, cmdparams->source, "Its not a recomended configuration.");
-				irc_prefmsg (ss_bot, cmdparams->source, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", ss_bot->name);
-				return NS_SUCCESS;
-			} else if (!ircstrcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
-				irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-				CommandReport(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
-				SecureServ.treatchanmsgaspm = 1;
-				DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
-				return NS_SUCCESS;
-			} else if ((!ircstrcasecmp(cmdparams->av[1], "OFF"))) {
-				irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
-				CommandReport(ss_bot, "%s has disabled channel message checking", cmdparams->source);
-				SecureServ.treatchanmsgaspm = 0;
-				DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
-				return NS_SUCCESS;
-			} else {
-				return NS_ERR_SYNTAX_ERROR;
-			}
-			break;
-		default:
-			break;
-	}
-	return NS_SUCCESS;
-}
 static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
 	if( reason == SET_CHANGE )
@@ -280,9 +240,11 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 		return NS_SUCCESS;
 	}
 	ScanChanMsg(cmdparams->source, cmdparams->param);
+#ifdef TREATCHANMSGASPM
 	if (SecureServ.treatchanmsgaspm == 1) {
 		ScanPrivmsg(cmdparams->source, cmdparams->param);
 	}
+#endif /* TREATCHANMSGASPM */ 
 	return NS_SUCCESS;
 }
 

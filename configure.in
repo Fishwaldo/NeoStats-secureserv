@@ -5,7 +5,7 @@ AC_CONFIG_HEADER(modconfig.h)
 PACKAGE=SecureServ
 MODULE_MAJOR=3
 MODULE_MINOR=0
-MODULE_REV=a2
+MODULE_REV=a3-dev
 VERSION=$MODULE_MAJOR.$MODULE_MINOR.$MODULE_REV
 AC_DEFINE_UNQUOTED(MODULE_VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(MODULE_MAJOR, "$MODULE_MAJOR")
@@ -55,7 +55,7 @@ int main(void) {
 if test "$ns_version_ok" = "yes"; then
 	AC_MSG_RESULT(Compatible version);
 else
-	AC_MSG_ERROR(This module requires NeoStats 3.0.a2 or higher)
+	AC_MSG_ERROR(This module requires NeoStats 3.0.a3-dev or higher)
 fi
 
 dnl check if we are running with debug....
@@ -72,6 +72,20 @@ AC_ARG_ENABLE(debug,
         AC_MSG_RESULT(no)
         ;;
   esac],
+AC_MSG_RESULT(no)
+)
+
+AC_MSG_CHECKING(whther to enable TREATCHANMSGASPM)
+AC_ARG_ENABLE(raw, [  --enable-treatchanmsgaspm - Enable TREATCHANMSGASPM],
+[ case "$enableval" in
+  yes)
+	AC_DEFINE(USE_RAW, 1, 'allow TREATCHANMSGASPM')
+	AC_MSG_RESULT(yes)
+	;;
+  *)
+	AC_MSG_RESULT(no)
+	;;
+esac],
 AC_MSG_RESULT(no)
 )
 

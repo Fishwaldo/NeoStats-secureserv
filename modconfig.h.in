@@ -4,6 +4,9 @@
 /* define this if crypt.h is available */
 #undef HAVE_CRYPT_H
 
+/* allow TREATCHANMSGASPM */
+#undef TREATCHANMSGASPM
+
 /* Version number of package */
 #undef MODULE_VERSION
 

@@ -51,13 +51,13 @@ void Helpers_init() {
 	if (GetDir("Helper", &data) > 0) {
 		for (i = 0; data[i] != NULL; i++) {	
 			helper = malloc(sizeof(SSHelpers));
-			strncpy(helper->nick, data[i], MAXNICK);
-			snprintf(path, 255, "Helper/%s/Pass", helper->nick);
+			strlcpy(helper->nick, data[i], MAXNICK);
+			ircsnprintf(path, 255, "Helper/%s/Pass", helper->nick);
 			if (GetConf((void *)&tmp, CFGSTR, path) <= 0) {
 				free(helper);
 				continue;
 			} else {
-				strncpy(helper->pass, tmp, MAXNICK);
+				strlcpy(helper->pass, tmp, MAXNICK);
 				free(tmp);
 			}
 			helper->u = NULL;
@@ -88,14 +88,14 @@ int Helpers_add(User *u, char **av, int ac) {
 
 
 	helper = malloc(sizeof(SSHelpers));
-	strncpy(helper->nick, av[3], MAXNICK);
-	strncpy(helper->pass, av[4], MAXNICK);
+	strlcpy(helper->nick, av[3], MAXNICK);
+	strlcpy(helper->pass, av[4], MAXNICK);
 	helper->u = NULL;
 	node = hnode_create(helper);
  	hash_insert(helperhash, node, helper->nick);
 
 	/* ok, now save the helper */
-	snprintf(path, 255, "Helper/%s/Pass", helper->nick);
+	ircsnprintf(path, 255, "Helper/%s/Pass", helper->nick);
 	SetConf((void *)helper->pass, CFGSTR, path);
 
 	prefmsg(u->nick, s_SecureServ, "Successfully added Helper %s with Password %s to Helpers List", helper->nick, helper->pass);
@@ -114,7 +114,7 @@ int Helpers_del(User *u, char *nick) {
 		hash_delete(helperhash, node);
 		free(hnode_get(node));
 		hnode_destroy(node);
-		snprintf(path, MAXNICK, "Helper/%s", nick);
+		ircsnprintf(path, MAXNICK, "Helper/%s", nick);
 		DelConf(path);
 		prefmsg(u->nick, s_SecureServ, "Deleted %s from Helpers List", nick);
 	} else {

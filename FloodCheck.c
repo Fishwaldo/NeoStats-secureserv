@@ -190,7 +190,7 @@ int ss_join_chan(char **av, int ac) {
 		nlog(LOG_DEBUG1, LOG_MOD, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
 		if (SecureServ.verbose) chanalert(s_SecureServ, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
 		SecureServ.MaxAJPP = ci->ajpp;
-		strncpy(SecureServ.MaxAJPPChan, c->name, CHANLEN);
+		strlcpy(SecureServ.MaxAJPPChan, c->name, CHANLEN);
 	}
 	return 1;
 }

@@ -245,16 +245,16 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				exempts = lnode_get(node);
 				switch (exempts->server) {
 					case 0:
-						strncpy(ss_buf, "HostName", SS_BUF_SIZE);
+						strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
 						break;
 					case 1:
-						strncpy(ss_buf, "Server", SS_BUF_SIZE);
+						strlcpy(ss_buf, "Server", SS_BUF_SIZE);
 						break;
 					case 2:
-						strncpy(ss_buf, "Channel", SS_BUF_SIZE);
+						strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
 						break;
 					default:
-						strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
+						strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
 						break;
 				}
 				prefmsg(u->nick, s_SecureServ, "%d) %s (%s) Added by %s for %s", i, exempts->host, ss_buf, exempts->who, exempts->reason);
@@ -284,26 +284,26 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				}
 			}
 			exempts = malloc(sizeof(exemptinfo));
-			strncpy(exempts->host, argv[3], MAXHOST);
+			strlcpy(exempts->host, argv[3], MAXHOST);
 			exempts->server = atoi(argv[4]);
-			strncpy(exempts->who, u->nick, MAXNICK);
+			strlcpy(exempts->who, u->nick, MAXNICK);
 			buf = joinbuf(argv, argc, 5);
-			strncpy(exempts->reason, buf, MAXHOST);
+			strlcpy(exempts->reason, buf, MAXHOST);
 			free(buf);
 			node = lnode_create(exempts);
 			list_append(exempt, node);
 			switch (exempts->server) {
 				case 0:
-					strncpy(ss_buf, "HostName", SS_BUF_SIZE);
+					strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
 					break;
 				case 1:
-					strncpy(ss_buf, "Server", SS_BUF_SIZE);
+					strlcpy(ss_buf, "Server", SS_BUF_SIZE);
 					break;
 				case 2:
-					strncpy(ss_buf, "Channel", SS_BUF_SIZE);
+					strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
 					break;
 				default:
-					strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
+					strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
 					break;
 			}
 			prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, ss_buf);
@@ -325,22 +325,22 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						list_delete(exempt, node);
 						switch (exempts->server) {
 							case 0:
-								strncpy(ss_buf, "HostName", SS_BUF_SIZE);
+								strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
 								break;
 							case 1:
-								strncpy(ss_buf, "Server", SS_BUF_SIZE);
+								strlcpy(ss_buf, "Server", SS_BUF_SIZE);
 								break;
 							case 2:
-								strncpy(ss_buf, "Channel", SS_BUF_SIZE);
+								strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
 								break;
 							default:
-								strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
+								strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
 								break;
 						}
 						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, ss_buf);
 						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, ss_buf);
 						buf = malloc(255);
-						snprintf(buf, 255, "Exempt/%s", exempts->host);
+						ircsnprintf(buf, 255, "Exempt/%s", exempts->host);
 						DelConf(buf);
 						free(exempts);
 						save_exempts();
@@ -392,19 +392,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				return 0;
 			}
 			buf = malloc(MAXHOST+1);
-			snprintf(buf, MAXHOST, "RandomNicks/%s/User", argv[3]);
+			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/User", argv[3]);
 			SetConf((void *)argv[4], CFGSTR, buf);
-			snprintf(buf, MAXHOST, "RandomNicks/%s/Host", argv[3]);
+			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/Host", argv[3]);
 			SetConf((void *)argv[5], CFGSTR, buf);
-			snprintf(buf, MAXHOST, "RandomNicks/%s/RealName", argv[3]);
+			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/RealName", argv[3]);
 			buf2 = joinbuf(argv, argc, 6);			
 			SetConf((void *)buf2, CFGSTR, buf);
 			free(buf);
 			bots = malloc(sizeof(randomnicks));
-			strncpy(bots->nick, argv[3], MAXNICK);
-			strncpy(bots->user, argv[4], MAXUSER);
-			strncpy(bots->host, argv[5], MAXHOST);
-			strncpy(bots->rname, buf2, MAXREALNAME);
+			strlcpy(bots->nick, argv[3], MAXNICK);
+			strlcpy(bots->user, argv[4], MAXUSER);
+			strlcpy(bots->host, argv[5], MAXHOST);
+			strlcpy(bots->rname, buf2, MAXREALNAME);
 			free(buf2);
 			node = lnode_create(bots);
 			list_append(nicks, node);
@@ -435,7 +435,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						}
 						list_delete(nicks, node);
 						buf = malloc(MAXHOST+1);
-						snprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
+						ircsnprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
 						DelConf(buf);
 						free(buf);
 						prefmsg(u->nick, s_SecureServ, "Deleted %s out of Bot list", bots->nick);
@@ -529,7 +529,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
 			return -1;
 		}
-		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 		chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
@@ -584,8 +584,8 @@ void do_set(User *u, char **av, int ac) {
 		}
 		SetConf((void *)av[3], CFGSTR, "UpdateUname");
 		SetConf((void *)av[4], CFGSTR, "UpdatePassword");
-		strncpy(SecureServ.updateuname, av[3], MAXNICK);
-		strncpy(SecureServ.updatepw, av[4], MAXNICK);
+		strlcpy(SecureServ.updateuname, av[3], MAXNICK);
+		strlcpy(SecureServ.updatepw, av[4], MAXNICK);
 		chanalert(s_SecureServ, "%s changed the Update Username and Password", u->nick);
 		prefmsg(u->nick, s_SecureServ, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 		return;
@@ -595,7 +595,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		SetConf((void *)av[3], CFGSTR, "ChanKey");
-		strncpy(SecureServ.ChanKey, av[3], CHANLEN);
+		strlcpy(SecureServ.ChanKey, av[3], CHANLEN);
 		chanalert(s_SecureServ, "%s changed the Channel Flood Protection key to %s", u->nick, SecureServ.ChanKey);
 		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Key has been updated to %s", SecureServ.ChanKey);
 		return;
@@ -949,7 +949,7 @@ void do_set(User *u, char **av, int ac) {
 		}
 		if (rnn != NULL) {
 			SetConf((void *)av[3], CFGSTR, "MonBot");
-			strncpy(SecureServ.monbot, nickname->nick, MAXNICK);
+			strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
 			prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);
 			chanalert(s_SecureServ, "%s set the Monitor bot to %s", u->nick, av[3]);
 			return;
@@ -1010,7 +1010,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.signonscanmsg, buf, BUFSIZE);
+		strlcpy(SecureServ.signonscanmsg, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "Signon Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the Signon Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "SignOnMsg");
@@ -1021,7 +1021,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.akillinfo, buf, BUFSIZE);
+		strlcpy(SecureServ.akillinfo, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "Akill Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the Akill Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "AkillMsg");
@@ -1032,7 +1032,7 @@ void do_set(User *u, char **av, int ac) {
 			return;
 		}
 		buf = joinbuf(av, ac, 3);			
-		strncpy(SecureServ.nohelp, buf, BUFSIZE);
+		strlcpy(SecureServ.nohelp, buf, BUFSIZE);
 		prefmsg(u->nick, s_SecureServ, "No Help Message is now set to %s", buf);
 		chanalert(s_SecureServ, "%s set the No Help Message to %s", u->nick, buf);
 		SetConf((void *)buf, CFGSTR, "NoHelpMsg");
@@ -1046,7 +1046,7 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Channel %s", av[3]);
 			return;
 		}
-		strncpy(SecureServ.HelpChan, av[3], CHANLEN);
+		strlcpy(SecureServ.HelpChan, av[3], CHANLEN);
 		prefmsg(u->nick, s_SecureServ, "Help Channel is now set to %s", av[3]);
 		chanalert(s_SecureServ, "%s set the Help Channel to %s", u->nick, av[3]);
 		SetConf((void *)av[3], CFGSTR, "HelpChan");
@@ -1144,41 +1144,41 @@ void do_list(User *u) {
 		i++;
 		switch (ve->dettype) {
 			case DET_CTCP:
-				strncpy(type, "Version", MAXHOST);
+				strlcpy(type, "Version", MAXHOST);
 				break;
 			case DET_MSG:
-				strncpy(type, "PM", MAXHOST);
+				strlcpy(type, "PM", MAXHOST);
 				break;
 			case DET_NICK:
-				strncpy(type, "Nick", MAXHOST);
+				strlcpy(type, "Nick", MAXHOST);
 				break;
 			case DET_IDENT:
-				strncpy(type, "Ident", MAXHOST);
+				strlcpy(type, "Ident", MAXHOST);
 				break;
 			case DET_REALNAME:
-				strncpy(type, "RealName", MAXHOST);
+				strlcpy(type, "RealName", MAXHOST);
 				break;
 			case DET_CHAN:
-				strncpy(type, "Chan", MAXHOST);
+				strlcpy(type, "Chan", MAXHOST);
 				break;
 			case DET_BUILTIN:
-				strncpy(type, "Built-In", MAXHOST);
+				strlcpy(type, "Built-In", MAXHOST);
 				break;
 			default:
-				snprintf(type, MAXHOST, "Unknown(%d)", ve->dettype);
+				ircsnprintf(type, MAXHOST, "Unknown(%d)", ve->dettype);
 		}
 		switch (ve->action) {
 			case ACT_SVSJOIN:
-				strncpy(action, "SVSjoin", MAXHOST);
+				strlcpy(action, "SVSjoin", MAXHOST);
 				break;
 			case ACT_AKILL:
-				strncpy(action, "Akill", MAXHOST);
+				strlcpy(action, "Akill", MAXHOST);
 				break;
 			case ACT_WARN:
-				strncpy(action, "OpersWarn", MAXHOST);
+				strlcpy(action, "OpersWarn", MAXHOST);
 				break;
 			default:
-				strncpy(action, "ClientWarn", MAXHOST);
+				strlcpy(action, "ClientWarn", MAXHOST);
 		}
 		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
 	} while ((node = list_next(viri, node)) != NULL);
@@ -1218,11 +1218,11 @@ void save_exempts() {
 	while (node) {
 		exempts = lnode_get(node);
 		nlog(LOG_DEBUG1, LOG_MOD, "Saving Exempt List %s", exempts->host);
-		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Who", exempts->host);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Who", exempts->host);
 		SetConf((void *)exempts->who, CFGSTR, ss_buf);
-		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Reason", exempts->host);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Reason", exempts->host);
 		SetConf((void *)exempts->reason, CFGSTR, ss_buf);
-		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Server", exempts->host);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Server", exempts->host);
 		SetConf((void *)exempts->server, CFGINT, ss_buf);
 		node = list_next(exempt, node);
 	}
@@ -1249,9 +1249,9 @@ void LoadTSConf() {
 		SecureServ.closechantime = 30;
 	} 
 	if (GetConf((void *)&tmp, CFGSTR, "ChanKey") <= 0) {
-		strncpy(SecureServ.ChanKey, "Eeeek", CHANLEN);
+		strlcpy(SecureServ.ChanKey, "Eeeek", CHANLEN);
 	} else {
-		strncpy(SecureServ.ChanKey, tmp, CHANLEN);
+		strlcpy(SecureServ.ChanKey, tmp, CHANLEN);
 		free(tmp);
 	}
 
@@ -1301,7 +1301,7 @@ void LoadTSConf() {
 		SecureServ.autoupgrade = 0;
 		SecureServ.updateuname[0] = 0;
 	} else {
-		strncpy(SecureServ.updateuname, tmp, MAXNICK);
+		strlcpy(SecureServ.updateuname, tmp, MAXNICK);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "UpdatePassword") <= 0) {
@@ -1309,7 +1309,7 @@ void LoadTSConf() {
 		SecureServ.autoupgrade = 0;
 		SecureServ.updatepw[0] = 0;
 	} else {
-		strncpy(SecureServ.updatepw, tmp, MAXNICK);
+		strlcpy(SecureServ.updatepw, tmp, MAXNICK);
 		free(tmp);
 	}
 	if (GetConf((void *)&SecureServ.dofizzer, CFGINT, "FizzerCheck") <= 0) {
@@ -1349,27 +1349,27 @@ void LoadTSConf() {
 		SecureServ.JoinThreshold = 5;
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "SignOnMsg") <= 0) {
-		snprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
+		ircsnprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
 	} else {
-		strncpy(SecureServ.signonscanmsg, tmp, BUFSIZE);
+		strlcpy(SecureServ.signonscanmsg, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "NoHelpMsg") <= 0) {
-		strncpy(SecureServ.nohelp, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info", BUFSIZE);
+		strlcpy(SecureServ.nohelp, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info", BUFSIZE);
 	} else {
-		strncpy(SecureServ.nohelp, tmp, BUFSIZE);
+		strlcpy(SecureServ.nohelp, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "AkillMsg") <= 0) {
-		strncpy(SecureServ.akillinfo, "You have been Akilled from this network. Please get a virus scanner and check your PC", BUFSIZE);
+		strlcpy(SecureServ.akillinfo, "You have been Akilled from this network. Please get a virus scanner and check your PC", BUFSIZE);
 	} else {
-		strncpy(SecureServ.akillinfo, tmp, BUFSIZE);
+		strlcpy(SecureServ.akillinfo, tmp, BUFSIZE);
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "HelpChan") <= 0) {
-		strncpy(SecureServ.HelpChan, "#nohack", CHANLEN);
+		strlcpy(SecureServ.HelpChan, "#nohack", CHANLEN);
 	} else {
-		strncpy(SecureServ.HelpChan, tmp, CHANLEN);
+		strlcpy(SecureServ.HelpChan, tmp, CHANLEN);
 		free(tmp);
 	}
 	
@@ -1377,25 +1377,25 @@ void LoadTSConf() {
 		/* try */
 		for (i = 0; data[i] != NULL; i++) {
 			exempts = malloc(sizeof(exemptinfo));
-			strncpy(exempts->host, data[i], MAXHOST);
+			strlcpy(exempts->host, data[i], MAXHOST);
 	
-			snprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
+			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
 			} else {
-				strncpy(exempts->who, tmp, MAXNICK);
+				strlcpy(exempts->who, tmp, MAXNICK);
 				free(tmp);
 			}
-			snprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
+			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
 			} else {
-				strncpy(exempts->reason, tmp, MAXHOST);
+				strlcpy(exempts->reason, tmp, MAXHOST);
 				free(tmp);
 			}
-			snprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
+			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
 			if (GetConf((void *)&exempts->server, CFGINT, datapath) <= 0) {
 				free(exempts);
 				continue;
@@ -1411,30 +1411,30 @@ void LoadTSConf() {
 		/* try */
 		for (i = 0; data[i] != NULL; i++) {
 			rnicks = malloc(sizeof(randomnicks));
-			strncpy(rnicks->nick, data[i], MAXNICK);
+			strlcpy(rnicks->nick, data[i], MAXNICK);
 	
-			snprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
+			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(rnicks);
 				continue;
 			} else {
-				strncpy(rnicks->user, tmp, MAXUSER);
+				strlcpy(rnicks->user, tmp, MAXUSER);
 				free(tmp);
 			}
-			snprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
+			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(rnicks);
 				continue;
 			} else {
-				strncpy(rnicks->host, tmp, MAXHOST);
+				strlcpy(rnicks->host, tmp, MAXHOST);
 				free(tmp);
 			}
-			snprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
+			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
 			} else {
-				strncpy(rnicks->rname, tmp, MAXREALNAME);
+				strlcpy(rnicks->rname, tmp, MAXREALNAME);
 				free(tmp);
 			}			
 			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
@@ -1455,7 +1455,7 @@ void LoadTSConf() {
 			node = list_next(nicks, node);
 		}
 		if (node != NULL) {
-			strncpy(SecureServ.monbot, tmp, MAXNICK);
+			strlcpy(SecureServ.monbot, tmp, MAXNICK);
 		} else {
 			SecureServ.monbot[0] = '\0';
 			nlog(LOG_DEBUG2, LOG_MOD, "Warning, Cant find nick %s in randmon bot list for monbot", tmp);
@@ -1517,12 +1517,12 @@ void load_dat() {
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = malloc(sizeof(virientry));
-	strncpy(viridet->name, "FizzerBot", MAXHOST);
+	strlcpy(viridet->name, "FizzerBot", MAXHOST);
 	viridet->dettype = DET_BUILTIN;
 	viridet->var1 = 0;
 	viridet->var2 = 0;
-	strncpy(viridet->recvmsg, "UserName is RealName Reversed", MAXHOST);
-	strncpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", MAXHOST);
+	strlcpy(viridet->recvmsg, "UserName is RealName Reversed", MAXHOST);
+	strlcpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", MAXHOST);
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
 	SecureServ.definitions[DET_BUILTIN]++;
@@ -1575,12 +1575,12 @@ void load_dat() {
 				}
 				
 				pcre_get_substring_list(buf, ovector, rc, &subs);		
-				strncpy(viridet->name, subs[1], MAXHOST);
+				strlcpy(viridet->name, subs[1], MAXHOST);
 				viridet->dettype = atoi(subs[2]);
 				viridet->var1 = atoi(subs[3]);
 				viridet->var2 = atoi(subs[4]);
-				strncpy(viridet->recvmsg, subs[5], MAXHOST);
-				strncpy(viridet->sendmsg, subs[6], MAXHOST);
+				strlcpy(viridet->recvmsg, subs[5], MAXHOST);
+				strlcpy(viridet->sendmsg, subs[6], MAXHOST);
 				viridet->action = atoi(subs[7]);
 				viridet->nofound = 0;
 				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
@@ -1743,13 +1743,13 @@ static int CheckNick(char **av, int ac) {
 			free(nick);
 		} else if ((time(NULL) - nick->when) > 10) {
 			nlog(LOG_DEBUG2, LOG_MOD, "Resetting NickFlood Count on %s", u->nick);
-			strncpy(nick->nick, u->nick, MAXNICK);
+			strlcpy(nick->nick, u->nick, MAXNICK);
 			nick->changes = 1;
 			nick->when = time(NULL);
 			hash_insert(nickflood, nfnode, nick->nick);
 		} else {			
 			/* re-insert it into the hash */
-			strncpy(nick->nick, u->nick, MAXNICK);
+			strlcpy(nick->nick, u->nick, MAXNICK);
 			hash_insert(nickflood, nfnode, nick->nick);
 		}
 	} else {
@@ -1757,7 +1757,7 @@ static int CheckNick(char **av, int ac) {
 		if (!hash_lookup(nickflood, u->nick)) {
 			/* this is a first */
 			nick = malloc(sizeof(nicktrack));
-			strncpy(nick->nick, u->nick, MAXNICK);
+			strlcpy(nick->nick, u->nick, MAXNICK);
 			nick->changes = 1;
 			nick->when = time(NULL);
 			nfnode = hnode_create(nick);
@@ -1843,10 +1843,10 @@ static int ScanNick(char **av, int ac) {
 	/* fizzer requires realname info, which we don't store yet. */
 	if (SecureServ.dofizzer == 1) {
 		user = malloc(MAXREALNAME);
-		strncpy(user, u->realname, MAXREALNAME);
+		strlcpy(user, u->realname, MAXREALNAME);
 		s1 = strtok(user, " ");
 		s2 = strtok(NULL, "");
-		snprintf(username, 11, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
+		ircsnprintf(username, 11, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
 		free(user);
 		nlog(LOG_DEBUG2, LOG_MOD, "Fizzer RealName Check %s -> %s", username, u->username);
 		SecureServ.trigcounts[DET_BUILTIN]++;
@@ -2037,7 +2037,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					}
 					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
-					snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+					ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
 					if(ve->iscustom) 
 						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
 					else
@@ -2073,7 +2073,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 			else
 				globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
 			if (SecureServ.helpcount > 0) {
-				snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+				ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
 				if(ve->iscustom) 
 					prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
 				else
@@ -2088,8 +2088,8 @@ void gotpositive(User *u, virientry *ve, int type) {
 	}
 	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
-		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, __module_info.module_version, SecureServ.viriversion);
+		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
+		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, __module_info.module_version, SecureServ.viriversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
 
@@ -2171,7 +2171,7 @@ void DownLoadDat()
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
 		SecureServ.doUpdate = 2;
-		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 	} 
 	return;
@@ -2195,7 +2195,7 @@ void datdownload(HTTP_Response *response) {
 
 		/* check response code */
 		tmp = malloc(response->lSize);
-		strncpy(tmp, response->pData, response->lSize);
+		strlcpy(tmp, response->pData, response->lSize);
 		tmp1 = tmp;
 		i = atoi(strtok(tmp, "\n"));
 		free(tmp1);	
@@ -2207,7 +2207,7 @@ void datdownload(HTTP_Response *response) {
 		
 	
 		/* make a temp file and write the contents to it */
-		strncpy(tmpname, "viriXXXXXX", 32);
+		strlcpy(tmpname, "viriXXXXXX", 32);
 		i = mkstemp(tmpname);
 		write(i, response->pData, response->lSize);
 		close(i);
@@ -2246,10 +2246,10 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 			SecureServ.sendtohost.sin_family = AF_INET;
 			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
 
-			strncpy(SecureServ.updateurl, url, SS_BUF_SIZE);
+			strlcpy(SecureServ.updateurl, url, SS_BUF_SIZE);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
-				snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+				ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 				http_request(ss_buf, 2, HFLAG_NONE, datver); 
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
 				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
@@ -2269,7 +2269,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 int AutoUpdate() 
 {
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
-		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(ss_buf, 2, HFLAG_NONE, datver); 
 	}
 	return 0;

@@ -137,7 +137,7 @@ restartchans:
 			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot",c->name);
 			goto restartchans;
 		}
-		strncpy(SecureServ.lastchan, c->name, CHANLEN);
+		strlcpy(SecureServ.lastchan, c->name, CHANLEN);
 	} else {
 		/* hu? */
 		nlog(LOG_DEBUG1, LOG_MOD, "Hu? Couldn't find a channel");
@@ -177,7 +177,7 @@ restartnicks:
 		j++;
 		rnn = list_next(nicks, rnn);
 	}
-	strncpy(SecureServ.lastnick, nickname->nick, MAXNICK);
+	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
@@ -256,8 +256,8 @@ restartnicksondemand:
 	SET_SEGV_INMODULE("SecureServ");
 	trychan = 0;
 
-	strncpy(SecureServ.lastnick, nickname->nick, MAXNICK);
-	strncpy(SecureServ.lastchan, c->name, CHANLEN);
+	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
+	strlcpy(SecureServ.lastchan, c->name, CHANLEN);
 
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
@@ -392,7 +392,7 @@ int MonChan(User *u, char *requestchan) {
 	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);
 	
 	buf = malloc(CHANLEN);
-	strncpy(buf, c->name, CHANLEN);
+	strlcpy(buf, c->name, CHANLEN);
 	rnn = lnode_create(buf);
 	list_append(monchans, rnn);
 	SaveMonChans();
@@ -455,7 +455,7 @@ int SaveMonChans() {
 	DelConf("MonChans");
 	node = list_first(monchans);
 	while (node != NULL) {
-		snprintf(buf, 255, "MonChans/%s", (char *)lnode_get(node));
+		ircsnprintf(buf, 255, "MonChans/%s", (char *)lnode_get(node));
 		SetConf((void *)1, CFGINT, buf);
 		node = list_next(monchans, node);
 	}

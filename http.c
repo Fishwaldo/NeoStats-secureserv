@@ -361,7 +361,7 @@ int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, v
         if( hd->pRequest ) free( hd->pRequest );
 	return(-1);
     } else {
-    	/* do connect, as the host, was a IP address */
+    	/* do connect, as the host, was an IP address */
 	sock_connect(SOCK_STREAM, addr.sin_addr.s_addr, hd->port, "SecureServ", "SecureServ", "http_read", "http_write", "http_error");
     } 
     return(1);
@@ -504,7 +504,7 @@ extern int http_read(int socknum, char *sockname) {
 
         if( (hd->data_size + i ) > hd->alloc_size )
         {
-            /* make sure that pBase has a enough memory for the file */
+            /* make sure that pBase has enough memory for the file */
             hd->pBase = realloc( hd->pBase, (hd->alloc_size + XFERLEN) );
             if( hd->pBase == NULL )
             {

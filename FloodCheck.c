@@ -115,7 +115,7 @@ int ss_join_chan(char **av, int ac) {
 	
 	/* check for netjoins!!!*/
 	/* XXX this isn't really the best, as a lot of 
-	* floodbots could connect to a IRC server, wait 
+	* floodbots could connect to an IRC server, wait 
 	* SecureServ.timediff, and then join the channel, 
 	* and SecureServ isn't going to flag them. It would be
 	* nicer if the IRCd protocol could easily identify nicks

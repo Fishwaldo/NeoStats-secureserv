@@ -31,11 +31,11 @@ TrojanServ Module for NeoStats Changelog.
  - SecureServ supports the new API version interface, and __ModInit, __ModFini function calls of NeoStats
  - When a user joins a channel, user exemptions are checked as well as channel exemptions.
  - Helper interface added, and SVSJOIN code now works!
- - send a update when we get a positive to secure.irc-chat.net if we have a account 
+ - send an update when we get a positive to secure.irc-chat.net if we have an account 
  - Helpers are automatically logged out if they go away (configurable)
  - Helpers are automatically logged out if they quit/get killed
  - SecureServ can join the help channel when the first helper logs in
- - added a option to disable the update to secure.irc-chat.net if users are worried about privacy
+ - added an option to disable the update to secure.irc-chat.net if users are worried about privacy
  - Assist command added to aid "helpers" deal with infected users
  - compile fix for IRCd's that don't have CHANADMINS
 
@@ -50,7 +50,7 @@ TrojanServ Module for NeoStats Changelog.
 0.9.1 - Fish - 25 May, 2003
  - Onjoin bot wasn't checking the last Onjoin Definition. Fixed. 
  - Fixed a problem with Matched channels in new_chan code. Re-Arranged Join_Chan code instead.
- - Fixed a problem with "Definitions count" after a update
+ - Fixed a problem with "Definitions count" after an update
  - AutoUpgrade now works
  - Messages received by the onjoinbot are now dumped into the logfile
  - Fixed a problem with restoring some string settings

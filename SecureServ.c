@@ -229,7 +229,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
 		if (UserLevel(u) < 50) {
 			prefmsg(u->nick, s_SecureServ, "Access Denied");
-			chanalert(s_SecureServ, "%s tried to use exclude, but is not a operator", u->nick);
+			chanalert(s_SecureServ, "%s tried to use exclude, but is not an operator", u->nick);
 			return 1;
 		}
 		if (argc < 3) {
@@ -362,7 +362,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	} else if (!strcasecmp(argv[1], "BOTS")) {
 		if (UserLevel(u) < 100) {
 			prefmsg(u->nick, s_SecureServ, "Access Denied");
-			chanalert(s_SecureServ, "%s tried to use BOTS, but is not a operator", u->nick);
+			chanalert(s_SecureServ, "%s tried to use BOTS, but is not an operator", u->nick);
 			return 1;
 		}
 		if (argc < 3) {
@@ -531,7 +531,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		snprintf(url, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
 		http_request(url, 2, HFLAG_NONE, datdownload);
 		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
-		chanalert(s_SecureServ, "%s requested a update to the Dat file", u->nick);
+		chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
@@ -1987,7 +1987,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
 			break;
 	}
-	/* send a update to secure.irc-chat.net */
+	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
 		snprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
 		snprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, my_info[0].module_version, SecureServ.viriversion);
@@ -2059,7 +2059,7 @@ int __ModInit(int modnum, int apiversion) {
 }
 
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
-** whats local, and if website is higher, either prompts for a upgrade, or does a automatic one :)
+** whats local, and if website is higher, either prompts for an upgrade, or does an automatic one :)
 **
 ** NOTE: we can't call http_request from this function as its NOT recursive 
 */
@@ -2108,7 +2108,7 @@ void datdownload(HTTP_Response *response) {
 	char *tmp, *tmp1;
 	int i;
 	
-	/* if this is a automatic download, KILL the timer */
+	/* if this is an automatic download, KILL the timer */
 	if (SecureServ.doUpdate == 2) {
 		/* clear this flag */
 		SecureServ.doUpdate = 0;

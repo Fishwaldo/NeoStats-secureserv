@@ -1,7 +1,6 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
 3.0.a1-dev - Mark (M)
- - Add more info to segfault.log reports. (M)
  - Add preliminary support for topic message scans. (M)
  - Update module to use new core module exclusion support. (M)
  - Add preliminary support for away message and quit message scans. (M)

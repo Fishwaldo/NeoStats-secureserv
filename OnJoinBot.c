@@ -45,7 +45,7 @@ static int SaveMonChans();
 static list_t *nicks;
 static char onjoinbot_modes[] = "+";
 
-unsigned hrand(unsigned upperbound, unsigned lowerbound) 
+static unsigned hrand(unsigned upperbound, unsigned lowerbound) 
 {
 	if ((upperbound < 1)) {
 		return -1;
@@ -53,14 +53,14 @@ unsigned hrand(unsigned upperbound, unsigned lowerbound)
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
 }
   
-int chkmonchan (const void *key1, const void *key2) 
+static int chkmonchan (const void *key1, const void *key2) 
 {
 	char *chan = (char *)key1;
 	char *chk = (char *)key2;
 	return (strcasecmp(chan, chk));
 }
 
-int is_monchan(char* chan)
+static int is_monchan(char* chan)
 {
 	if (list_find(monchans, chan, chkmonchan)) {
 		return(1);
@@ -68,7 +68,7 @@ int is_monchan(char* chan)
 	return(0);
 }
 
-Chans *GetRandomChan() 
+static Chans *GetRandomChan() 
 {
 	hscan_t cs;
 	hnode_t *cn;
@@ -90,7 +90,7 @@ Chans *GetRandomChan()
 	return NULL;
 }
 
-Chans * GetNewChan () 
+static Chans * GetNewChan () 
 {
 	Chans *c;
 	int i;
@@ -136,7 +136,7 @@ Chans * GetNewChan ()
 	return NULL;
 }
 
-randomnicks * GetNewBot(int resetflag)
+static randomnicks * GetNewBot(int resetflag)
 {
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
@@ -231,7 +231,7 @@ void JoinNewChan()
 	}
 }
 
-int CheckChan(User *u, char *requestchan) 
+static int CheckChan(User *u, char *requestchan) 
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
@@ -338,7 +338,7 @@ int CheckOnjoinBotKick(char **argv, int ac)
 	return 0;
 }		
 
-int MonChan(User *u, char *requestchan) 
+static int MonChan(User *u, char *requestchan) 
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
@@ -410,7 +410,7 @@ int MonChan(User *u, char *requestchan)
 	return 1;
 }
 
-int StopMon(User *u, char *chan) 
+static int StopMon(User *u, char *chan) 
 {
 	lnode_t *node, *node2;
 	int ok = 0; 

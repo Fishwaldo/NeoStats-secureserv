@@ -37,11 +37,11 @@
 #include "SecureServ.h"
 
 static int ScanNick(char **av, int ac);
-void LoadConfig(void);
-int check_version_reply(User* u, char **av, int ac);
-int ss_notice(char *origin, char **av, int ac);
-int do_set(User *u, char **av, int ac);
-int do_status(User *u, char **av, int ac);
+static int LoadConfig(void);
+static int check_version_reply(User* u, char **av, int ac);
+static int ss_notice(char *origin, char **av, int ac);
+static int do_set(User *u, char **av, int ac);
+static int do_status(User *u, char **av, int ac);
 static int NickChange(char **av, int ac);
 static int DelNick(char **av, int ac);
 static int ss_kick_chan(char **argv, int ac);
@@ -56,7 +56,7 @@ ModuleInfo __module_info = {
 	__TIME__
 };
 
-int new_m_version(char *origin, char **av, int ac) 
+static int new_m_version(char *origin, char **av, int ac) 
 {
 	snumeric_cmd(RPL_VERSION,origin, "Module SecureServ Loaded, Version: %s %s %s",__module_info.module_version,__module_info.module_build_date,__module_info.module_build_time);
 	return 0;
@@ -199,7 +199,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	return 1;
 }
 
-int do_set(User *u, char **av, int ac) 
+static int do_set(User *u, char **av, int ac) 
 {
 	int i, j;
 	char *buf;
@@ -740,7 +740,7 @@ int do_set(User *u, char **av, int ac)
 	return 1;
 }
 
-int do_status(User *u, char **av, int ac)
+static int do_status(User *u, char **av, int ac)
 {
 	SET_SEGV_LOCATION();
 	if (UserLevel(u) < NS_ULEVEL_OPER) {
@@ -807,7 +807,7 @@ static int Online(char **av, int ac)
 	return 1;
 };
 
-void LoadConfig(void) 
+static int LoadConfig(void) 
 {
 	char *tmp;
 
@@ -949,6 +949,7 @@ void LoadConfig(void)
 		strlcpy(SecureServ.HelpChan, tmp, CHANLEN);
 		free(tmp);
 	}
+	return 1;
 }
 
 int ss_join_chan(char **av, int ac)
@@ -1124,7 +1125,7 @@ static int ScanNick(char **av, int ac)
 	return 1;
 }
 
-int check_version_reply(User* u, char **av, int ac) 
+static int check_version_reply(User* u, char **av, int ac) 
 {
 	char *buf;
 	int positive = 0;
@@ -1158,7 +1159,7 @@ int check_version_reply(User* u, char **av, int ac)
 	return 0;
 }
 
-int ss_notice(char *origin, char **av, int ac) 
+static int ss_notice(char *origin, char **av, int ac) 
 {
 	User* u;
 
@@ -1220,7 +1221,7 @@ void __ModFini()
 	ExitOnJoinBots();
 };
 
-int ss_kick_chan(char **argv, int ac) 
+static int ss_kick_chan(char **argv, int ac) 
 {
 	SET_SEGV_LOCATION();
 	if(CheckOnjoinBotKick(argv, ac)) {

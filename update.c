@@ -43,7 +43,7 @@ void datver(void *data, int status, char *ver, int versize);
 void datdownload(void *data, int status, char *ver, int versize);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
-void DownLoadDat();
+static int DownLoadDat(void);
 
 static char ss_buf[SS_BUF_SIZE];
 
@@ -81,7 +81,7 @@ void datver(void *data, int status, char *ver, int versize)
 	}
 	CLEAR_SEGV_INMODULE();
 }
-void DownLoadDat() 
+static int DownLoadDat() 
 {
 	char *tmpname;
 
@@ -96,10 +96,11 @@ void DownLoadDat()
 		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
 			nlog(LOG_WARNING, LOG_MOD, "Definition download failed.");
 			chanalert(s_SecureServ, "Definition Download failed. Check log files");
+			return -1;
 		}	
 
 	} 
-	return;
+	return 1;
 }
 
 /* @brief this downloads a dat file and loads the new version into memory if required 

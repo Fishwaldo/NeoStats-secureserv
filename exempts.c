@@ -52,6 +52,8 @@ static char ss_buf[SS_BUF_SIZE];
 /* this is the list of exempted hosts/servers */
 static list_t *exempt;
 
+static void load_exempts(void);
+
 int InitExempts(void)
 {
 	SET_SEGV_LOCATION();
@@ -61,7 +63,7 @@ int InitExempts(void)
 	return 1;
 }
 
-void save_exempts() 
+static void save_exempts() 
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
@@ -83,7 +85,7 @@ void save_exempts()
 	}
 }
 
-void load_exempts()
+static void load_exempts(void)
 {
 	exemptinfo *exempts = NULL;
 	lnode_t *node;
@@ -187,7 +189,7 @@ int IsChanExempt(Chans *c)
 	return -1;
 }
 
-int do_exempt_list(User* u, char **argv, int argc)
+static int do_exempt_list(User* u, char **argv, int argc)
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
@@ -222,7 +224,7 @@ int do_exempt_list(User* u, char **argv, int argc)
 	return 1;
 }
 
-int do_exempt_add(User* u, char **argv, int argc)
+static int do_exempt_add(User* u, char **argv, int argc)
 {
 	char *buf;
 	lnode_t *node;
@@ -277,7 +279,7 @@ int do_exempt_add(User* u, char **argv, int argc)
 	return 1;
 }
 
-int do_exempt_del(User* u, char **argv, int argc)
+static int do_exempt_del(User* u, char **argv, int argc)
 {
 	char *buf;
 	lnode_t *node;

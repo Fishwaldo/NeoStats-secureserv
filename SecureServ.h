@@ -147,10 +147,7 @@ void GotHTTPAddress(char *data, adns_answer *a);
 /* OnJoin.c */
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
-int CheckChan(User *u, char *requestchan);
-int MonChan(User *u, char *requestchan);
 int ListMonChan(User *u);
-int StopMon(User *u, char *chan);
 int LoadMonChans();
 int MonChanCount(void);
 int OnJoinBotConf(void);
@@ -178,8 +175,6 @@ void load_dat(void);
 /* exempts.c */
 int IsChanExempt(Chans *c);
 int IsUserExempt(User *u);
-void save_exempts(void);
-void load_exempts(void);
 int do_exempt(User* u, char **argv, int argc);
 int InitExempts(void);
 

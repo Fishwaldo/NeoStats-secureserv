@@ -127,7 +127,7 @@ void load_dat() {
 			{
 				/* We do not really care if the custom file is not present so don't report it except in debug */
 				/* as the comment says, we don't care about custom.dat, so don't fool users into thinking SecureSer is disabled by telling them it is! */
-				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found.", s_SecureServ);
+				nlog(LOG_DEBUG1, LOG_MOD, "No custom.dat file found.");
 			}
 			else
 			{

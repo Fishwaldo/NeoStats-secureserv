@@ -333,7 +333,7 @@ static int Online(char **av, int ac)
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.isonline = 1;
 	LoadMonChans();
-	if (SecureServ.doautoupgrade == 1) {
+	if (SecureServ.autoupgrade == 1) {
 		add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 3600);
 	}
 

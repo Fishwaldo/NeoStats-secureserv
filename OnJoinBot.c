@@ -88,6 +88,11 @@ void JoinNewChan() {
 	if (SecureServ.DoOnJoin < 1)
 		return;
 
+	if (list_count(nicks) < 1) {
+		/* just broadcast a error every time we try, till a admin either turns of Onjoin checking, or adds a few bots */
+		chanalert(s_SecureServ, "Warning!!! BotList is empty. We cant do OnJoin Checking. Add a few bots via ./msg %s bots command", s_SecureServ);
+		return;
+	}
 
 
 	trychan = 0;

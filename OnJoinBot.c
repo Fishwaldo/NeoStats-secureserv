@@ -321,6 +321,7 @@ int JoinNewChan()
 		nlog (LOG_WARNING, "init_bot reported nick was in use. How? Dunno");
 		return NS_SUCCESS;
 	}
+	irc_umode( ojbotptr, ojbotptr->u->name, UmodeStringToMask( onjoinbot_modes ) );
 	irc_cloakhost (ojbotptr);
 	irc_join (ojbotptr, c->name, 0);
 	if (SecureServ.verbose) {
@@ -376,6 +377,7 @@ static int CheckChan(Client *u, char *requestchan)
 		lastnick[0] = 0;
 		return 1;
 	}
+	irc_umode( ojbotptr, ojbotptr->u->name, UmodeStringToMask( onjoinbot_modes ) );
 	irc_cloakhost (ojbotptr);
 	irc_join (ojbotptr, c->name, 0);
 	irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->name);
@@ -463,6 +465,7 @@ int InitMonBot()
 	if (!monbotptr) {
 		return NS_FALSE;
 	}
+	irc_umode( monbotptr, monbotptr->u->name, UmodeStringToMask( onjoinbot_modes ) );
 	irc_cloakhost (monbotptr);
 	return NS_TRUE;
 }

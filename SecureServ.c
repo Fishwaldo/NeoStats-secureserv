@@ -399,15 +399,15 @@ static int LoadConfig(void)
 		free(tmp);
 	}
 	if (GetConf((void *) &tmp, CFGSTR, "RealName") < 0) {
-		strlcpy(SecureServ.realname, MAXREALNAME, "Trojan Scanning Bot");
+		strlcpy(SecureServ.realname, "Trojan Scanning Bot", MAXREALNAME);
 	} else {
 		strlcpy(SecureServ.realname, tmp, MAXREALNAME);
 		free(tmp);
 	}
 	if (GetConf((void *) &tmp, CFGSTR, "OnJoinBotModes") < 0) {
-		strlcpy(SecureServ.onjoinbot_modes, "+", MODESIZE);
+		strlcpy(onjoinbot_modes, "+", MODESIZE);
 	} else {
-		strlcpy(SecureServ.onjoinbot_modes, tmp, MODESIZE);
+		strlcpy(onjoinbot_modes, tmp, MODESIZE);
 		free(tmp);
 	}
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
@@ -535,7 +535,7 @@ static int LoadConfig(void)
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "BotQuitMsg") <= 0) {
-		strlcpy(SecureServ.botquitmsg, BUFSIZE, "Client quit");
+		strlcpy(SecureServ.botquitmsg, "Client quit", BUFSIZE);
 	} else {
 		strlcpy(SecureServ.botquitmsg, tmp, BUFSIZE);
 		free(tmp);

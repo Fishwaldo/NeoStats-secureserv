@@ -9,6 +9,7 @@ TrojanServ Module for NeoStats Changelog.
  - Check Exempts for PM's and Notices is now performed.
  - Akill times can be set larger than 10,000 seconds now BUGID: 31
  - Disabling Version check didn't actuall disable it. Fixed. BugID: 24
+ - Moved is_pub_chan into NeoStats core, as there is more checking than I though. BugID: 33
 
 0.9.2 - Fish - 03 June, 2003
  - Fixed the hash_insert problem that was crashing NeoStats. Was happening with NickChanges

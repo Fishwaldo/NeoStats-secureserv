@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.15 2003/07/17 13:41:33 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.16 2003/07/23 10:29:57 fishwaldo Exp $
 */
 
 
@@ -161,11 +161,6 @@ hash_t *nickflood;
 #ifndef MODE_INVITE
 #define MODE_INVITE MODE_INVITEONLY
 #endif
-
-/* a Macro for determing if the channel is public */
-#define is_pub_chan(x) ((x) && (x->modes & (MODE_PRIVATE|MODE_SECRET|MODE_ADMONLY|MODE_OPERONLY|MODE_INVITE|MODE_KEY)))
-
-
 
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100

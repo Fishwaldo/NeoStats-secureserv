@@ -1954,7 +1954,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 	
 		AddStringToList(&av1, origin, &ac1);
 		AddStringToList(&av1, buf, &ac1);	
- 		Module_Event("CLIENTVERSION", av1, ac1);
+ 		Module_Event(EVENT_CLIENTVERSION, av1, ac1);
  		free(av1);
  		/* reset segvinmodule */
 		SET_SEGV_INMODULE("SecureServ");

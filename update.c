@@ -106,8 +106,6 @@ void datver(void *data, int status, char *ver, int versize)
 }
 static int DownLoadDat() 
 {
-	char *tmpname;
-
 	SET_SEGV_LOCATION();
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
@@ -118,7 +116,6 @@ bugid: 154
 		SecureServ.doUpdate = 2;
 		os_memset (ss_buf, 0, SS_BUF_SIZE);
 		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-		tmpname = os_tempnam( NULL, NULL );
 		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
 			nlog (LOG_WARNING, "Definition download failed.");
 			irc_chanalert (ss_bot, "Definition download failed. Check log files");

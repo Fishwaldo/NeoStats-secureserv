@@ -104,6 +104,7 @@ struct SecureServ {
 	int dofizzer;
 	int MaxAJPP;
 	int DoOnJoin;
+	int BotEcho;
 	char MaxAJPPChan[CHANLEN];
 	int trigcounts[MAX_PATTERN_TYPES];
 	int actioncounts[MAX_PATTERN_TYPES];

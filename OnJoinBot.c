@@ -293,7 +293,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	buf = joinbuf(argv, ac, 1);
 	node = list_first(viri);
 	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot: %s", u->nick, buf);
-	if (SecureServ.verbose) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
+	if (SecureServ.verbose||SecureServ.BotEcho) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
 	do {
 		viridetails = lnode_get(node);
 		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20)) {

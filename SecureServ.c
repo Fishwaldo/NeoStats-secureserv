@@ -878,6 +878,27 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return;
 		}
+	} else if (!strcasecmp(av[2], "BOTECHO")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "OnJoin Bot Echo is now enabled");
+			chanalert(s_SecureServ, "%s enabled OnJoin Bot Echo", u->nick);
+			SetConf((void *)1, CFGINT, "BotEcho");
+			SecureServ.BotEcho= 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "OnJoin Bot Echo is now disabled");
+			chanalert(s_SecureServ, "%s disabled OnJoin Bot Echo", u->nick);
+			SetConf((void *)0, CFGINT, "BotEcho");
+			SecureServ.BotEcho= 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
 	} else if (!strcasecmp(av[2], "VERBOSE")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -1041,6 +1062,7 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "CHANKEY:      %s", SecureServ.ChanKey);
 		}
 		prefmsg(u->nick, s_SecureServ, "DOONJOIN:     %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "BOTECHO:      %s", SecureServ.BotEcho ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "DOPRIVCHAN:   %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
 		prefmsg(u->nick, s_SecureServ, "AKILL:        %s", SecureServ.doakill ? "Enabled" : "Disabled");
@@ -1301,6 +1323,10 @@ void LoadTSConf() {
 		/* yes is the default is the default */
 		SecureServ.DoOnJoin = 1;
 	}
+	if (GetConf((void *)&SecureServ.BotEcho, CFGINT, "BotEcho") <= 0) {
+		/* yes is the default is the default */
+		SecureServ.BotEcho = 0;
+	}	
 	if (GetConf((void *)&SecureServ.doakill, CFGINT, "DoAkill") <= 0) {
 		/* we akill is the default */
 		SecureServ.doakill = 1;

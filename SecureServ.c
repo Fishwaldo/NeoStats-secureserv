@@ -1610,16 +1610,16 @@ void load_dat() {
 
 
 EventFnList __module_events[] = {
-	{ "ONLINE", 	Online},
-	{ "SIGNON", 	ScanNick},
-	{ "SIGNOFF", 	DelNick},
-	{ "KILL", 	DelNick},
-	{ "JOINCHAN", 	ss_join_chan},
-	{ "DELCHAN",	ss_del_chan},
-	{ "NICK_CHANGE", CheckNick},
-	{ "KICK",	ss_kick_chan},
-	{ "AWAY", 	Helpers_away},
-	{ NULL, 	NULL}
+	{ EVENT_ONLINE, 	Online},
+	{ EVENT_SIGNON, 	ScanNick},
+	{ EVENT_SIGNOFF, 	DelNick},
+	{ EVENT_KILL, 		DelNick},
+	{ EVENT_JOINCHAN, 	ss_join_chan},
+	{ EVENT_DELCHAN,	ss_del_chan},
+	{ EVENT_NICKCHANGE, CheckNick},
+	{ EVENT_KICK,		ss_kick_chan},
+	{ EVENT_AWAY, 		Helpers_away},
+	{ NULL, 			NULL}
 };
 
 int is_exempt(User *u) {

@@ -51,16 +51,16 @@ static char ss_buf[SS_BUF_SIZE];
 char *downloaderror(int errcode) {
 	switch (errcode) {
 		case -1:
-				return "Invalid UserName/Password.";
+				return "Invalid username or password.";
 				break;
 		case -2:
-				return "Account Disabled. Please contact admin@lists.neostats.net";
+				return "Account disabled. Please contact admin@lists.neostats.net";
 				break;
 		case -3:
-				return "Your copy of SecureServ is too old. Please Upgrade";
+				return "Your copy of SecureServ is too old. Please upgrade";
 				break;
 		default:
-				return "Unknown Reason.";
+				return "Unknown reason.";
 				break;
 	}
 }
@@ -80,10 +80,9 @@ void datver(void *data, int status, char *ver, int versize)
 	if (status == NS_SUCCESS) {
 		myversion = atoi(ver);
 		if (myversion <= 0) {
-			nlog (LOG_NORMAL, "When Trying to Check Dat File Version, we got Permission Denied: %d", myversion);
-			irc_chanalert (ss_bot, "Permission Denied when trying to check Dat File Version: %s", downloaderror(myversion));
-			if (u) irc_prefmsg (ss_bot, u, "Permission Denied when trying to check Dat File Version: %s", downloaderror(myversion));
-			printf("%d\n", (unsigned int) atoi(ver));
+			nlog (LOG_WARNING, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
+			irc_chanalert (ss_bot, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
+			if (u) irc_prefmsg (ss_bot, u, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
 			return;
 		}			
 		dlog (DEBUG1, "LocalDat Version %d, WebSite %d", SecureServ.datfileversion, myversion);
@@ -93,17 +92,17 @@ void datver(void *data, int status, char *ver, int versize)
 				DownLoadDat();
 				if (u) irc_prefmsg (ss_bot, u, "A new Dat file version %d is being downloaded. Please Monitor the Services Channel", myversion);
 			 } else
-				irc_chanalert (ss_bot, "A new DatFile Version %d is available. You should /msg %s update", myversion, ss_bot->name);
+				irc_chanalert (ss_bot, "A new Dat file version %d is available. You should /msg %s update", myversion, ss_bot->name);
 				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
 			 } else {
-			irc_chanalert (ss_bot, "SecureServ is operating with the most recent Dat file. No Need to update");
-			if (u) irc_prefmsg (ss_bot, u, "SecureServ is operating with the most recent Dat file. No need to update");
+			irc_chanalert (ss_bot, "SecureServ is operating with the most recent Dat file. No update required.");
+			if (u) irc_prefmsg (ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required.");
 			}
 		return;
 	} else {
-		dlog (DEBUG1, "Virus Definition check Failed. %s", ver);
-		irc_chanalert (ss_bot, "Virus Definition Check failed: %s", ver);
-		if (u) irc_prefmsg (ss_bot, u, "Virus Definition Check failed. %s", ver);
+		nlog (LOG_WARNING, "Virus definition check failed. %s", ver);
+		irc_chanalert (ss_bot, "Virus definition check failed: %s", ver);
+		if (u) irc_prefmsg (ss_bot, u, "Virus definition check failed. %s", ver);
 		return;
 	}
 }
@@ -124,7 +123,7 @@ bugid: 154
 		tmpname = tempnam(NULL, NULL);
 		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
 			nlog (LOG_WARNING, "Definition download failed.");
-			irc_chanalert (ss_bot, "Definition Download failed. Check log files");
+			irc_chanalert (ss_bot, "Definition download failed. Check log files");
 			return -1;
 		}	
 
@@ -158,8 +157,8 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 		i = atoi(strtok(tmp, "\n"));
 		ns_free (tmp1);	
 		if (i <= 0) {
-			nlog (LOG_NORMAL, "When Trying to Download Dat File, we got Permission Denied: %d", i);
-			irc_chanalert (ss_bot, "Permission Denied when trying to Download Dat File : %d", i);
+			nlog (LOG_NORMAL, "Permission denied trying to download Dat file: %d", i);
+			irc_chanalert (ss_bot, "Permission denied trying to download Dat file: %d", i);
 			return;
 		}			
 		
@@ -173,11 +172,11 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 		rename(tmpname, VIRI_DAT_NAME);
 		/* reload the dat file */
 		load_dat();
-		nlog (LOG_NOTICE, "Successfully Downloaded DatFile Version %d", SecureServ.datfileversion);
-		irc_chanalert (ss_bot, "DatFile Version %d has been downloaded and installed", SecureServ.datfileversion);
+		nlog (LOG_NOTICE, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
+		irc_chanalert (ss_bot, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
 	} else {
-		dlog (DEBUG1, "Virus Definition Download Failed. %s", data);
-		irc_chanalert (ss_bot, "Virus Definition Download Failed. %s", data);
+		dlog (DEBUG1, "Virus definition download failed. %s", data);
+		irc_chanalert (ss_bot, "Virus definition download failed. %s", data);
 		return;
 	}
 #endif	
@@ -203,15 +202,15 @@ void GotHTTPAddress(char *data, adns_answer *a)
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
 				AutoUpdate();
 			} else {
-				if (SecureServ.autoupgrade == 1) irc_chanalert (ss_bot, "No Valid Username/Password configured for update Checking. Aborting Update Check");
+				if (SecureServ.autoupgrade == 1) irc_chanalert (ss_bot, "No valid Username/Password configured for update checking. Aborting update check");
 			}
 		} else {
-			irc_chanalert (ss_bot, "DNS error Checking for Updates: %s", adns_strerror(ri));
+			irc_chanalert (ss_bot, "DNS error Checking for updates: %s", adns_strerror(ri));
 		}
 		ns_free (url);
 	}
 	if (a->nrrs < 1) {
-		irc_chanalert (ss_bot,  "DNS Error checking for Updates");
+		irc_chanalert (ss_bot, "DNS Error checking for updates");
 	}
 }
 

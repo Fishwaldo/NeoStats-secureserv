@@ -527,8 +527,8 @@ void gotpositive(Client *u, virientry *ve, int type)
 			nlog (LOG_NOTICE, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);
 			break;
 		case ACT_NOTHING:
-			if (SecureServ.verbose) irc_chanalert (ss_bot, "SecureServ warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
-			nlog (LOG_NOTICE, "SecureServ warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
+			if (SecureServ.verbose) irc_chanalert (ss_bot, "Warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
+			nlog (LOG_NOTICE, "Warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
 			break;
 	}
 #ifndef WIN32

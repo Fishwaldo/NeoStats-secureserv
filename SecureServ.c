@@ -973,7 +973,7 @@ static int LoadConfig(void)
 	}
 	if (GetConf((void *)&SecureServ.treatchanmsgaspm, CFGINT, "ChanMsgAsPM") <= 0) {
 		/* disable is the default */
-		SecureServ.autoupgrade = 0;
+		SecureServ.treatchanmsgaspm = 0;
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "UpdateUname") <= 0) {
 		/* disable autoupgrade if its set */

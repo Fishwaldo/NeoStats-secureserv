@@ -1,5 +1,8 @@
 TrojanServ Module for NeoStats Changelog.
 ==============================================================================
+0.9.5 - Fish - 22 Aug, 2003
+ - Fixed a problem with users signing off while NeoStats was still booting.
+
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)
  - fixed bots del command crashing neo when not enough args supplied (BugID: 39)

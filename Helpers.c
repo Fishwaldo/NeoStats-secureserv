@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.7 2003/08/20 12:04:39 fishwaldo Exp $
+** $Id: Helpers.c,v 1.8 2003/08/21 23:21:30 fishwaldo Exp $
 */
 
 
@@ -39,6 +39,8 @@ struct hlpstr {
 };
 
 typedef struct hlpstr SSHelpers;
+
+int HlpsOk = 0;
 
 void Helpers_init() {
 	char **data, path[255], *tmp;
@@ -65,12 +67,16 @@ void Helpers_init() {
 		}
 	}	
 	free(data);
+	HlpsOk = 1;
 }
 
 int Helpers_add(User *u, char **av, int ac) {
 	SSHelpers *helper;
 	hnode_t *node;
 	char path[255];
+	
+	if (HlpsOk == 0) 
+		return -1;
 	
 	if (ac < 5) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg SecureServ help helpers");
@@ -100,6 +106,9 @@ int Helpers_add(User *u, char **av, int ac) {
 int Helpers_del(User *u, char *nick) {
 	hnode_t *node;
 	char path[255];
+
+	if (HlpsOk == 0) 
+		return -1;
 	
 	node = hash_lookup(helperhash, nick);
 	if (node) {
@@ -120,6 +129,10 @@ int Helpers_list(User *u) {
 	hscan_t hlps;
 	hnode_t *node;
 	SSHelpers *helper;
+
+	if (HlpsOk == 0) 
+		return -1;
+
 	
 	prefmsg(u->nick, s_SecureServ, "Helpers List (%d):", hash_count(helperhash));
 	hash_scan_begin(&hlps, helperhash);
@@ -142,6 +155,10 @@ int Helpers_Login(User *u, char **av, int ac) {
 	SSHelpers *helper;
 	hscan_t hlps;
 	UserDetail *ud;
+
+	if (HlpsOk == 0) 
+		return -1;
+
 	
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
@@ -196,6 +213,10 @@ int Helpers_Logout(User *u) {
 	hnode_t *node;
 	SSHelpers *helper;
 	
+	if (HlpsOk == 0) 
+		return -1;
+
+
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);
@@ -225,6 +246,10 @@ int Helpers_signoff(User *u) {
 	hnode_t *node;
 	SSHelpers *helper;
 	
+	if (HlpsOk == 0) 
+		return -1;
+
+
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);
@@ -252,6 +277,11 @@ int Helpers_away(char **av, int ac) {
 	hnode_t *node;
 	SSHelpers *helper;
 	User *u;
+
+	if (HlpsOk == 0) 
+		return -1;
+
+
 	if (SecureServ.signoutaway != 1) {
 		return 1;
 	}
@@ -282,6 +312,11 @@ int Helpers_Assist(User *u, char **av, int ac) {
 	UserDetail *ud, *td;
 	User *tu;
 	virientry *ve;
+
+	if (HlpsOk == 0) 
+		return -1;
+
+
 	if (u->moddata[SecureServ.modnum] == NULL) {
 		prefmsg(u->nick, s_SecureServ, "Access Denied");
 		chanalert(s_SecureServ, "%s tried to use assist %s on %s, but is not logged in", u->nick, av[2], av[3]);

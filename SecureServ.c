@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.46 2003/08/20 12:04:39 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.47 2003/08/21 23:21:30 fishwaldo Exp $
 */
 
 
@@ -146,6 +146,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_login);
 			} else if (!strcasecmp(argv[2], "logout")) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_logout);
+			} else if ((!strcasecmp(argv[2], "helpers")) && (UserLevel(u) >= 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_helpers);
 			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= 40)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_list);
 			} else if ((!strcasecmp(argv[2], "exclude")) && (UserLevel(u) >= 50)) {

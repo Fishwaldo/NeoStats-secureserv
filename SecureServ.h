@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.25 2003/08/18 15:19:19 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.26 2003/08/21 23:21:30 fishwaldo Exp $
 */
 
 
@@ -234,4 +234,5 @@ extern const char *ts_help_bots[];
 extern const char *ts_help_monchan[];
 extern const char *ts_help_assist[];
 extern const char *ts_help_helper[];
+extern const char *ts_help_helpers[];
 #endif /* TS_H */

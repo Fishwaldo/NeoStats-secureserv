@@ -6,8 +6,3 @@
 /* Version number of package */
 #undef SECURESERV_VERSION
 
-/* Major Version */
-#undef MAJOR
-
-/* Minor Version */
-#undef MINOR

@@ -18,8 +18,12 @@ DISTDIR = @PACKAGE@-@VERSION@
 
 all:	 module
 
+# include dependency info 
+@MAKEDEPENDENCIES@
+
 .c.o:	
-	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
+	$(CC) -c $(CFLAGS) $(INCLUDES) $<
+	$(CC) -MM $(INCLUDES) -c $< > $*.d
 
 module:	 $(OBJS)
 	 $(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
@@ -49,12 +53,3 @@ dist:
 	@echo "Tar file $(DISTDIR).tar.gz created, Freshmeat Time"
 
 $(OBJS): Makefile
-
-SecureServ.o:		SecureServ.h modconfig.h 
-SecureServ_help.o: 	SecureServ.h modconfig.h
-OnJoinBot.o:		SecureServ.h modconfig.h 
-FloodCheck.o:		SecureServ.h modconfig.h 
-Helpers.o:		SecureServ.h modconfig.h 
-scan.o:		SecureServ.h modconfig.h 
-exempts.o:		SecureServ.h modconfig.h 
-update.o:		SecureServ.h modconfig.h 

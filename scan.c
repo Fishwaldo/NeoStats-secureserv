@@ -202,6 +202,7 @@ void load_dat(void)
 			fclose(fp);
 		}
 	}	
+	do_servversion();
 }
 
 int do_reload(User *u, char **av, int ac)

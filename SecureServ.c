@@ -40,17 +40,21 @@ static int do_status(User *u, char **av, int ac);
 static int NickChange(char **av, int ac);
 static int DelNick(char **av, int ac);
 static int ss_kick_chan(char **argv, int ac);
-
 char s_SecureServ[MAXNICK];
 static ModUser *ss_bot;
+char SecureServ_VersionString[BUFSIZE];
 
 ModuleInfo __module_info = {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	MODULE_VERSION,
+	SecureServ_VersionString,
 	__DATE__,
 	__TIME__
 };
+
+void do_servversion() {
+	irc_snprintf(SecureServ_VersionString, BUFSIZE, "%S - %d", MODULE_VERSION, SecureServ.viriversion);
+}
 
 int do_viriversion(User *u, char **av, int ac)
 {

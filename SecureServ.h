@@ -155,6 +155,7 @@ struct SecureServ {
 } SecureServ;
 
 /* SecureServ.c */
+void do_servversion();
 
 /* update.c */
 int do_update(User *u, char **av, int ac);

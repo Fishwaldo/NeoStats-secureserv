@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.10 2003/08/18 15:19:19 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.11 2003/09/09 11:16:16 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -231,7 +231,7 @@ const char *ts_help_set[] = {
 "    \2UPDATEINFO <username> <password>\2",
 "                               - This Option Sets the Username and Password required for updating the SecureServ",
 "                                 Definitions file. See the Readme file for more info",
-"    \2MONBOT <bot>\2           - Assign <bot> (from /msg %S bot list) to be used for Channel Monitoring",
+"    \2MONBOT <bot>\2           - Assign <bot> (from /msg SecureServ bots list) to be used for Channel Monitoring",
 "\2Advanced Settings\2          - These settings should not be changed unless you know the effects in full",
 "    \2REPORT <on/off>\2        - Enable Reporting to Secure.irc-chat.net of infected users.",
 "    \2AUTOSIGNOUT <on/off>\2   - Automatically sign out helpers if they set away.",

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.47 2003/08/21 23:21:30 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.48 2003/09/09 11:16:16 fishwaldo Exp $
 */
 
 
@@ -67,7 +67,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.4"
+	"0.9.5"
 } };
 
 
@@ -337,6 +337,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						}
 						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, url);
 						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, url);
+						buf = malloc(255);
+						snprintf(buf, 255, "Exempt/%s", exempts->host);
+						DelConf(buf);
 						free(exempts);
 						save_exempts();
 						return 1;

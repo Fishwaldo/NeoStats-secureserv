@@ -635,7 +635,7 @@ int ss_part_chan(char **av, int ac)
 		return -1;
 	}
 	MonBotDelChan(c);
-	OnJoinDelChan(c);
+/*	OnJoinDelChan(c);*/
 	return 1;
 }
 

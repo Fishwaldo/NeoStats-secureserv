@@ -1,5 +1,5 @@
 /* NeoStats - IRC Statistical Services Copyright 
-** Copyright (c) 1999-2003 Justin Hammond
+** Copyright (c) 1999-2004 Justin Hammond
 ** http://www.neostats.net/
 **
 **  This program is free software; you can redistribute it and/or modify

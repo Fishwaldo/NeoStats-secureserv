@@ -32,15 +32,15 @@ restrictions:
 -----------------------------------------------------------------------------
 */
 
-/* Define DEBUG to get debugging output on stdout. */
+/* Define PCREDEBUG to get debugging output on stdout. */
 
-/* #define DEBUG */
+/* #define PCREDEBUG */
 
 /* Use a macro for debugging printing, 'cause that eliminates the use of #ifdef
 inline, and there are *still* stupid compilers about that don't like indented
 pre-processor statements. I suppose it's only been 10 years... */
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
 #define DPRINTF(p) printf p
 #else
 #define DPRINTF(p) /*nothing*/
@@ -425,7 +425,7 @@ return i + 1;
 /* The code for doing this is held in a separate file that is also included in
 pcretest.c. It defines a function called print_internals(). */
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
 #include "printint.c"
 #endif
 
@@ -623,7 +623,7 @@ return 0;
 
 
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
 /*************************************************
 *        Debugging function to print chars       *
 *************************************************/
@@ -4714,7 +4714,7 @@ if debugging, leave the test till after things are printed out. */
 
 *code++ = OP_END;
 
-#ifndef DEBUG
+#ifndef PCREDEBUG
 if (code - codestart > length) *errorptr = ERR23;
 #endif
 
@@ -4779,7 +4779,7 @@ if (reqbyte >= 0 &&
 
 /* Print out the compiled data for debugging */
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
 
 printf("Length = %d top_bracket = %d top_backref = %d\n",
   length, re->top_bracket, re->top_backref);
@@ -4856,7 +4856,7 @@ match_ref(int offset, register const uschar *eptr, int length, match_data *md,
 {
 const uschar *p = md->start_subject + md->offset_vector[offset];
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
 if (eptr >= md->end_subject)
   printf("matching subject <null>");
 else
@@ -5038,7 +5038,7 @@ for (;;)
       number = GET2(ecode, 2+LINK_SIZE);
     offset = number << 1;
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
     printf("start bracket %d subject=", number);
     pchars(eptr, 16, TRUE, md);
     printf("\n");
@@ -5511,7 +5511,7 @@ for (;;)
         if (number > EXTRACT_BASIC_MAX) number = GET2(prev, 2+LINK_SIZE);
         offset = number << 1;
 
-#ifdef DEBUG
+#ifdef PCREDEBUG
         printf("end bracket %d", number);
         printf("\n");
 #endif
@@ -6197,7 +6197,7 @@ for (;;)
       register int length = ecode[1];
       ecode += 2;
 
-#ifdef DEBUG    /* Sigh. Some compilers never learn. */
+#ifdef PCREDEBUG    /* Sigh. Some compilers never learn. */
       if (eptr >= md->end_subject)
         printf("matching subject <null> against pattern ");
       else
@@ -7463,7 +7463,7 @@ do
       }
     }
 
-#ifdef DEBUG  /* Sigh. Some compilers never learn. */
+#ifdef PCREDEBUG  /* Sigh. Some compilers never learn. */
   printf(">>>> Match against: ");
   pchars(start_match, end_subject - start_match, TRUE, &match_block);
   printf("\n");

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.23 2003/05/30 14:04:09 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.24 2003/06/03 11:38:43 fishwaldo Exp $
 */
 
 
@@ -59,7 +59,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.1"
+	"0.9.2"
 } };
 
 
@@ -375,13 +375,13 @@ void do_set(User *u, char **av, int ac) {
 		}			
 		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
 			prefmsg(u->nick, s_SecureServ, "Version Checking is now enabled");
-			chanalert(s_SecureServ, "%s has enabled Version Checking");
+			chanalert(s_SecureServ, "%s has enabled Version Checking", u->nick);
 			SetConf((void *)1, CFGINT, "DoVersionScan");
 			SecureServ.doscan = 1;
 			return;
 		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
 			prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
-			chanalert(s_SecureServ, "%s has disabled Version Checking");
+			chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
 			SetConf((void *)0, CFGINT, "DoVersionScan");
 			SecureServ.doscan = 0;
 			return;
@@ -1235,14 +1235,19 @@ static int CheckNick(char **av, int ac) {
 			hash_insert(nickflood, nfnode, nick->nick);
 		}
 	} else {
-		/* this is a first */
-		nick = malloc(sizeof(nicktrack));
-		strncpy(nick->nick, u->nick, MAXNICK);
-		nick->changes = 1;
-		nick->when = time(NULL);
-		nfnode = hnode_create(nick);
-		hash_insert(nickflood, nfnode, nick->nick);
-		nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
+		/* this is because maybe we already have a record from a signoff etc */
+		if (!hash_lookup(nickflood, u->nick)) {
+			/* this is a first */
+			nick = malloc(sizeof(nicktrack));
+			strncpy(nick->nick, u->nick, MAXNICK);
+			nick->changes = 1;
+			nick->when = time(NULL);
+			nfnode = hnode_create(nick);
+			hash_insert(nickflood, nfnode, nick->nick);
+			nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
+		} else {
+			nlog(LOG_DEBUG2, LOG_MOD, "Already got a record for %s in NickFlood", u->nick);
+		}
 	}
 
 

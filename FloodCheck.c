@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.7 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.8 2003/06/03 11:38:43 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -139,7 +139,7 @@ int ss_join_chan(char **av, int ac) {
 		ci->sampletime = 0;
 		ci->c = c;
 		cn = hnode_create(ci);
-		hash_insert(FC_Chans, cn, ci->c->name);
+		hash_insert(FC_Chans, cn, c->name);
 	} else {		
 		ci = hnode_get(cn);
 	}
@@ -195,9 +195,11 @@ int ss_del_chan(char **av, int ac) {
 		hash_delete(FC_Chans, cn);
 		free(ci);
 		hnode_destroy(cn);
+#if 0		
 	} else {
 		/* ignore this, as it just means since we started SecureServ, no one has joined the channel, and now the last person has left. Was just flooding logfiles */
 		//nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
+#endif
 	}
 	return 1;
 }

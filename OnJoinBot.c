@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.15 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.16 2003/06/03 11:38:43 fishwaldo Exp $
 */
 
 
@@ -74,7 +74,7 @@ void JoinNewChan() {
 	strcpy(segvinmodule, "SecureServ");
 
 	/* if we don't do OnJoin Checking, Don't go any further */
-	if (SecureServ.DoOnJoin > 0)
+	if (SecureServ.DoOnJoin < 1)
 		return;
 
 

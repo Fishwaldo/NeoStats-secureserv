@@ -53,7 +53,6 @@ typedef struct http_details {
 	char *pBase;
         unsigned long total_bytes;
         unsigned long bytes;
-        unsigned long header_size;
         unsigned long data_size;
         unsigned long alloc_size;
         int in_header;
@@ -212,20 +211,10 @@ char *parse_url( char *url, char *scheme, char *host, int *port )
 int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags, void (*callback)(HTTP_Response response))
 {
     char scheme[50], host[MAXPATHLEN];
-    char *pData, *pBase, *pHCode, *pHMsgEnd; // *pScheme, *pHost, *pPath, 
     char *proxy;
     char *path;
     int port;
-    struct hostent *nameinfo;
-    int s;
     struct sockaddr_in addr;
-    struct timeval from_request, from_reply, end;
-    unsigned long total_bytes, bytes, header_size = 0UL, data_size = 0UL, alloc_size = 0UL;
-    fd_set set;
-    int in_header;
-#ifdef DEBUG
-    long secs, usecs, bytes_per_sec;
-#endif
 
 
 
@@ -387,7 +376,7 @@ extern int http_read(int socknum, char *sockname) {
 	    	}
 	    	else
     		{
-		        hd->header_size = hd->total_bytes;
+		        header_size = hd->total_bytes;
 		        h_end_ptr = hd->pBase + hd->total_bytes;
     		}
 
@@ -395,17 +384,16 @@ extern int http_read(int socknum, char *sockname) {
     		//  subtract that from the total of bytes downloaded to get the
     		//  real size of the data.
     		header_size = (unsigned long)(h_end_ptr - hd->pBase);
-
+#if 0
     		/* Found, print up to delimiter to stderr and rest to stdout */
     		debug( stderr, "----- HTTP reply header follows -----\n" );
     		debug2( hd->pBase, h_end_ptr - hd->pBase, 1, stderr );
     		debug( stderr, "----- HTTP reply header end -----\n" );
     		debug( stderr, "Header size: %d\n", header_size );
-
+#endif 
     		if( hd->method == kHMethodHead )
     		{
 			if( hd->path ) free( hd->path );
-        		if( buf ) free( buf );
         		if( hd->pRequest ) free( hd->pRequest );
         		hd->pBase = realloc( hd->pBase, header_size );
         		if( hd->pBase == NULL ) {
@@ -421,13 +409,13 @@ extern int http_read(int socknum, char *sockname) {
     		}
 
 	    	/* Delete HTTP headers */
-    		memcpy(hd->pBase, h_end_ptr, hd->total_bytes - hd->header_size);
-
+    		memcpy(hd->pBase, h_end_ptr, hd->total_bytes - header_size);
+		hd->pBase[hd->total_bytes - header_size] = '\0';
     		//  realloc the data if we've gotten anything. chances are
     		//  we'll have more allocated than we've transfered. ajd 8/27/2001
     		if( (hd->total_bytes - header_size) > 0 )
     		{
-        		hd->pBase = realloc( hd->pBase, (hd->total_bytes - header_size) + 1 );
+        		hd->pBase = realloc( hd->pBase, (hd->total_bytes - header_size) +1);
         		if( hd->pBase == NULL )
         		{
             			hd->response.iError = errno;
@@ -435,7 +423,6 @@ extern int http_read(int socknum, char *sockname) {
 
             			if( hd->pBase ) free( hd->pBase );
 				if( hd->path ) free( hd->path );
-            			if( buf ) free( buf );
             			if( hd->pRequest ) free( hd->pRequest );
 				sock_disconnect(sockname);
 				/* callback */
@@ -451,23 +438,26 @@ extern int http_read(int socknum, char *sockname) {
         		hd->response.pData = hd->pBase;
     		}
 		if( hd->path ) free( hd->path );
-//    		if( buf ) free( buf ); //
     		if( hd->pRequest ) free( hd->pRequest );
-
-
-
-
-printf("%s\n", hd->pBase);
-printf("%s\n", hd->response.szHCode);
+#ifdef DEBUG
+		printf("HTTP Data:\n%s\n %d = %d\n", hd->response.pData, hd->response.lSize, strlen(hd->response.pData));
+#endif
 //        	hd->callback(hd->response);
+         	if( hd->pBase ) free( hd->pBase );
+		if( hd->path ) free( hd->path );
+            	if( hd->pRequest ) free( hd->pRequest );
         	sock_disconnect(sockname);
         	return -1;
+	/* end of succesfull get */
 	}                		
+
+
+	/* if we are here, we wer still downloading */
         hd->total_bytes += i;
-printf("TotalBytes %d\n", hd->total_bytes);
 
         if( (hd->data_size + i ) > hd->alloc_size )
         {
+            /* make sure that pBase has a enough memory for the file */
             hd->pBase = realloc( hd->pBase, (hd->alloc_size + XFERLEN) );
             if( hd->pBase == NULL )
             {
@@ -483,20 +473,21 @@ printf("TotalBytes %d\n", hd->total_bytes);
                 if( hd->pBase ) free( hd->pBase );
                 if( hd->pRequest ) free( hd->pRequest );
 		free(buf);
+nlog(LOG_DEBUG2, LOG_MOD, "HTTP Data: %s\n", hd->pBase);
 //                hd->callback(hd->response);
                 sock_disconnect(sockname);
                 return(-1);
             }
             hd->pData = hd->pBase + hd->data_size;
             hd->alloc_size += XFERLEN;
-            debug( stderr, "." );
         }
 
         memcpy( hd->pData, buf, i );   //  copy data
         hd->pData += i;                 //  increment pointer
         hd->data_size += i;             //  increment size of data
 
-    return 1;
+    	/* we are continuing, so just return 1 */
+    	return 1;
 }
 extern int http_write(int socknum, char *sockname) {
     int i;
@@ -557,7 +548,7 @@ extern int http_write(int socknum, char *sockname) {
                                             //  and/or if the data is encoded. ajd 8/28/2001
             sprintf( szContent, "%s%d\r\n", "Content-Length: ", strlen( pContent ) );
             strcat( hd->pRequest, szContent );
-            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/0.5\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             strcat( hd->pRequest, pContent );
@@ -566,7 +557,7 @@ extern int http_write(int socknum, char *sockname) {
         case kHMethodHead:
         {
             sprintf( hd->pRequest, "HEAD %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
-            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/0.5\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;
@@ -578,7 +569,7 @@ extern int http_write(int socknum, char *sockname) {
                                             //  as that was preventing some servers
                                             //  from responding properly.
             sprintf( hd->pRequest, "GET %s HTTP/1.0\r\nHost: %s\r\n", hd->path, HTTPHOST );
-            strcat( hd->pRequest, "User-Agent: hget/0.5\r\n" );
+            strcat( hd->pRequest, "User-Agent: SecureServ/0.5\r\n" );
             strcat( hd->pRequest, "Pragma: no-cache\r\n" );
             strcat( hd->pRequest, "Accept: */*\r\n\r\n" );
             break;

@@ -7,7 +7,7 @@
 /OnJoinBot.c eol=lf
 /README.SecureServ -text
 /README.SecureServ.html -text
-/RelNotes.txt -text
+/RELNOTES -text
 /SecureServ.c eol=lf
 /SecureServ.h eol=lf
 /SecureServ.settings -text

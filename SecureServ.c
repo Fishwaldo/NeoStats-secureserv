@@ -928,8 +928,9 @@ void do_set(User *u, char **av, int ac) {
 		}
 		/* if we get here, all is ok */
 		SecureServ.stayinchantime = i;
-		prefmsg(u->nick, s_SecureServ, "Cycle Time is set to %d Seconds (Restart Required)", i);
-		chanalert(s_SecureServ, "%s Set Cycle Time to %d Seconds (Restart Required)",u->nick,  i);
+		change_mod_timer_interval ("JoinNewChan", i);
+		prefmsg(u->nick, s_SecureServ, "Cycle Time is set to %d Seconds", i);
+		chanalert(s_SecureServ, "%s Set Cycle Time to %d Seconds",u->nick,  i);
 		SetConf((void *)i, CFGINT, "CycleTime");
 		return;
 	} else if (!strcasecmp(av[2], "MONBOT")) {

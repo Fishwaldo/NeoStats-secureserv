@@ -26,6 +26,7 @@ SecureServ Module for NeoStats Changelog.
  - if the IRCd we are using doesn't support SVSJOIN, use invite instead (LOL!) (F)
  - Random Version replies for the Onjoin Bots. BugID: 71 (F)
  - removed local libpcre stuff - this must now be present in core (M)
+ - Change of Join Chan timer no longer requires restart (M)
  
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

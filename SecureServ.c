@@ -1193,7 +1193,6 @@ int Online(char **av, int ac) {
 		s_SecureServ = strcat(s_SecureServ, "_");
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name);
 	}
-	LoadTSConf();
 	LoadMonChans();
 	Helpers_init();
 	if (SecureServ.verbose) chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
@@ -1205,6 +1204,7 @@ int Online(char **av, int ac) {
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
 	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 10);
 	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
+	SecureServ.inited = 1;
 
 	return 1;
 };
@@ -1464,7 +1464,6 @@ void LoadTSConf() {
 	}
 	free(data);
 	load_dat();
-	SecureServ.inited = 1;
 
 }
 
@@ -2133,6 +2132,7 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.MaxAJPPChan[0] = 0;
 	SecureServ.modnum = modnum;
 
+	LoadTSConf();
 	return 1;
 }
 

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.35 2003/08/07 12:30:35 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.36 2003/08/07 12:46:02 fishwaldo Exp $
 */
 
 
@@ -60,7 +60,7 @@ int CleanNickFlood();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.2"
+	"0.9.3"
 } };
 
 

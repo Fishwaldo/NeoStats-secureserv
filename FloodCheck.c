@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.9 2003/07/30 15:38:41 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.10 2003/08/07 12:46:02 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -71,9 +71,20 @@ int ss_join_chan(char **av, int ac) {
 		nlog(LOG_WARNING, LOG_MOD, "joinchan: Can't Find Channel %s", av[0]);
 		return -1;
 	}
+	u = finduser(av[1]);
+	if (!u) {
+		nlog(LOG_WARNING, LOG_MOD, "Can't find nick %s", av[1]);
+		return -1;
+	}
+
+
 	
 	/* is it exempt? */
 	if (Chan_Exempt(c) > 0) {
+		return -1;
+	}
+	/* how about the user, is he exempt? */
+	if (is_exempt(u) > 0) {
 		return -1;
 	}
 
@@ -103,30 +114,24 @@ int ss_join_chan(char **av, int ac) {
 	}
 
 	
-	u = finduser(av[1]);
-	if (u) {
-		/* check for netjoins!!!*/
-		/* XXX this isn't really the best, as a lot of 
-		* floodbots could connect to a IRC server, wait 
-		* SecureServ.timediff, and then join the channel, 
-		* and SecureServ isn't going to flag them. It would be
-		* nicer if the IRCd protocol could easily identify nicks
-		* that are ridding in on a netjoin. 
-		*/
-		if ((time(NULL) - u->TS) > SecureServ.timedif) {
-			nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", av[1]);
-			/* forget the update */
-			return -1;
-		}
+	/* check for netjoins!!!*/
+	/* XXX this isn't really the best, as a lot of 
+	* floodbots could connect to a IRC server, wait 
+	* SecureServ.timediff, and then join the channel, 
+	* and SecureServ isn't going to flag them. It would be
+	* nicer if the IRCd protocol could easily identify nicks
+	* that are ridding in on a netjoin. 
+	*/
+	if ((time(NULL) - u->TS) > SecureServ.timedif) {
+		nlog(LOG_DEBUG2, LOG_MOD, "Nick %s is Riding a NetJoin", av[1]);
+		/* forget the update */
+		return -1;
+	}
 
-		/* ok, now if the server just linked in as well, ignore this */
-		/* XXX should this time be configurable? */
-		if ((time(NULL) - u->server->connected_since) < 120) {
-			nlog(LOG_DEBUG2, LOG_MOD, "Ignoring %s joining %s as it seems server %s just linked", u->nick, c->name, u->server->name);
-			return -1;
-		}
-	} else {
-		nlog(LOG_WARNING, LOG_MOD, "Can't find nick %s", av[1]);
+	/* ok, now if the server just linked in as well, ignore this */
+	/* XXX should this time be configurable? */
+	if ((time(NULL) - u->server->connected_since) < 120) {
+		nlog(LOG_DEBUG2, LOG_MOD, "Ignoring %s joining %s as it seems server %s just linked", u->nick, c->name, u->server->name);
 		return -1;
 	}
 

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.21 2003/07/23 10:29:57 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.22 2003/07/23 10:45:25 fishwaldo Exp $
 */
 
 
@@ -165,7 +165,7 @@ restartnicks:
 		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
 		return;
 	}
-#if defined(ULTIMATE3) || defined(BAHAMUT)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else
 	sjoin_cmd(nickname->nick, c->name);
@@ -238,7 +238,7 @@ restartnicksondemand:
 
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
-#if defined(ULTIMATE3) || defined(BAHAMUT)
+#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else
 	sjoin_cmd(nickname->nick, c->name);

@@ -1076,7 +1076,7 @@ static int LoadConfig(void)
 	}
 	if (GetConf((void *)&SecureServ.sampletime, CFGINT, "SampleTime") <= 0) {
 		/* 5 secondsis the default */
-		SecureServ.dosvsjoin = 5;
+		SecureServ.sampletime = 5;
 	}
 	if (GetConf((void *)&SecureServ.JoinThreshold, CFGINT, "JoinThreshold") <= 0) {
 		/* 5 joins is the default */

@@ -15,5 +15,8 @@ TODO List.
 - AutoUpdate support isn't actually fully implemented. You must still
   /msg SecureServ update to update the Definitions file. 
 
+- If you wish to take advantage of updated Definition files, you *MUST*
+  apply for a account at http://secure.irc-chat.net/
+
 - Read the README file Please. It contains VERY important information. Read
   it again if you have already read it. 

@@ -19,6 +19,7 @@ SecureServ Module for NeoStats Changelog.
  - Changed SET LIST to output setting names rather than descriptions (M)
  - SecureServ will log positives and the action taken (M)
  - Added RELOAD command to allow reloading of viri.dat and customviri.dat without restart (M)
+ - Fixed problem with pcre rebuilding tables when not necessary (M)
  
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

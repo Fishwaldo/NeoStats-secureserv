@@ -11,6 +11,7 @@ SecureServ Module for NeoStats Changelog.
  - Fixed bug with helper delete using MAXNICK instead of correct buffer size (M)
  - Updated conf buffers to use CONFBUFSIZE (M)
  - Fix free() position in Helpers_init (M)
+ - Nick flood code tidied up and moved to floodcheck.c (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

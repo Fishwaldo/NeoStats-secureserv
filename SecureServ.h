@@ -163,17 +163,6 @@ list_t *exempt;
 list_t *nicks;
 
 
-/* this is the nickflood stuff */
-struct nicktrack_ {
-	char nick[MAXNICK];
-	int changes;
-	int when;
-};
-
-typedef struct nicktrack_ nicktrack;
-
-hash_t *nickflood;
-
 /* this is the size of the exempt list */
 #define MAX_EXEMPTS	100
 #define MAX_VIRI	-1
@@ -196,10 +185,14 @@ int LoadMonChans();
 int MonChanCount(void);
 
 /* FloodCheck.c */
-void ss_init_chan_hash();
+void InitJoinFloodHash(void);
 int ss_join_chan(char **av, int ac);
 int ss_del_chan(char **av, int ac);
-int CheckLockChan();
+int CheckLockChan(void);
+int InitNickFloodHash(void);
+int CleanNickFlood(void);
+int NickFloodSignoff(char * n);
+int CheckNickFlood(User* u);
 
 /* Helpers.c */
 void Helpers_init(void);

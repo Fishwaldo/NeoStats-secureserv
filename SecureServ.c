@@ -56,7 +56,6 @@ static int DelNick(char **av, int ac);
 static void GotHTTPAddress(char *data, adns_answer *a);
 static void save_exempts();
 int AutoUpdate();
-int CleanNickFlood();
 
 static char ss_buf[SS_BUF_SIZE];
 char s_SecureServ[MAXNICK];
@@ -1686,32 +1685,19 @@ int Chan_Exempt(Chans *c) {
 	}
 	return -1;
 }
-static int DelNick(char **av, int ac) {
-	hnode_t *nfnode;
-	nicktrack *nick;
-	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s\n", av[0]);
-	nfnode = hash_lookup(nickflood, av[0]);
-	if (nfnode) {
-		nick = hnode_get(nfnode);
-		hash_delete(nickflood, nfnode);
-       		hnode_destroy(nfnode);
-		free(nick);
-	}
-	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: After nickflood Code");
+
+static int DelNick(char **av, int ac) 
+{
+	NickFloodSignoff(av[0]);
 	/* u->moddata is free'd in helpers_signoff */
 	Helpers_signoff(finduser(av[0]));
 	return 1;
 }
 
-
-
-
 /* scan nickname changes */
 static int CheckNick(char **av, int ac) {
 	User *u;
 	lnode_t *node;
-	hnode_t *nfnode;
-	nicktrack *nick;
 	virientry *viridetails;
 	int rc;
 	
@@ -1730,51 +1716,7 @@ static int CheckNick(char **av, int ac) {
 		return -1;
 	}
 	/* is it a nickflood? */
-	nfnode = hash_lookup(nickflood, av[0]);
-	
-	if (nfnode) {
-		/* its already there */
-		nick = hnode_get(nfnode);
-		/* first, remove it from the hash, as the nick has changed */
-		hash_delete(nickflood, nfnode);
-		/* increment the nflood count */
-		nick->changes++;
-		nlog(LOG_DEBUG2, LOG_MOD, "NickFlood Check: %d in 10", nick->changes);
-		if ((nick->changes > SecureServ.nfcount) && ((time(NULL) - nick->when) <= 10)) {
-			/* its a bad bad bad flood */
-			chanalert(s_SecureServ, "NickFlood Detected on %s", u->nick);
-			/* XXX Do Something bad !!!! */
-			
-			/* free the struct */
-			hnode_destroy(nfnode);
-			free(nick);
-		} else if ((time(NULL) - nick->when) > 10) {
-			nlog(LOG_DEBUG2, LOG_MOD, "Resetting NickFlood Count on %s", u->nick);
-			strlcpy(nick->nick, u->nick, MAXNICK);
-			nick->changes = 1;
-			nick->when = time(NULL);
-			hash_insert(nickflood, nfnode, nick->nick);
-		} else {			
-			/* re-insert it into the hash */
-			strlcpy(nick->nick, u->nick, MAXNICK);
-			hash_insert(nickflood, nfnode, nick->nick);
-		}
-	} else {
-		/* this is because maybe we already have a record from a signoff etc */
-		if (!hash_lookup(nickflood, u->nick)) {
-			/* this is a first */
-			nick = malloc(sizeof(nicktrack));
-			strlcpy(nick->nick, u->nick, MAXNICK);
-			nick->changes = 1;
-			nick->when = time(NULL);
-			nfnode = hnode_create(nick);
-			hash_insert(nickflood, nfnode, nick->nick);
-			nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
-		} else {
-			nlog(LOG_DEBUG2, LOG_MOD, "Already got a record for %s in NickFlood", u->nick);
-		}
-	}
-
+	CheckNickFlood(u);
 
 	/* check the nickname */
 	node = list_first(viri);
@@ -1800,28 +1742,6 @@ static int CheckNick(char **av, int ac) {
 	} while ((node = list_next(viri, node)) != NULL);
 	return -1;
 }
-
-/* periodically clean up the nickflood hash so it doesn't grow to big */
-int CleanNickFlood() {
-	hscan_t nfscan;
-	hnode_t *nfnode;
-	nicktrack *nick;
-
-        hash_scan_begin(&nfscan, nickflood);
-        while ((nfnode = hash_scan_next(&nfscan)) != NULL) {
-        	nick = hnode_get(nfnode);
-        	if ((time(NULL) - nick->when) > 10) {
-        		/* delete the nickname */
-			nlog(LOG_DEBUG2, LOG_MOD, "Deleting %s out of NickFlood Hash", nick->nick);
-        		hash_scan_delete(nickflood, nfnode);
-        		free(nick);
-        	}
-        }
-	return 1;
-}       
-	                
-
-
 
 /* scan someone connecting */
 static int ScanNick(char **av, int ac) {
@@ -2134,10 +2054,9 @@ int __ModInit(int modnum, int apiversion) {
 	/* init the random nicks list */
 	nicks = list_create(MAX_NICKS);
 	/* init the channel tracking hash */
-	ss_init_chan_hash();
-
-	/* init the nickflood hash */
-	nickflood = hash_create(-1, 0, 0);
+	InitJoinFloodHash();
+	
+	InitNickFloodHash();
 	
 	SecureServ.inited = 0;			
 	SecureServ.helpcount = 0;

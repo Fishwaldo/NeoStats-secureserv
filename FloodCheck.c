@@ -31,36 +31,43 @@
 #include "SecureServ.h"
 
 /* the structure to keep track of joins per period (ajpp = average joins per period) */
-struct ci_ {
+typedef struct ChanInfo {
 	Chans *c;
 	int ajpp;
 	time_t sampletime;
 	int locked;
-};
+}ChanInfo;
 
-typedef struct ci_ ChanInfo;
+/* this is the nickflood stuff */
+typedef struct nicktrack {
+	char nick[MAXNICK];
+	int changes;
+	int when;
+}nicktrack;
 
 /* the hash that contains the channels we are tracking */
+static hash_t *FC_Chans;
 
-hash_t *FC_Chans;
+/* the hash that contains the nicks we are tracking */
+static hash_t *nickflood;
 
 /* init the channel hash */	
-void ss_init_chan_hash() {
-
+void InitJoinFloodHash() 
+{
 	FC_Chans = hash_create(-1, 0, 0);
 }
 
 /* update ajpp for chan, if required */
-int ss_join_chan(char **av, int ac) {
+int ss_join_chan(char **av, int ac) 
+{
 	User *u;
 	Chans *c;
 	ChanInfo *ci;
 	hnode_t *cn;
-        lnode_t *node;
-        virientry *viridetails;
-        int rc;
+    lnode_t *node;
+    virientry *viridetails;
+    int rc;
 	
-
 	/* if we not even inited, exit this */
 	if (!SecureServ.inited) {
 		return -1;
@@ -78,8 +85,6 @@ int ss_join_chan(char **av, int ac) {
 		return -1;
 	}
 
-
-	
 	/* is it exempt? */
 	if (Chan_Exempt(c) > 0) {
 		return -1;
@@ -88,32 +93,30 @@ int ss_join_chan(char **av, int ac) {
 	if (is_exempt(u) > 0) {
 		return -1;
 	}
-
 	
 	/* first, check if this is a *bad* channel */
-        node = list_first(viri);
-        if (node) {
-                do {
-       	        	viridetails = lnode_get(node);
-               		if (viridetails->dettype == DET_CHAN) {
-               			SecureServ.trigcounts[DET_CHAN]++;
-                               	nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
-                                rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
-       	                        if (rc < -1) {
-        	                        nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
-                       	                continue;
-                               	}
-                                if (rc > -1) {
-	                                gotpositive(finduser(av[1]), viridetails, DET_CHAN);
-               	                        if (SecureServ.breakorcont == 0)
-                	                        continue;
-                               	        else
-                                       	        return 1;
-                                }
-       	                }
-               	} while ((node = list_next(viri, node)) != NULL);
+	node = list_first(viri);
+	if (node) {
+		do {
+			viridetails = lnode_get(node);
+			if (viridetails->dettype == DET_CHAN) {
+				SecureServ.trigcounts[DET_CHAN]++;
+				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
+				if (rc < -1) {
+					nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
+					continue;
+				}
+				if (rc > -1) {
+					gotpositive(finduser(av[1]), viridetails, DET_CHAN);
+					if (SecureServ.breakorcont == 0)
+						continue;
+					else
+						return 1;
+				}
+			}
+		} while ((node = list_next(viri, node)) != NULL);
 	}
-
 	
 	/* check for netjoins!!!*/
 	/* XXX this isn't really the best, as a lot of 
@@ -196,10 +199,11 @@ int ss_join_chan(char **av, int ac) {
 }
 
 /* delete the channel from our hash */
-int ss_del_chan(char **av, int ac) {
+int ss_del_chan(char **av, int ac) 
+{
 	Chans *c;
-        ChanInfo *ci;
-        hnode_t *cn;
+	ChanInfo *ci;
+	hnode_t *cn;
 
 	c = findchan(av[0]);
 	if (!c) {
@@ -221,7 +225,8 @@ int ss_del_chan(char **av, int ac) {
 	return 1;
 }
 
-int CheckLockChan() {
+int CheckLockChan() 
+{
 	hscan_t cs;
 	hnode_t *cn;
 	ChanInfo *ci;
@@ -241,3 +246,99 @@ int CheckLockChan() {
 	}
 	return 1;
 }
+
+int InitNickFloodHash(void)
+{
+	/* init the nickflood hash */
+	nickflood = hash_create(-1, 0, 0);
+	return 1;
+}
+
+/* periodically clean up the nickflood hash so it doesn't grow to big */
+int CleanNickFlood() 
+{
+	hscan_t nfscan;
+	hnode_t *nfnode;
+	nicktrack *nick;
+
+    hash_scan_begin(&nfscan, nickflood);
+    while ((nfnode = hash_scan_next(&nfscan)) != NULL) {
+        nick = hnode_get(nfnode);
+        if ((time(NULL) - nick->when) > 10) {
+        	/* delete the nickname */
+		nlog(LOG_DEBUG2, LOG_MOD, "Deleting %s out of NickFlood Hash", nick->nick);
+        	hash_scan_delete(nickflood, nfnode);
+        	free(nick);
+        }
+    }
+	return 1;
+}       
+	                
+int CheckNickFlood(User* u)
+{
+	hnode_t *nfnode;
+	nicktrack *nick;
+
+	nfnode = hash_lookup(nickflood, u->nick);
+	if (nfnode) {
+		/* its already there */
+		nick = hnode_get(nfnode);
+		/* first, remove it from the hash, as the nick has changed */
+		hash_delete(nickflood, nfnode);
+		/* increment the nflood count */
+		nick->changes++;
+		nlog(LOG_DEBUG2, LOG_MOD, "NickFlood Check: %d in 10", nick->changes);
+		if ((nick->changes > SecureServ.nfcount) && ((time(NULL) - nick->when) <= 10)) {
+			/* its a bad bad bad flood */
+			chanalert(s_SecureServ, "NickFlood Detected on %s", u->nick);
+			/* XXX Do Something bad !!!! */
+			
+			/* free the struct */
+			hnode_destroy(nfnode);
+			free(nick);
+		} else if ((time(NULL) - nick->when) > 10) {
+			nlog(LOG_DEBUG2, LOG_MOD, "Resetting NickFlood Count on %s", u->nick);
+			strlcpy(nick->nick, u->nick, MAXNICK);
+			nick->changes = 1;
+			nick->when = time(NULL);
+			hash_insert(nickflood, nfnode, nick->nick);
+		} else {			
+			/* re-insert it into the hash */
+			strlcpy(nick->nick, u->nick, MAXNICK);
+			hash_insert(nickflood, nfnode, nick->nick);
+		}
+	} else {
+		/* this is because maybe we already have a record from a signoff etc */
+		if (!hash_lookup(nickflood, u->nick)) {
+			/* this is a first */
+			nick = malloc(sizeof(nicktrack));
+			strlcpy(nick->nick, u->nick, MAXNICK);
+			nick->changes = 1;
+			nick->when = time(NULL);
+			nfnode = hnode_create(nick);
+			hash_insert(nickflood, nfnode, nick->nick);
+			nlog(LOG_DEBUG2, LOG_MOD, "NF: Created New Entry");
+		} else {
+			nlog(LOG_DEBUG2, LOG_MOD, "Already got a record for %s in NickFlood", u->nick);
+		}
+	}
+	return 0;
+}
+
+int NickFloodSignoff(char * n)
+{
+	hnode_t *nfnode;
+	nicktrack *nick;
+
+	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s\n", n);
+	nfnode = hash_lookup(nickflood, n);
+	if (nfnode) {
+		nick = hnode_get(nfnode);
+		hash_delete(nickflood, nfnode);
+       		hnode_destroy(nfnode);
+		free(nick);
+	}
+	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: After nickflood Code");
+	return 1;
+}
+

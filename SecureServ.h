@@ -136,32 +136,6 @@ struct SecureServ {
 	char sampleversion[SS_BUF_SIZE];
 } SecureServ;
 
-
-typedef struct exemptinfo {
-	char host[MAXHOST];
-	int server;
-	char who[MAXNICK];
-	char reason[MAXREASON];
-}exemptinfo;
-
-typedef struct randomnicks {
-	char nick[MAXNICK];
-	char user[MAXUSER];
-	char host[MAXHOST];
-	char rname[MAXREALNAME];
-}randomnicks;
-
-/* this is the list of random nicknames */
-list_t *nicks;
-
-/* this is the list of exempted hosts/servers */
-list_t *exempt;
-
-/* this is the size of the exempt list */
-#define MAX_EXEMPTS	100
-#define MAX_VIRI	-1
-#define MAX_NICKS	100
-
 /* SecureServ.c */
 
 /* OnJoin.c */
@@ -181,6 +155,7 @@ int do_bots(User* u, char **argv, int argc);
 int do_checkchan(User* u, char **argv, int argc);
 int do_monchan(User* u, char **argv, int argc);
 int do_cycle(User* u, char **argv, int argc);
+int do_set_monbot(User* u, char **argv, int argc);
 
 /* scan.c */
 int ScanFizzer(User *u);
@@ -198,6 +173,7 @@ int IsUserExempt(User *u);
 void save_exempts(void);
 void load_exempts(void);
 int do_exempt(User* u, char **argv, int argc);
+int InitExempts(void);
 
 /* FloodCheck.c */
 void InitJoinFloodHash(void);

@@ -37,10 +37,8 @@
 #include "SecureServ.h"
 #include "http.h"
 
-#define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
-
 static int ScanNick(char **av, int ac);
-void LoadTSConf();
+void LoadConfig(void);
 int check_version_reply(char *origin, char **av, int ac);
 int do_set(User *u, char **av, int ac);
 int do_status(User *u, char **av, int ac);
@@ -51,7 +49,7 @@ void datdownload(HTTP_Response *response);
 static int CheckNick(char **av, int ac);
 static int DelNick(char **av, int ac);
 static void GotHTTPAddress(char *data, adns_answer *a);
-int AutoUpdate();
+int AutoUpdate(void);
 
 static char ss_buf[SS_BUF_SIZE];
 char s_SecureServ[MAXNICK];
@@ -214,9 +212,6 @@ int __Bot_Message(char *origin, char **argv, int argc)
 int do_set(User *u, char **av, int ac) {
 	int i, j;
 	char *buf;
-	/* this is ok, its just to shut up fussy compilers */
-	randomnicks *nickname = NULL;
-	lnode_t *rnn;
 	
 	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
 		prefmsg(u->nick, s_SecureServ, "Permission is denied");
@@ -603,36 +598,7 @@ int do_set(User *u, char **av, int ac) {
 		SetConf((void *)i, CFGINT, "CycleTime");
 		return 1;
 	} else if (!strcasecmp(av[2], "MONBOT")) {
-		if (ac < 4) {
-			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
-			return 1;
-		}			
-		/* Do not allow overwrite of the monbot if one is already 
-		 * assigned and we have monchans. 
-		 */
-		if(SecureServ.monbot[0] != 0 && MonChanCount() > 1) {
-			prefmsg(u->nick, s_SecureServ, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
-			return 1;
-		}
-		rnn = list_first(nicks);
-		while (rnn != NULL) {
-			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, av[3])) {
-				/* ok, got the bot ! */
-				break;
-			}
-			rnn = list_next(nicks, rnn);
-		}
-		if (rnn != NULL) {
-			SetConf((void *)av[3], CFGSTR, "MonBot");
-			strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
-			prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);
-			chanalert(s_SecureServ, "%s set the Monitor bot to %s", u->nick, av[3]);
-			return 1;
-		} else {
-			prefmsg(u->nick, s_SecureServ, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", av[3], s_SecureServ);
-			return 1;
-		}
+		do_set_monbot(u, av, ac);
 		return 1;
 	} else if (!strcasecmp(av[2], "AUTOUPDATE")) {
 		if (ac < 4) {
@@ -834,7 +800,7 @@ static int Online(char **av, int ac)
 	return 1;
 };
 
-void LoadTSConf() 
+void LoadConfig(void) 
 {
 	char *tmp;
 
@@ -1123,9 +1089,7 @@ int __ModInit(int modnum, int apiversion) {
 	}
 	strlcpy(s_SecureServ, "SecureServ", MAXNICK);
 	
-	/* init the exemptions list */
-	exempt = list_create(MAX_EXEMPTS);
-	
+	InitExempts();
 	InitScanner();
 	InitOnJoinBots();
 	InitJoinFloodHash();
@@ -1136,7 +1100,6 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.doUpdate = 0;
 	SecureServ.MaxAJPP = 0;
 	SecureServ.updateurl[0] = 0;
-	strlcpy(SecureServ.sampleversion, DEFAULT_VERSION_RESPONSE, SS_BUF_SIZE);
 	
 	for (i = 0; i > MAX_PATTERN_TYPES; i++) {
 		SecureServ.trigcounts[i] = 0;
@@ -1145,7 +1108,7 @@ int __ModInit(int modnum, int apiversion) {
 	SecureServ.MaxAJPPChan[0] = 0;
 	SecureServ.modnum = modnum;
 
-	LoadTSConf();
+	LoadConfig();
 	return 1;
 }
 
@@ -1279,7 +1242,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 	}
 }
 
-int AutoUpdate() 
+int AutoUpdate(void) 
 {
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
 		ircsnprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);

@@ -28,10 +28,21 @@
 #include "conf.h"
 #include "SecureServ.h"
 
+#define MAX_NICKS	100
+#define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
+
+typedef struct randomnicks {
+	char nick[MAXNICK];
+	char user[MAXUSER];
+	char host[MAXHOST];
+	char rname[MAXREALNAME];
+}randomnicks;
+
 static char confbuf[CONFBUFSIZE];
 static list_t *monchans;
 static int SaveMonChans();
-
+/* this is the list of random nicknames */
+static list_t *nicks;
 static char onjoinbot_modes[] = "+";
 
 unsigned hrand(unsigned upperbound, unsigned lowerbound) 
@@ -526,6 +537,8 @@ int InitOnJoinBots(void)
 {
 	/* init the random nicks list */
 	nicks = list_create(MAX_NICKS);
+	/* init CTCP version response */
+	strlcpy(SecureServ.sampleversion, DEFAULT_VERSION_RESPONSE, SS_BUF_SIZE);
 	return 1;
 }
 
@@ -690,5 +703,42 @@ int do_cycle(User* u, char **argv, int argc)
 		return -1;
 	}			
 	JoinNewChan();
+	return 1;
+}
+
+int do_set_monbot(User* u, char **av, int ac)
+{
+	/* this is ok, its just to shut up fussy compilers */
+	randomnicks *nickname = NULL;
+	lnode_t *rnn;
+
+	if (ac < 4) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+		return 1;
+	}			
+	/* Do not allow overwrite of the monbot if one is already 
+		* assigned and we have monchans. 
+		*/
+	if(SecureServ.monbot[0] != 0 && MonChanCount() > 1) {
+		prefmsg(u->nick, s_SecureServ, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
+		return 1;
+	}
+	rnn = list_first(nicks);
+	while (rnn != NULL) {
+		nickname = lnode_get(rnn);
+		if (!strcasecmp(nickname->nick, av[3])) {
+			/* ok, got the bot ! */
+			break;
+		}
+		rnn = list_next(nicks, rnn);
+	}
+	if (rnn != NULL) {
+		SetConf((void *)av[3], CFGSTR, "MonBot");
+		strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
+		prefmsg(u->nick, s_SecureServ, "Monitoring Bot set to %s", av[3]);
+		chanalert(s_SecureServ, "%s set the Monitor bot to %s", u->nick, av[3]);
+		return 1;
+	}
+	prefmsg(u->nick, s_SecureServ, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", av[3], s_SecureServ);
 	return 1;
 }

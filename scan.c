@@ -34,6 +34,8 @@
 #include "log.h"
 #include "SecureServ.h"
 
+#define MAX_VIRI	-1
+
 static void gotpositive(User *u, virientry *ve, int type);
 
 /* this is the list of viri */

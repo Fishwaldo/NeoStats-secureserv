@@ -38,8 +38,26 @@
 #include "SecureServ.h"
 #include "http.h"
 
+/* this is the size of the exempt list */
+#define MAX_EXEMPTS	100
+
+typedef struct exemptinfo {
+	char host[MAXHOST];
+	int server;
+	char who[MAXNICK];
+	char reason[MAXREASON];
+}exemptinfo;
+
 static char confbuf[CONFBUFSIZE];
 static char ss_buf[SS_BUF_SIZE];
+/* this is the list of exempted hosts/servers */
+static list_t *exempt;
+
+int InitExempts(void)
+{
+	/* init the exemptions list */
+	exempt = list_create(MAX_EXEMPTS);
+}
 
 void save_exempts() 
 {

@@ -20,5 +20,7 @@
 /install-sh -text
 /modconfig.h.in -text
 /scan.c -text
+/secureserv.vcproj -text
 /update.c -text
 /viri.dat -text
+/win32modconfig.h -text

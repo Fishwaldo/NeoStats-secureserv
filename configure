@@ -1268,7 +1268,7 @@ PACKAGE=SecureServ
 VERSION=1.0
 DIRINST=~/NeoStats/
 
-CFLAGS="$CFLAGS -O2 -Wall"
+CFLAGS="$CFLAGS -O2"
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3488,7 +3488,7 @@ if test "${enable_debug+set}" = set; then
   enableval="$enable_debug"
    case "$enableval" in
   yes)
-        CFLAGS="$CFLAGS -ggdb"
+        CFLAGS="$CFLAGS -ggdb -Wall"
 	cat >>confdefs.h <<\_ACEOF
 #define DEBUG 1
 _ACEOF

@@ -41,37 +41,40 @@
 
 typedef struct exemptinfo {
 	char host[MAXHOST];
-	int server;
+	NS_EXCLUDE type;
 	char who[MAXNICK];
 	char reason[MAXREASON];
 }exemptinfo;
 
-static char ss_buf[SS_BUF_SIZE];
+const char* ExcludeDesc[NS_EXCLUDE_MAX] = {
+	"HostName",
+	"Server",
+	"Channel",
+};
+
 /* this is the list of exempted hosts/servers */
-static list_t *exempt;
+static list_t *exemptlist;
 
 static void new_exempt (void *data)
 {
-	lnode_t *node;
 	exemptinfo *exempts;
 
 	exempts = malloc(sizeof(exemptinfo));
 	os_memcpy (exempts, data, sizeof(exemptinfo));
-	node = lnode_create(exempts);
-	list_prepend(exempt, node);			
-	dlog (DEBUG2, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
+	lnode_create_prepend(exemptlist, exempts);
+	dlog (DEBUG2, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->type, exempts->who, exempts->reason);
 }
 
 int SSInitExempts(void)
 {
 	SET_SEGV_LOCATION();
 	/* init the exemptions list */
-	exempt = list_create(MAX_EXEMPTS);
+	exemptlist = list_create(MAX_EXEMPTS);
 	DBAFetchRows ("Exempt", new_exempt);
 	return NS_SUCCESS;
 }
 
-int SS_IsUserExempt(Client *u) 
+int SSIsUserExempt(Client *u) 
 {
 	lnode_t *node;
 	exemptinfo *exempts;
@@ -79,87 +82,68 @@ int SS_IsUserExempt(Client *u)
 	SET_SEGV_LOCATION();
 	if (!strcasecmp(u->uplink->name, me.name)) {
 		dlog (DEBUG1, "SecureServ: User %s Exempt. its Me!", u->name);
-		return NS_SUCCESS;
+		return NS_TRUE;
 	}
-
 	/* don't scan users from a server that is excluded */
-	node = list_first(exempt);
+	node = list_first(exemptlist);
 	while (node) {
 		exempts = lnode_get(node);
-		if (exempts->server == 1) {
+		if (exempts->type == NS_EXCLUDE_SERVER) {
 			/* match a server */
 			if (match(exempts->host, u->uplink->name)) {
 				dlog (DEBUG1, "User %s exempt. Matched server entry %s in Exemptions", u->name, exempts->host);
-				return NS_SUCCESS;
+				return NS_TRUE;
 			}
-		} else if (exempts->server == 0) {
+		} else if (exempts->type == NS_EXCLUDE_HOST) {
 			/* match a hostname */
 			if (match(exempts->host, u->user->hostname)) {
 				dlog (DEBUG1, "SecureServ: User %s is exempt. Matched Host Entry %s in Exceptions", u->name, exempts->host);
-				return NS_SUCCESS;
+				return NS_TRUE;
 			}
 		}				
-		node = list_next(exempt, node);
+		node = list_next(exemptlist, node);
 	}
-	return -1;
+	return NS_FALSE;
 }
 
-int SS_IsChanExempt(Channel *c) 
+int SSIsChanExempt(Channel *c) 
 {
 	lnode_t *node;
 	exemptinfo *exempts;
 
 	SET_SEGV_LOCATION();
 	if (IsServicesChannel( c )) {
-		dlog (DEBUG1, "SecureServ: Channel %s Exempt. its Mine!", c->name);
-		return NS_SUCCESS;
+		dlog (DEBUG1, "Services channel %s is exempt.", c->name);
+		return NS_TRUE;
 	}
-
 	/* don't scan users from a server that is excluded */
-	node = list_first(exempt);
+	node = list_first(exemptlist);
 	while (node) {
 		exempts = lnode_get(node);
-		if (exempts->server == 2) {
+		if (exempts->type == NS_EXCLUDE_CHANNEL) {
 			/* match a channel */
 			if (match(exempts->host, c->name)) {
 				dlog (DEBUG1, "SecureServ: Channel %s exempt. Matched Channel entry %s in Exemptions", c->name, exempts->host);
-				return NS_SUCCESS;
+				return NS_TRUE;
 			}
 		}				
-		node = list_next(exempt, node);
+		node = list_next(exemptlist, node);
 	}
-	return -1;
+	return NS_FALSE;
 }
 
 static int ss_cmd_exempt_list(CmdParams *cmdparams)
 {
 	lnode_t *node;
-	exemptinfo *exempts = NULL;
-	int i;
+	exemptinfo *exempts;
 
 	SET_SEGV_LOCATION();
-	node = list_first(exempt);
-	i = 1;
+	node = list_first(exemptlist);
 	irc_prefmsg (ss_bot, cmdparams->source, "Exception List:");
 	while (node) {
 		exempts = lnode_get(node);
-		switch (exempts->server) {
-			case 0:
-				strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
-				break;
-			case 1:
-				strlcpy(ss_buf, "Server", SS_BUF_SIZE);
-				break;
-			case 2:
-				strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
-				break;
-			default:
-				strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
-				break;
-		}
-		irc_prefmsg (ss_bot, cmdparams->source, "%d) %s (%s) Added by %s for %s", i, exempts->host, ss_buf, exempts->who, exempts->reason);
-		++i;
-		node = list_next(exempt, node);
+		irc_prefmsg (ss_bot, cmdparams->source, "%s (%s) Added by %s for %s", exempts->host, ExcludeDesc[exempts->type], exempts->who, exempts->reason);
+		node = list_next(exemptlist, node);
 	}
 	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
 	return NS_SUCCESS;
@@ -167,55 +151,50 @@ static int ss_cmd_exempt_list(CmdParams *cmdparams)
 
 static int ss_cmd_exempt_add(CmdParams *cmdparams)
 {
+	NS_EXCLUDE type;
 	char *buf;
-	lnode_t *node;
-	exemptinfo *exempts = NULL;
+	exemptinfo *exempts;
 
 	SET_SEGV_LOCATION();
 	if (cmdparams->ac < 4) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);
-		return NS_SUCCESS;
+		return NS_ERR_NEED_MORE_PARAMS;
 	}
-	if (list_isfull(exempt)) {
+	if (list_isfull(exemptlist)) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Error, Exception list is full");
 		return NS_SUCCESS;
 	}
-	if (atoi(cmdparams->av[2]) != 2) {
-		if (!index(cmdparams->av[1], '.')) {
-			irc_prefmsg (ss_bot, cmdparams->source, "Host field does not contain a vaild host"); 
+	if (!ircstrcasecmp("HOST", cmdparams->av[1])) {
+		if (!index(cmdparams->av[2], '.')) {
+			irc_prefmsg (ss_bot, cmdparams->source, "Invalid host name");
 			return NS_SUCCESS;
 		}
+		type = NS_EXCLUDE_HOST;
+	} else if (!ircstrcasecmp("CHANNEL", cmdparams->av[1])) {
+		if (cmdparams->av[2][0] != '#') {
+			irc_prefmsg (ss_bot, cmdparams->source, "Invalid channel name");
+			return NS_SUCCESS;
+		}
+		type = NS_EXCLUDE_CHANNEL;
+	} else if (!ircstrcasecmp("SERVER", cmdparams->av[1])) {
+		if (!index(cmdparams->av[2], '.')) {
+			irc_prefmsg (ss_bot, cmdparams->source, "Invalid host name");
+			return NS_SUCCESS;
+		}
+		type = NS_EXCLUDE_SERVER;
 	} else {
-		if (!index(cmdparams->av[1], '#')) {
-			irc_prefmsg (ss_bot, cmdparams->source, "Channel Field is not valid");
-			return NS_SUCCESS;
-		}
+		irc_prefmsg (ss_bot, cmdparams->source, "Invalid exclude type");
+		return NS_SUCCESS;
 	}
-	exempts = ns_malloc (sizeof(exemptinfo));
-	strlcpy(exempts->host, cmdparams->av[1], MAXHOST);
-	exempts->server = atoi(cmdparams->av[2]);
+	exempts = ns_calloc (sizeof(exemptinfo));
+	exempts->type = type;
+	strlcpy(exempts->host, cmdparams->av[2], MAXHOST);
 	strlcpy(exempts->who, cmdparams->source->name, MAXNICK);
 	buf = joinbuf(cmdparams->av, cmdparams->ac, 3);
 	strlcpy(exempts->reason, buf, MAXREASON);
 	ns_free (buf);
-	node = lnode_create(exempts);
-	list_append(exempt, node);
-	switch (exempts->server) {
-		case 0:
-			strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
-			break;
-		case 1:
-			strlcpy(ss_buf, "Server", SS_BUF_SIZE);
-			break;
-		case 2:
-			strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
-			break;
-		default:
-			strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
-			break;
-	}
-	irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s) exception to list", exempts->host, ss_buf);
-	irc_chanalert (ss_bot, "%s added %s (%s) exception to list", cmdparams->source->name, exempts->host, ss_buf);
+	lnode_create_append (exemptlist, exempts);
+	irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s) exception to list", exempts->host, ExcludeDesc[exempts->type]);
+	irc_chanalert (ss_bot, "%s added %s (%s) exception to list", cmdparams->source->name, exempts->host, ExcludeDesc[exempts->type]);
 	DBAStore ("Exempt", exempts->host, exempts, sizeof(exemptinfo));
 	return NS_SUCCESS;
 }
@@ -224,51 +203,25 @@ static int ss_cmd_exempt_del(CmdParams *cmdparams)
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
-	int i;
 
 	SET_SEGV_LOCATION();
 	if (cmdparams->ac < 2) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);
-		return NS_SUCCESS;
+		return NS_ERR_NEED_MORE_PARAMS;
 	}
-	if (atoi(cmdparams->av[1]) != 0) {
-		node = list_first(exempt);
-		i = 1;
-		while (node) {
-			if (i == atoi(cmdparams->av[1])) {
-				/* delete the entry */
-				exempts = lnode_get(node);
-				list_delete(exempt, node);
-				switch (exempts->server) {
-					case 0:
-						strlcpy(ss_buf, "HostName", SS_BUF_SIZE);
-						break;
-					case 1:
-						strlcpy(ss_buf, "Server", SS_BUF_SIZE);
-						break;
-					case 2:
-						strlcpy(ss_buf, "Channel", SS_BUF_SIZE);
-						break;
-					default:
-						strlcpy(ss_buf, "Unknown", SS_BUF_SIZE);
-						break;
-				}
-				irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s %s out of exception list", exempts->host, ss_buf);
-				irc_chanalert (ss_bot, "%s deleted %s %s out of exception list", cmdparams->source->name, exempts->host, ss_buf);
-				DBADelete ("Exempt", exempts->host);
-				ns_free (exempts);
-				return NS_SUCCESS;
-			}
-			++i;
-			node = list_next(exempt, node);
-		}		
-		/* if we get here, then we can't find the entry */
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, Can't find entry %d. /msg %s exclude list", atoi(cmdparams->av[1]), ss_bot->name);
-		return NS_SUCCESS;
-	} else {
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, Out of Range");
-		return NS_SUCCESS;
-	}
+	node = list_first(exemptlist);
+	while (node) {
+		exempts = lnode_get(node);
+		if (ircstrcasecmp (cmdparams->av[1], exempts->host) == 0) {
+			list_delete(exemptlist, node);
+			irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s %s out of exception list", exempts->host, ExcludeDesc[exempts->type]);
+			irc_chanalert (ss_bot, "%s deleted %s %s out of exception list", cmdparams->source->name, exempts->host, ExcludeDesc[exempts->type]);
+			DBADelete ("Exempt", exempts->host);
+			ns_free (exempts);
+			return NS_SUCCESS;
+		}
+		node = list_next(exemptlist, node);
+	}		
+	irc_prefmsg (ss_bot, cmdparams->source, "Error, Can't find entry %s.", cmdparams->av[1]);
 	return NS_SUCCESS;
 }
 
@@ -276,15 +229,11 @@ int ss_cmd_exempt(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		ss_cmd_exempt_list(cmdparams);
-		return NS_SUCCESS;
+		return ss_cmd_exempt_list(cmdparams);
 	} else if (!strcasecmp(cmdparams->av[0], "ADD")) {
-		ss_cmd_exempt_add(cmdparams);
-		return NS_SUCCESS;
+		return ss_cmd_exempt_add(cmdparams);
 	} else if (!strcasecmp(cmdparams->av[0], "DEL")) {
-		ss_cmd_exempt_del(cmdparams);
-		return NS_SUCCESS;
+		return ss_cmd_exempt_del(cmdparams);
 	}
-    irc_prefmsg (ss_bot, cmdparams->source, "Syntax Error. /msg %s help exclude", ss_bot->name);
-	return NS_SUCCESS;
+	return NS_ERR_SYNTAX_ERROR;
 }

@@ -244,3 +244,48 @@ int ss_cmd_update(CmdParams *cmdparams)
 	irc_chanalert (ss_bot, "%s requested an update to the Dat file", cmdparams->source->name);
 	return NS_SUCCESS;
 }
+
+int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason) 
+{
+	SET_SEGV_LOCATION();
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
+	if (!strcasecmp(cmdparams->av[0], "LIST")) {
+		irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", SecureServ.updateuname[0] ? "Set" : "Not Set");
+		if (SecureServ.updateuname[0]) {
+			irc_prefmsg (ss_bot, cmdparams->source, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
+		}
+		return NS_SUCCESS;
+	}
+	if (cmdparams->ac < 3) {
+		return NS_ERR_NEED_MORE_PARAMS;
+	}
+	DBAStoreConfigStr ("UpdateUname", cmdparams->av[1], MAXNICK);
+	DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
+	strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
+	strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
+	irc_chanalert (ss_bot, "%s changed the Update Username and Password", cmdparams->source);
+	irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
+	return NS_SUCCESS;
+}
+
+int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason) 
+{
+	if (reason == SET_LOAD) {
+		return NS_SUCCESS;
+	}
+	if (SecureServ.autoupgrade == 1) {
+		if ((SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
+			add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
+		} else {
+			irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate, as you have not set a username and password");
+			SecureServ.autoupgrade = 0;
+			del_timer ("AutoUpdate");
+			DBAStoreConfigInt ("AutoUpdate", &SecureServ.autoupgrade);
+		}
+	} else {
+		del_timer ("AutoUpdate");
+	}
+	return NS_SUCCESS;
+}

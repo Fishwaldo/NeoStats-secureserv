@@ -144,6 +144,8 @@ struct SecureServ {
 
 /* update.c */
 int ss_cmd_update(CmdParams *cmdparams);
+int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_set_autoupdate_cb (CmdParams *cmdparams, SET_REASON reason);
 void GotHTTPAddress(char *data, adns_answer *a);
 int AutoUpdate(void);
 
@@ -152,18 +154,15 @@ int JoinNewChan(void);
 void OnJoinBotStatus (CmdParams *cmdparams);
 int ss_event_message (CmdParams *cmdparams);
 int ss_event_versionrequest (CmdParams *cmdparams);
-int ListMonChan(Client *u);
 int LoadMonChans();
-int MonChanCount(void);
-int OnJoinBotConf(void);
 int ViriCount(void);
 int InitOnJoinBots(void);
-int ExitOnJoinBots(void);
+void FiniOnJoinBots(void);
 int ss_cmd_bots(CmdParams *cmdparams);
 int ss_cmd_checkchan(CmdParams *cmdparams);
 int ss_cmd_monchan(CmdParams *cmdparams);
 int ss_cmd_cycle(CmdParams *cmdparams);
-int do_set_monbot (CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_set_monbot (CmdParams *cmdparams, SET_REASON reason);
 int ss_event_kickbot(CmdParams *cmdparams);
 int ss_event_emptychan(CmdParams *cmdparams);
 int MonJoin(Channel *c);
@@ -176,15 +175,15 @@ int ScanFizzer(Client *u);
 int ScanChan(Client* u, Channel *c);
 int ScanUser(Client *u, unsigned flags);
 int ScanMsg(Client *u, char* buf, int chanmsg);
-int ScanCTCP(Client *u, char* buf);
+int ScanCTCPVersion(Client *u, char* buf);
 int ss_cmd_list(CmdParams *cmdparams);
 int ss_cmd_reload(CmdParams *cmdparams);
 void InitScanner(void);
 void load_dat(void);
 
 /* exempts.c */
-int SS_IsChanExempt(Channel *c);
-int SS_IsUserExempt(Client *u);
+int SSIsChanExempt(Channel *c);
+int SSIsUserExempt(Client *u);
 int ss_cmd_exempt(CmdParams *cmdparams);
 int SSInitExempts(void);
 
@@ -199,7 +198,7 @@ int ss_cmd_chpass(CmdParams *cmdparams);
 int HelpersSignoff(CmdParams *cmdparams);
 int HelpersAway(CmdParams *cmdparams);
 void HelpersStatus (CmdParams *cmdparams);
-
+int ss_cmd_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason);
 
 /* SecureServ_help.c */
 extern const char *ts_help_checkchan[];
@@ -261,8 +260,5 @@ extern const char *ts_help_set_updateinfo[];
 extern const char *ts_help_set_onjoinbotmodes[];
 
 extern char onjoinbot_modes[MODESIZE];
-
-int is_monchan(char* chan);
-int do_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason);
 
 #endif /* SECURESERV_H */

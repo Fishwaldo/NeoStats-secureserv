@@ -42,11 +42,9 @@ static int ss_event_nick (CmdParams *cmdparams);
 static int ss_event_quit (CmdParams *cmdparams);
 static int ss_cmd_viriversion (CmdParams *cmdparams);
 
-static int do_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
-static int do_set_monchancycletime (CmdParams *cmdparams, SET_REASON reason);
-static int do_set_cycletime (CmdParams *cmdparams, SET_REASON reason);
-static int do_set_autoupdate (CmdParams *cmdparams, SET_REASON reason);
-static int do_set_updateinfo (CmdParams *cmdparams, SET_REASON reason);
+static int ss_cmd_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
+static int ss_cmd_set_monchancycletime_cb (CmdParams *cmdparams, SET_REASON reason);
+static int ss_cmd_set_cycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 
 Bot *ss_bot;
 
@@ -101,7 +99,7 @@ static bot_cmd ss_commands[]=
 
 static bot_setting ss_settings[]=
 {
-	{"HELPERS",		&SecureServ.helpers,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN, "helpers",		NULL,	ts_help_set_helpers, do_set_helpers_cb, (void *)1 },
+	{"HELPERS",		&SecureServ.helpers,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN, "helpers",		NULL,	ts_help_set_helpers, ss_cmd_set_helpers_cb, (void *)1 },
 	{"VERSION",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoVersionScan",NULL,	ts_help_set_version, NULL, (void *)0 },
 	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
 	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN,"HelpChan",		NULL,	ts_help_set_helpchan, NULL, (void *)"#nohack" },
@@ -112,17 +110,17 @@ static bot_setting ss_settings[]=
 	{"AKILL",		&SecureServ.doakill,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAkill",		NULL,	ts_help_set_akill, NULL, (void *)1 },
 	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	0,			NS_ULEVEL_ADMIN,"AkillTime",	NULL,	ts_help_set_akilltime, NULL, (void *)3600 },
 	{"SVSJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoSvsJoin",	NULL,	ts_help_set_dojoin, NULL, (void *)1 },
-	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_CUSTOM,0,0,		NS_ULEVEL_ADMIN,"ChanMsgAsPM",	NULL,	ts_help_set_treatchanmsgaspm, do_set_treatchanmsgaspm, (void *)0 },
+	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_CUSTOM,0,0,		NS_ULEVEL_ADMIN,"ChanMsgAsPM",	NULL,	ts_help_set_treatchanmsgaspm, ss_cmd_set_treatchanmsgaspm, (void *)0 },
 	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoOnJoin",		NULL,	ts_help_set_doonjoin, NULL, (void *)1 },
 	{"VERBOSE",		&SecureServ.verbose,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"Verbose",		NULL,	ts_help_set_verbose, NULL, (void *)1 },
 	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"BotEcho",		NULL,	ts_help_set_botecho, NULL, (void *)0 },
 	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
 	{"MONCHANCYCLE",&SecureServ.monchancycle,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"MonChanCycle", NULL,	ts_help_set_monchancycle, NULL, (void *)1 },
-	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_INT,1,10000,	NS_ULEVEL_ADMIN,"MonitorBotCycle",NULL,	ts_help_set_monchancycletime, do_set_monchancycletime, (void *)1800 },
-	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	1000,		NS_ULEVEL_ADMIN,"CycleTime",	NULL,	ts_help_set_cycletime, do_set_cycletime, (void *)60 },
-	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_monbot, do_set_monbot, (void *)0 },
-	{"AUTOUPDATE",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_autoupdate, do_set_autoupdate, (void *)0 },
-	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_updateinfo, do_set_updateinfo, (void *)0 },
+	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_INT,1,10000,	NS_ULEVEL_ADMIN,"MonitorBotCycle",NULL,	ts_help_set_monchancycletime, ss_cmd_set_monchancycletime_cb, (void *)1800 },
+	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	1000,		NS_ULEVEL_ADMIN,"CycleTime",	NULL,	ts_help_set_cycletime, ss_cmd_set_cycletime_cb, (void *)60 },
+	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_monbot, ss_cmd_set_monbot, (void *)0 },
+	{"AUTOUPDATE",	&SecureServ.autoupgrade,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_autoupdate, ss_cmd_set_autoupdate_cb, (void *)0 },
+	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_updateinfo, ss_cmd_set_updateinfo, (void *)0 },
 	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,"OnJoinBotModes",NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
 	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
 };
@@ -139,33 +137,7 @@ BotInfo ss_botinfo =
 	ss_settings,
 };
 
-static int do_set_updateinfo(CmdParams *cmdparams, SET_REASON reason) 
-{
-	SET_SEGV_LOCATION();
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
-	}
-	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		irc_prefmsg (ss_bot, cmdparams->source, "UPDATEINFO:   %s", SecureServ.updateuname[0] ? "Set" : "Not Set");
-		if (SecureServ.updateuname[0]) {
-			irc_prefmsg (ss_bot, cmdparams->source, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
-		}
-		return NS_SUCCESS;
-	}
-	if (cmdparams->ac < 3) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set", ss_bot->name);
-		return NS_SUCCESS;
-	}
-	DBAStoreConfigStr ("UpdateUname", cmdparams->av[1], MAXNICK);
-	DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
-	strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
-	strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
-	irc_chanalert (ss_bot, "%s changed the Update Username and Password", cmdparams->source);
-	irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
-	return NS_SUCCESS;
-}
-
-static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason) 
+static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason) 
 {
 	if (reason == SET_LOAD) {
 		return NS_SUCCESS;
@@ -175,10 +147,9 @@ static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	}
 	if (cmdparams->ac < 2) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
-		return NS_SUCCESS;
+		return NS_ERR_NEED_MORE_PARAMS;
 	}			
-	if ((!strcasecmp(cmdparams->av[1], "YES")) || (!strcasecmp(cmdparams->av[1], "ON"))) {
+	if ((!strcasecmp(cmdparams->av[1], "ON"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "\2Warning:\2");
 		irc_prefmsg (ss_bot, cmdparams->source, "This option can consume a \2LOT\2 of CPU");
 		irc_prefmsg (ss_bot, cmdparams->source, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
@@ -187,23 +158,22 @@ static int do_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	} else if (!strcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-		irc_chanalert (ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source, ss_bot->name);
+		irc_chanalert (ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 1;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
-	} else if ((!strcasecmp(cmdparams->av[1], "NO")) || (!strcasecmp(cmdparams->av[1], "OFF"))) {
+	} else if ((!strcasecmp(cmdparams->av[1], "OFF"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
 		irc_chanalert (ss_bot, "%s has disabled channel message checking", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 0;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
 	} else {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
-		return NS_SUCCESS;
+		return NS_ERR_SYNTAX_ERROR;
 	}
 	return NS_SUCCESS;
 }
-static int do_set_monchancycletime(CmdParams *cmdparams, SET_REASON reason) 
+static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
 	if (reason == SET_LOAD) {
 		return NS_SUCCESS;
@@ -211,7 +181,7 @@ static int do_set_monchancycletime(CmdParams *cmdparams, SET_REASON reason)
 	set_timer_interval ("MonBotCycle", SecureServ.monchancycletime);
 	return NS_SUCCESS;
 }
-static int do_set_cycletime(CmdParams *cmdparams, SET_REASON reason) 
+static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
 	if (reason == SET_LOAD) {
 		return NS_SUCCESS;
@@ -220,45 +190,6 @@ static int do_set_cycletime(CmdParams *cmdparams, SET_REASON reason)
 	return NS_SUCCESS;
 }
 
-static int do_set_autoupdate(CmdParams *cmdparams, SET_REASON reason) 
-{
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
-	}
-	if (!strcasecmp(cmdparams->av[0], "LIST")) {
-		irc_prefmsg (ss_bot, cmdparams->source, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
-		return NS_SUCCESS;
-	}
-	if (cmdparams->ac < 2) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid Syntax. /msg %s help set for more info", ss_bot->name);
-		return NS_SUCCESS;
-	}			
-	if ((!strcasecmp(cmdparams->av[1], "YES")) || (!strcasecmp(cmdparams->av[1], "ON"))) {
-		if ((SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
-			irc_prefmsg (ss_bot, cmdparams->source, "AutoUpdate Mode is now enabled");
-			irc_chanalert (ss_bot, "%s enabled AutoUpdate Mode", cmdparams->source);
-			if (SecureServ.autoupgrade != 1) {
-				add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
-			}
-			SecureServ.autoupgrade = 1;
-			DBAStoreConfigInt ("AutoUpdate", &SecureServ.autoupgrade);
-			return NS_SUCCESS;
-		} else {
-			irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate, as you have not set a username and password");
-			return NS_SUCCESS;
-		}
-	} else if ((!strcasecmp(cmdparams->av[1], "NO")) || (!strcasecmp(cmdparams->av[1], "OFF"))) {
-		irc_prefmsg (ss_bot, cmdparams->source, "AutoUpdate Mode is now disabled");
-		irc_chanalert (ss_bot, "%s disabled AutoUpdate Mode", cmdparams->source);
-		if (SecureServ.autoupgrade == 1) {
-			del_timer ("AutoUpdate");
-		}
-		SecureServ.autoupgrade = 0;
-		DBAStoreConfigInt ("AutoUpdate", &SecureServ.autoupgrade);
-		return NS_SUCCESS;
-	}
-	return NS_SUCCESS;
-}
 static int ss_cmd_viriversion(CmdParams *cmdparams)
 {
 	irc_prefmsg (ss_bot, cmdparams->source, "%d", SecureServ.ss_cmd_viriversion);
@@ -282,8 +213,7 @@ int ss_event_newchan(CmdParams *cmdparams)
 	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
-	cd = ns_malloc(sizeof(ChannelDetail));
-	cd->scanned = 0;
+	cd = ns_calloc(sizeof(ChannelDetail));
 	SetChannelModValue (cmdparams->channel, (void *)cd);
 	/* check if its a monchan and we are not in place */
 	MonJoin(cmdparams->channel);
@@ -296,12 +226,12 @@ int ss_event_joinchan(CmdParams *cmdparams)
 
 	SET_SEGV_LOCATION();
 	/* is it exempt? */
-	if (SS_IsChanExempt(cmdparams->channel) > 0) {
+	if (SSIsChanExempt(cmdparams->channel) > 0) {
 		return -1;
 	}
 	
 	/* how about the user, is he exempt? */
-	if (SS_IsUserExempt(cmdparams->source) > 0) {
+	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
 		return -1;
 	}
 	cd = (ChannelDetail *)GetChannelModValue (cmdparams->channel);
@@ -343,7 +273,7 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 	if (IsServicesChannel( cmdparams->channel )) {
 		return -1;
 	}
-	if (SS_IsUserExempt(cmdparams->source) > 0) {
+	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
 		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
 		return -1;
 	}
@@ -395,15 +325,10 @@ static int ss_event_quit(CmdParams *cmdparams)
 static int ss_event_nick(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	if (SS_IsUserExempt(cmdparams->source) > 0) {
-		dlog (DEBUG1, "Bye, I'm Exempt %s", cmdparams->source);
-		return -1;
+	if (SSIsUserExempt(cmdparams->source) == NS_FALSE) {
+		/* check the nickname */
+		ScanUser(cmdparams->source, SCAN_NICK);
 	}
-	/* check the nickname */
-	if(ScanUser(cmdparams->source, SCAN_NICK)) {
-		return NS_SUCCESS;
-	}
-
 	return NS_SUCCESS;
 }
 
@@ -417,7 +342,7 @@ static int ss_event_signon(CmdParams *cmdparams)
 		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
 		return -1;
 	}
-	if (SS_IsUserExempt(cmdparams->source) > 0) {
+	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
 		return -1;
 	}
 	/* fizzer scan */
@@ -439,7 +364,7 @@ static int ss_event_versionreply(CmdParams *cmdparams)
 	static int versioncount = 0;
 
 	SET_SEGV_LOCATION();
-	positive = ScanCTCP(cmdparams->source, cmdparams->param);
+	positive = ScanCTCPVersion(cmdparams->source, cmdparams->param);
 	versioncount++;
 	/* why do we only change the version reply every 23 entries? Why not? */
 	if ((positive == 0) && (versioncount > 23)) {
@@ -462,6 +387,31 @@ int ModInit (Module *mod_ptr)
 	return NS_SUCCESS;
 }
 
+int ScanMember (Channel *c, ChannelMember *m, void *v)
+{
+	ChannelDetail *cd;
+
+	if (SSIsUserExempt(m->u) == NS_FALSE) {
+		cd = (ChannelDetail *)GetChannelModValue (c);
+		if (!cd) {
+			cd = ns_calloc(sizeof(ChannelDetail));
+			SetChannelModValue (c, (void *)cd);
+		}	
+		if (ScanChan(m->u, c) == 0) {
+			cd->scanned = 1;
+			/* Channel is OK so stop abort list handling */
+			return NS_TRUE;
+		}
+	}
+	return NS_FALSE;
+}
+
+int ScanChannel (Channel *c, void *v)
+{
+	GetChannelMembers (c, ScanMember, NULL);
+	return NS_FALSE;
+}
+
 /** @brief ModSynch
  *
  *  Startup handler
@@ -473,12 +423,6 @@ int ModInit (Module *mod_ptr)
 
 int ModSynch (void)
 {
-	Channel *c;
-	Client *u;
-	lnode_t *lnode;
-	hnode_t *hnode;
-	hscan_t hs;
-	
 	SET_SEGV_LOCATION();
 	ss_bot = AddBot (&ss_botinfo);
 	if (!ss_bot) {
@@ -498,26 +442,7 @@ int ModSynch (void)
 		add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
 	}
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
-	hash_scan_begin(&hs, GetChannelHash());
-	while ((hnode = hash_scan_next(&hs)) != NULL) {
-		c = hnode_get(hnode);
-		if (!c)
-			continue;
-
-		/* now scan channel members */
-		lnode = list_first(c->members);
-		while (lnode) {
-			u = find_user(lnode_get(lnode));
-			if (SS_IsUserExempt(u) > 0) {
-				lnode = list_next(c->members, lnode);
-				continue;
-			}
-			if (u && ScanChan(u, c) == 0) {
-				break;
-			}
-			lnode = list_next(c->members, lnode);
-		}
-	}
+	GetChannelList (ScanChannel, NULL);
 	return NS_SUCCESS;
 };
 
@@ -528,7 +453,7 @@ void ModFini()
 {
 	SET_SEGV_LOCATION();
 	FiniHelpers();
-	ExitOnJoinBots();
+	FiniOnJoinBots();
 }
 
 int ModAuthUser (Client *u)
@@ -536,10 +461,8 @@ int ModAuthUser (Client *u)
 	UserDetail *ud;
 
 	ud = (UserDetail *)GetUserModValue (u);
-	if (ud) {
-		if (ud->type == USER_HELPER) {
-			return 30;
-		}
+	if (ud && ud->type == USER_HELPER) {
+		return 30;
 	}
 	return 0;
 }

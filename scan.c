@@ -90,7 +90,7 @@ const char* DatFiles[NUM_DAT_FILES]=
 	CUSTOM_DAT_NAME,
 };
 
-/* This function will not load viri.dat then try to load custom.dat 
+/* This function will load viri.dat then try to load custom.dat 
    For custom entries, the lack of file is of no importance and a flag is set
    in the viri entry to indicate the custom nature of the definition for use
    by SecureServ.
@@ -417,7 +417,7 @@ int ScanUser(Client *u, unsigned flags)
 	return positive;
 }
 
-int ScanCTCP(Client *u, char* buf) 
+int ScanCTCPVersion(Client *u, char* buf) 
 {
 	int positive = 0;
 	lnode_t *node;

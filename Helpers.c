@@ -353,7 +353,7 @@ int HelpersAway(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int do_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason) 
+int ss_cmd_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
 	if (reason == SET_LOAD || reason == SET_LIST) {
 		return NS_SUCCESS;

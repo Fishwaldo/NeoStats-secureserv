@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.14 2003/07/17 13:29:41 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.15 2003/07/17 13:41:33 fishwaldo Exp $
 */
 
 
@@ -174,7 +174,7 @@ hash_t *nickflood;
 /* SecureServ.c */
 void gotpositive(User *u, virientry *ve, int type);
 int Chan_Exempt(Chans *c);
-
+int is_exempt(User *u);
 /* OnJoin.c */
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );

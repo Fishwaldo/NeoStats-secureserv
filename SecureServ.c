@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.29 2003/07/17 13:29:41 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.30 2003/07/17 13:41:33 fishwaldo Exp $
 */
 
 
@@ -1228,6 +1228,7 @@ static int DelNick(char **av, int ac) {
        		hnode_destroy(nfnode);
 		free(nick);
 	}
+	return 1;
 }
 
 

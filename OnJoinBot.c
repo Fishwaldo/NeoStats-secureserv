@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.19 2003/07/17 13:29:41 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.20 2003/07/17 13:41:33 fishwaldo Exp $
 */
 
 
@@ -256,6 +256,13 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	virientry *viridetails;
 	int rc;
 	
+	/* check if this user is exempt */
+	if (is_exempt(u) > 0) {
+		nlog(LOG_DEBUG1, LOG_MOD, "User %s is exempt from Message Checking", u->nick);
+		return;
+	}
+
+
 	buf = joinbuf(argv, ac, 1);
 	node = list_first(viri);
 	nlog(LOG_NORMAL, LOG_MOD, "Recieved Messaage from %s to OnJoin Bot: %s", u->nick, buf);
@@ -289,5 +296,5 @@ int ss_kick_chan(char **argv, int ac) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
 		strncpy(SecureServ.lastchan, "\0", MAXNICK);
 	}
+	return 1;
 }		
-		

@@ -2268,7 +2268,7 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
 				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
 			} else {
-				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
+				if (SecureServ.verbose) chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
 			}
                 } else {
 	                chanalert(s_SecureServ, "DNS error Checking for Updates: %s", adns_strerror(ri));

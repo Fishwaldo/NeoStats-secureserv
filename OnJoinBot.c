@@ -418,7 +418,7 @@ int MonChan(User *u, char *requestchan) {
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
 
-	chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
+	if (SecureServ.verbose) chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
 	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);
 	
 	buf = malloc(CHANLEN);

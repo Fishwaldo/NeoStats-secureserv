@@ -115,7 +115,10 @@ static int DownLoadDat()
 	SET_SEGV_LOCATION();
 	/* dont keep trying to download !*/
 	if (SecureServ.doUpdate == 1) {
+#if 0
+bugid: 154
 		del_mod_timer("DownLoadNewDat");
+#endif
 		SecureServ.doUpdate = 2;
 		bzero(ss_buf, SS_BUF_SIZE);
 		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);

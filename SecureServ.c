@@ -173,6 +173,9 @@ static int do_set_autoupdate(User *u, char **av, int ac)
 			prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now enabled");
 			chanalert(s_SecureServ, "%s enabled AutoUpdate Mode", u->nick);
 			SetConf((void *)1, CFGINT, "AutoUpdate");
+			if (SecureServ.autoupgrade != 1) {
+				add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 3600);
+			}
 			SecureServ.autoupgrade = 1;
 			return 1;
 		} else {
@@ -183,6 +186,9 @@ static int do_set_autoupdate(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "AutoUpdate Mode is now disabled");
 		chanalert(s_SecureServ, "%s disabled AutoUpdate Mode", u->nick);
 		SetConf((void *)0, CFGINT, "AutoUpdate");
+		if (SecureServ.autoupgrade == 1) {
+			del_mod_timer("DownLoadNewDat");
+		}
 		SecureServ.autoupgrade = 0;
 		return 1;
 	}

@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="SecureServ.c"
-ac_default_prefix=~/NeoStats/
+ac_default_prefix=~/NeoStats3.0/
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -1300,7 +1300,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 PACKAGE=SecureServ
 MODULE_MAJOR=3
-MODULE_MINOR=0
+MODULE_MINOR=0prealpha1
 VERSION=$MODULE_MAJOR.$MODULE_MINOR
 cat >>confdefs.h <<_ACEOF
 #define MODULE_VERSION "$VERSION"
@@ -1314,7 +1314,7 @@ cat >>confdefs.h <<_ACEOF
 #define MODULE_MINOR "$MODULE_MINOR"
 _ACEOF
 
-DIRINST=~/NeoStats/
+DIRINST=~/NeoStats3.0/
 
 CFLAGS="$CFLAGS -O2"
 
@@ -3654,11 +3654,9 @@ cat >>conftest.$ac_ext <<_ACEOF
 #include <config.h>
 #include <stdlib.h>
 int main(void) {
-	if (MAJOR >= 2) {
-		if (MINOR >= 5) {
-			if (REV >= 13) {
-				exit(0);
-			}
+	if (MAJOR >= 3) {
+		if (MINOR >= 0) {
+			exit(0);
 		}
 	}
 	exit(1);

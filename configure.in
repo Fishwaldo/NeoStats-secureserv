@@ -4,13 +4,13 @@ AC_CONFIG_HEADER(modconfig.h)
 
 PACKAGE=SecureServ
 MODULE_MAJOR=3
-MODULE_MINOR=0
+MODULE_MINOR=0prealpha1
 VERSION=$MODULE_MAJOR.$MODULE_MINOR
 AC_DEFINE_UNQUOTED(MODULE_VERSION, "$VERSION")
 AC_DEFINE_UNQUOTED(MODULE_MAJOR, "$MODULE_MAJOR")
 AC_DEFINE_UNQUOTED(MODULE_MINOR, "$MODULE_MINOR")
-DIRINST=~/NeoStats/
-AC_PREFIX_DEFAULT(~/NeoStats/)
+DIRINST=~/NeoStats3.0/
+AC_PREFIX_DEFAULT(~/NeoStats3.0/)
 CFLAGS="$CFLAGS -O2"
 
 case "$host_os" in
@@ -65,11 +65,9 @@ AC_TRY_RUN(
 #include <config.h>
 #include <stdlib.h>
 int main(void) {
-	if (MAJOR >= 2) {
-		if (MINOR >= 5) {
-			if (REV >= 13) {
-				exit(0);
-			}
+	if (MAJOR >= 3) {
+		if (MINOR >= 0) {
+			exit(0);
 		}
 	}
 	exit(1);

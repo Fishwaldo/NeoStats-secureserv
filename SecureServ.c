@@ -1756,8 +1756,8 @@ static int CheckNick(char **av, int ac) {
 				continue;
 			}
 			if (rc > -1) {					
-				gotpositive(u, viridetails, DET_NICK);
 				nlog(LOG_NOTICE, LOG_MOD, "Got positive nick %s for %s against %s", u->nick, viridetails->name, viridetails->recvmsg);
+				gotpositive(u, viridetails, DET_NICK);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1851,8 +1851,8 @@ static int ScanNick(char **av, int ac) {
 				continue;
 			}
 			if (rc > -1) {					
-				gotpositive(u, viridetails, DET_NICK);
 				nlog(LOG_NOTICE, LOG_MOD, "Got positive nick %s for %s against %s", u->nick, viridetails->name, viridetails->recvmsg);
+				gotpositive(u, viridetails, DET_NICK);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1867,8 +1867,8 @@ static int ScanNick(char **av, int ac) {
 				continue;
 			}
 			if (rc > -1) {					
-				gotpositive(u, viridetails, DET_IDENT);
 				nlog(LOG_NOTICE, LOG_MOD, "Got positive ident %s for %s against %s", u->username, viridetails->name, viridetails->recvmsg);
+				gotpositive(u, viridetails, DET_IDENT);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1883,8 +1883,8 @@ static int ScanNick(char **av, int ac) {
 				continue;
 			}
 			if (rc > -1) {					
-				gotpositive(u, viridetails, DET_REALNAME);
 				nlog(LOG_NOTICE, LOG_MOD, "Got positive realname %s for %s against %s", u->realname, viridetails->name, viridetails->recvmsg);
+				gotpositive(u, viridetails, DET_REALNAME);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1948,8 +1948,8 @@ int check_version_reply(char *origin, char **av, int ac) {
 					continue;
 				}
 				if (rc > -1) {					
-					gotpositive(finduser(origin), viridetails, DET_CTCP);
 					nlog(LOG_NOTICE, LOG_MOD, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
+					gotpositive(finduser(origin), viridetails, DET_CTCP);
 					if (SecureServ.breakorcont == 0)
 						continue;
 					else 

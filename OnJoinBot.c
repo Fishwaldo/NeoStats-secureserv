@@ -32,6 +32,12 @@
 list_t *monchans;
 int SaveMonChans();
 
+#ifdef UMODE_HIDE
+static char onjoinbot_modes[]="+ix";
+#else
+static char onjoinbot_modes[]="+i";
+#endif
+
 unsigned hrand(unsigned upperbound, unsigned lowerbound) {
 	if ((upperbound < 1)) return -1;
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
@@ -175,7 +181,7 @@ restartnicks:
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
-	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+", "SecureServ") == -1) {
+	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ") == -1) {
 		/* hu? Nick was in use. How is that possible? */
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
@@ -254,7 +260,7 @@ restartnicksondemand:
 	strncpy(SecureServ.lastchan, c->name, CHANLEN);
 
 	/* ok, init the new bot. */
-	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
+	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
 #if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM)
 	sjoin_cmd(nickname->nick, c->name, 0);
 #else
@@ -365,7 +371,7 @@ int MonChan(User *u, char *requestchan) {
 			rnn = list_next(nicks, rnn);
 		}
 		if (rnn != NULL) {
-			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
+			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
 		} else {
 			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			return -1;
 		}

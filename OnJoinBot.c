@@ -168,7 +168,7 @@ static Channel *GetNewChan ()
 			continue;
 		}
 		/* if the channel is exempt, restart */
-		if (SSIsChanExempt(c) == NS_TRUE) {
+		if (ModIsChannelExcluded(c) == NS_TRUE) {
 			continue;
 		}
 		/* if we are already monitoring with a monbot, don't join */
@@ -396,7 +396,7 @@ int ss_event_message (CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* check if this user is exempt */
-	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
 		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
@@ -525,8 +525,8 @@ static int MonChan(Client *u, char *requestchan)
 		return -1;
 	}			
 	/* dont allow excepted channels */
-	if (SSIsChanExempt(c) == NS_TRUE) {
-		if (u) irc_prefmsg (ss_bot, u, "Can not monitor a channel listed as a Exempt Channel");
+	if (ModIsChannelExcluded(c) == NS_TRUE) {
+		if (u) irc_prefmsg (ss_bot, u, "Can not monitor a channel listed as a Exclude Channel");
 		return -1;
 	}
 	if (SecureServ.monbot[0] == 0) {

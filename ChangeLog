@@ -1,6 +1,7 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
 3.0prealpha3 - Mark (M)
+ - Update module to use new core module exclusion support. (M)
  - Add preliminary support for away message and quit message scans. (M)
  - Change virus storage to multiple lists to optimise scanning process. (M)
  - Add error checks for det and act types in load. (M)

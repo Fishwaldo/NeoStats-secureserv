@@ -8,10 +8,10 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY = @DIRINST@/modules/
 INCLUDES = -I@DIRINST@/include/ -I.
 
-SRCS= SecureServ.c SecureServ_help.c OnJoinBot.c Helpers.c scan.c exempts.c update.c
+SRCS= SecureServ.c SecureServ_help.c OnJoinBot.c Helpers.c scan.c update.c
 OBJS= ${SRCS:.c=.o}
 TARGET= secureserv.so 
-DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
+DOCS=README.SecureServ README.SecureServ.html html.css 
 DATA=viri.dat
 DISTFILES = $(SRCS) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in SecureServ.h RelNotes.txt
 DISTDIR = @PACKAGE@-@VERSION@
@@ -35,8 +35,6 @@ install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
 	 @if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
-	 @cd $(DIRECTORY)..; \
-	 if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i $(DIRECTORY)../doc/SecureServ.settings; fi
 
 dist:	
 	@echo -n "Creating Directories"

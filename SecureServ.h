@@ -177,12 +177,6 @@ int ss_cmd_reload(CmdParams *cmdparams);
 void InitScanner(void);
 void load_dat(void);
 
-/* exempts.c */
-int SSIsChanExempt(Channel *c);
-int SSIsUserExempt(Client *u);
-int ss_cmd_exempt(CmdParams *cmdparams);
-int SSInitExempts(void);
-
 /* Helpers.c */
 int InitHelpers(void);
 void FiniHelpers(void);
@@ -204,7 +198,6 @@ extern const char *ts_help_chpass[];
 extern const char *ts_help_cycle[];
 extern const char *ts_help_update[];
 extern const char *ts_help_status[];
-extern const char *ts_help_exclude[];
 extern const char *ts_help_list[];
 extern const char *ts_help_bots[];
 extern const char *ts_help_monchan[];
@@ -218,7 +211,6 @@ extern const char ts_help_chpass_oneline[];
 extern const char ts_help_assist_oneline[];
 extern const char ts_help_checkchan_oneline[];
 extern const char ts_help_status_oneline[];
-extern const char ts_help_exclude_oneline[];
 extern const char ts_help_cycle_oneline[];
 extern const char ts_help_list_oneline[];
 extern const char ts_help_update_oneline[];

@@ -26,12 +26,6 @@
 #else
 #include "modconfig.h"
 #endif
-
-#include <stdio.h>
-#ifdef HAVE_CRYPT_H
-#include <crypt.h>
-#endif
-
 #include "neostats.h"
 #include "SecureServ.h"
 
@@ -78,7 +72,7 @@ ModuleInfo module_info = {
 	MODULE_VERSION,
 	__DATE__,
 	__TIME__,
-	0,
+	MODULE_FLAG_LOCAL_EXCLUDES,
 	0,
 };
 
@@ -90,7 +84,6 @@ static bot_cmd ss_commands[]=
 	{"ASSIST",	ss_cmd_assist,		2,	30,				ts_help_assist,		ts_help_assist_oneline},
 	{"HELPERS",	ss_cmd_helpers,		1,	NS_ULEVEL_OPER, ts_help_helpers,	ts_help_helpers_oneline},
 	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list,		ts_help_list_oneline},
-	{"EXCLUDE",	ss_cmd_exempt,		1,	50,				ts_help_exclude,	ts_help_exclude_oneline},
 	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan,	ts_help_checkchan_oneline},
 	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle,		ts_help_cycle_oneline},
 	{"UPDATE",	ss_cmd_update,		0,	NS_ULEVEL_ADMIN,ts_help_update,		ts_help_update_oneline},
@@ -231,12 +224,12 @@ int ss_event_joinchan(CmdParams *cmdparams)
 
 	SET_SEGV_LOCATION();
 	/* is it exempt? */
-	if (SSIsChanExempt(cmdparams->channel) > 0) {
+	if (ModIsChannelExcluded(cmdparams->channel) > 0) {
 		return -1;
 	}
 	
 	/* how about the user, is he exempt? */
-	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
 		return -1;
 	}
 	cd = (ChannelDetail *)GetChannelModValue (cmdparams->channel);
@@ -278,7 +271,7 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 	if (IsServicesChannel( cmdparams->channel )) {
 		return -1;
 	}
-	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
 		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
 		return -1;
 	}
@@ -332,7 +325,7 @@ static int ss_event_quit(CmdParams *cmdparams)
 static int ss_event_nick(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	if (SSIsUserExempt(cmdparams->source) == NS_FALSE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_FALSE) {
 		/* check the nickname */
 		ScanNick(cmdparams->source);
 	}
@@ -349,7 +342,7 @@ static int ss_event_signon(CmdParams *cmdparams)
 		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
 		return -1;
 	}
-	if (SSIsUserExempt(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
 		return -1;
 	}
 	/* fizzer scan */
@@ -399,7 +392,6 @@ int ModInit (Module *mod_ptr)
 #endif
 	os_memset (&SecureServ, 0, sizeof (SecureServ));
 	ModuleConfig (ss_settings);
-	SSInitExempts();
 	InitScanner();
 	InitOnJoinBots();
 	return NS_SUCCESS;
@@ -409,7 +401,7 @@ int ScanMember (Channel *c, ChannelMember *m, void *v)
 {
 	ChannelDetail *cd;
 
-	if (SSIsUserExempt(m->u) == NS_FALSE) {
+	if (ModIsUserExcluded(m->u) == NS_FALSE) {
 		cd = (ChannelDetail *)GetChannelModValue (c);
 		if (!cd) {
 			cd = ns_calloc(sizeof(ChannelDetail));

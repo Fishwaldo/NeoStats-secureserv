@@ -22,4 +22,5 @@
 /install-sh -text
 /modconfig.h.in -text
 /scan.c -text
+/update.c -text
 /viri.dat -text

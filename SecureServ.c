@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.48 2003/09/09 11:16:16 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.49 2003/09/18 12:01:55 fishwaldo Exp $
 */
 
 
@@ -1504,6 +1504,7 @@ void load_dat() {
 				continue;
 			} else if (rc != 8) {
 				nlog(LOG_WARNING, LOG_MOD, "Didn't get required number of Subs (%d)", rc);
+				free(viridet);
 				continue;
 			}
 			

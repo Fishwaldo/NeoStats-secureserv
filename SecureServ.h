@@ -147,6 +147,8 @@ struct SecureServ {
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
 	int treatchanmsgaspm;
+	Bot *monbotptr;
+	Bot *ojbotptr;
 } SecureServ;
 
 /* SecureServ.c */

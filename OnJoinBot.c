@@ -28,13 +28,6 @@
 #define MAX_NICKS	100
 #define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
 
-typedef struct randomnicks {
-	char nick[MAXNICK];
-	char user[MAXUSER];
-	char host[MAXHOST];
-	char realname[MAXREALNAME];
-}randomnicks;
-
 static char confbuf[CONFBUFSIZE];
 static list_t *monchans;
 static int SaveMonChans();
@@ -140,9 +133,9 @@ static Channel * GetNewChan ()
 	return NULL;
 }
 
-static randomnicks * GetNewBot(int resetflag)
+static BotInfo * GetNewBot(int resetflag)
 {
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *rnn;
 	int randno, curno, i;
 
@@ -262,7 +255,7 @@ int MonBotCycle()
 int JoinNewChan() 
 {
 	Channel *c;
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 
 	SET_SEGV_LOCATION();
 
@@ -300,8 +293,8 @@ int JoinNewChan()
 	strlcpy(SecureServ.lastnick, nickname->nick, MAXNICK);
 
 	/* ok, init the new bot. */
-	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ") == -1) {
-		/* hu? Nick was in use. How is that possible? */
+	SecureServ.ojbotptr = AddBot(nickname);
+	if (!SecureServ.ojbotptr) {
 		SecureServ.lastchan[0] = 0;
 		SecureServ.lastnick[0] = 0;
 		nlog (LOG_WARNING, "init_bot reported nick was in use. How? Dunno");
@@ -319,7 +312,7 @@ int JoinNewChan()
 static int CheckChan(Client *u, char *requestchan) 
 {
 	Channel *c;
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *lnode;
 	Client *cm;
 	
@@ -359,7 +352,12 @@ static int CheckChan(Client *u, char *requestchan)
 	strlcpy(SecureServ.lastchan, c->name, MAXCHANLEN);
 
 	/* ok, init the new bot. */
-	init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+	SecureServ.ojbotptr = AddBot(nickname);
+	if (!SecureServ.ojbotptr) {
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
+		return 1;
+	}
 	irc_cloakhost (find_bot(nickname->nick));
 	irc_join (find_bot(nickname->nick), c->name, 0);
 
@@ -431,7 +429,7 @@ int CheckOnjoinBotKick(CmdParams *cmdparams)
 	return 0;
 }		
 int MonJoin(Channel *c) {
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *rnn, *mn;
 
 	if (SecureServ.monbot[0] == 0) {
@@ -452,7 +450,10 @@ int MonJoin(Channel *c) {
 					rnn = list_next(nicks, rnn);
 				}
 				if (rnn != NULL) {
-					init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+					SecureServ.monbotptr = AddBot(nickname);
+					if (!SecureServ.monbotptr) {
+						return 1;
+					}
 					irc_cloakhost (find_bot(nickname->nick));
 				} else {
 					nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
@@ -489,7 +490,7 @@ int MonBotDelChan(Channel *c)
 static int MonChan(Client *u, char *requestchan) 
 {
 	Channel *c;
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *rnn, *mn;
 	char *buf;
 	
@@ -544,7 +545,10 @@ static int MonChan(Client *u, char *requestchan)
 			rnn = list_next(nicks, rnn);
 		}
 		if (rnn != NULL) {
-			init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+			SecureServ.monbotptr = AddBot(nickname);
+			if (!SecureServ.monbotptr) {
+				return 1;
+			}
 			irc_cloakhost (find_bot(nickname->nick));
 		} else {
 			nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
@@ -647,7 +651,7 @@ int MonChanCount(void)
 
 int OnJoinBotConf(void)
 {
-	randomnicks *rnicks;
+	BotInfo *rnicks;
 	lnode_t *node;
 	int i;
 	char **data;
@@ -658,7 +662,7 @@ int OnJoinBotConf(void)
 	if (GetDir("RandomNicks", &data) > 0) {
 		/* try */
 		for (i = 0; data[i] != NULL; i++) {
-			rnicks = ns_malloc (sizeof(randomnicks));
+			rnicks = ns_malloc (sizeof(BotInfo));
 			strlcpy(rnicks->nick, data[i], MAXNICK);
 	
 			ircsnprintf(confbuf, CONFBUFSIZE, "RandomNicks/%s/User", data[i]);
@@ -748,7 +752,7 @@ int do_bots(CmdParams *cmdparams)
 {
 	int i;
 	lnode_t *node;
-	randomnicks *bots;
+	BotInfo *bots;
 	char *buf, *buf2;
 
 	SET_SEGV_LOCATION();
@@ -782,7 +786,7 @@ int do_bots(CmdParams *cmdparams)
 		buf2 = joinbuf(cmdparams->av, cmdparams->ac, 4);			
 		SetConf((void *)buf2, CFGSTR, buf);
 		ns_free (buf);
-		bots = ns_malloc (sizeof(randomnicks));
+		bots = ns_malloc (sizeof(BotInfo));
 		strlcpy(bots->nick, cmdparams->av[1], MAXNICK);
 		strlcpy(bots->user, cmdparams->av[2], MAXUSER);
 		strlcpy(bots->host, cmdparams->av[3], MAXHOST);
@@ -885,7 +889,7 @@ int do_cycle(CmdParams *cmdparams)
 int do_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 {
 	/* this is ok, its just to shut up fussy compilers */
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *rnn;
 
 	SET_SEGV_LOCATION();
@@ -936,7 +940,7 @@ int do_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 
 int CheckMonBotKill(char* nick)
 {
-	randomnicks *nickname = NULL;
+	BotInfo *nickname = NULL;
 	lnode_t *rnn;
 	lnode_t *mcnode;
 	Channel *c;
@@ -958,7 +962,10 @@ int CheckMonBotKill(char* nick)
 		rnn = list_next(nicks, rnn);
 	}
 	if (rnn != NULL) {
-		init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+		SecureServ.monbotptr = AddBot(nickname);
+		if (!SecureServ.monbotptr) {
+			return 1;
+		}
 		irc_cloakhost (find_bot(nickname->nick));
 	} else {
 		nlog (LOG_WARNING, "Warning, MonBot %s isn't available!", SecureServ.monbot);			

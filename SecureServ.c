@@ -1979,6 +1979,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					}
+					nlog(LOG_NORMAL, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
 					if(ve->iscustom) 
 						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
@@ -1993,6 +1994,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					else
 						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
+					nlog(LOG_NORMAL, LOG_MOD, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
 					break;
 				}
 			}
@@ -2004,6 +2006,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s ", ve->name);
 				else
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+				nlog(LOG_NORMAL, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 				break;
 			}
 		case ACT_WARN:
@@ -2019,9 +2022,11 @@ void gotpositive(User *u, virientry *ve, int type) {
 				else
 					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
 			}
+			nlog(LOG_NORMAL, LOG_MOD, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
 			break;
 		case ACT_NOTHING:
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
+			nlog(LOG_NORMAL, LOG_MOD, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
 			break;
 	}
 	/* send an update to secure.irc-chat.net */

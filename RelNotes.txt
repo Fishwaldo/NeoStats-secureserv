@@ -1,6 +1,8 @@
-SecureServ 0.9.3 Release Notes - 18/8/2003
+SecureServ 0.9.4 Release Notes - 20/8/2003
 ========================================
 THIS IS BETA SOFTWARE. YOU ARE WARNED.
+
+- Only BugFixes in this release, nothing new.
 
 - SecureServ at the moment does not prevent users that are joined to the
   help channel from joining other channels. This will be fixed in the next

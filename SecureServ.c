@@ -2188,6 +2188,7 @@ void datdownload(HTTP_Response *response) {
 		chanalert(s_SecureServ, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
 	} else {
 		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition Download Failed. %s", response->szHCode);
+		chanalert(s_SecureServ, "Virus Definition Download Failed. %s", response->szHCode);
 		return;
 	}
 	

@@ -22,6 +22,8 @@ SecureServ Module for NeoStats Changelog.
  - Fixed problem with pcre rebuilding tables when not necessary (M)
  - Added BOTECHO option so onjoin bots can echo all PMs without the other info that verbose on reports (M)
  - Ported to new optimised buffer safe string functions (M)
+ - Only compile in pcre if its not contained in NeoStats Core (F)
+ - if the IRCd we are using doesn't support SVSJOIN, use invite instead (LOL!) (F)
  
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

@@ -2034,7 +2034,11 @@ void gotpositive(User *u, virientry *ve, int type) {
 					else
 						globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
+#if defined(GOTSVSJOIN)
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
+#else 
+						sinvite(s_SecureServ, u->nick, SecureServ.HelpChan);
+#endif
 					}
 					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					ircsnprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
@@ -2042,6 +2046,9 @@ void gotpositive(User *u, virientry *ve, int type) {
 						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
 					else
 						prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+#if !defined(GOTSVSJOIN)
+						prefmsg(chan, s_SecureServ, "%s was invited to the Channel", u->nick);
+#endif
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);

@@ -178,10 +178,6 @@ int Helpers_Login(User *u, char **av, int ac) {
 			ud->data = (void *) helper;
 			u->moddata[SecureServ.modnum] = (void *)ud;
 			prefmsg(u->nick, s_SecureServ, "Login Successful");
-			if (IsChanMember(findchan(SecureServ.HelpChan), u) != 1) {
-				prefmsg(u->nick, s_SecureServ, "Joining you to the Help Channel");
-				ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
-			}
 			chanalert(s_SecureServ, "%s Successfully Logged in", u->nick);
 			if ((SecureServ.joinhelpchan == 1) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) != 1)) {
 #if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
@@ -192,6 +188,15 @@ int Helpers_Login(User *u, char **av, int ac) {
 #else
 		                sjoin_cmd(s_SecureServ, SecureServ.HelpChan);
 		                schmode_cmd(s_SecureServ, SecureServ.HelpChan, "+o", s_SecureServ);
+#endif
+			}
+			if (IsChanMember(findchan(SecureServ.HelpChan), u) != 1) {
+#if defined(GOTSVSJOIN)
+				prefmsg(u->nick, s_SecureServ, "Joining you to the Help Channel");
+				ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
+#else
+				prefmsg(u->nick, s_SecureServ, "Inviting you to the Help Channel");
+				sinvite_cmd(s_SecureServ, u->nick, SecureServ.HelpChan);
 #endif
 			}
 				                

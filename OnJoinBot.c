@@ -341,7 +341,7 @@ int ss_kick_chan(char **argv, int ac) {
 #endif
 				/* restore segvinmodules */
 				SET_SEGV_INMODULE("SecureServ");
-			
+				if (SecureServ.verbose) chanalert(s_SecureServ, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
 				return 1;
 			}
 			mn = list_next(monchans, mn);

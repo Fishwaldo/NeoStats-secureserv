@@ -789,6 +789,7 @@ static int Online(char **av, int ac)
 	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 10);
 	dns_lookup(HTTPHOST,  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.inited = 1;
+	LoadMonChans();
 
 	return 1;
 };

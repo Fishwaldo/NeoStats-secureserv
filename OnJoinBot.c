@@ -537,7 +537,6 @@ int OnJoinBotConf(void)
 		}
 		free(tmp);
 	}
-	LoadMonChans();
 	return 1;
 }
 

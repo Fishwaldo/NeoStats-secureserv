@@ -712,7 +712,6 @@ static int event_private(char **av, int ac)
 	User *u;
 
 	SET_SEGV_LOCATION();
-printf("private\n");
 	u = finduser(av[0]); 
 	if (!u) { 
 		nlog(LOG_WARNING, LOG_MOD, "Unable to find user %s (ts)", av[0]); 

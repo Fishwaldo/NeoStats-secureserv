@@ -199,6 +199,7 @@ int __BotMessage(char *origin, char **argv, int argc)
 		do_reload(u, argv, argc);
 		return 1;	
 	} else if (!strcasecmp(argv[1], "version")) {
+		/* leave this command un-documented. Its only for checking applications */
 		prefmsg(u->nick, s_SecureServ, "%d", SecureServ.viriversion);
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
@@ -1292,8 +1293,11 @@ static int ScanNick(char **av, int ac)
 	if (time(NULL) - u->TS > SecureServ.timedif) {
 		if (sd) {
 			sd->tsoutcount++;
-			if (sd->tsoutcount > 10) {
+			if (sd->tsoutcount >= 10) {
 				chanalert(s_SecureServ, "Hrm. Is the time on %s correct? There are a lot of Netsplit Nicks", u->server->name);
+				globops(s_SecureServ, "Hrm. TS on %s seems to be incorrect. You should fix this ASAP.", u->server->name);
+				/* reset so we don't blast all the time */
+				sd->tsoutcount = 0;
 			}
 		}
 		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning %d > %d", av[0], (int)(time(NULL) - u->TS), SecureServ.timedif);

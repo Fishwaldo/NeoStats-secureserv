@@ -171,7 +171,7 @@ void GotHTTPAddress(char *data, adns_answer *a)
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
 				AutoUpdate();
 			} else {
-				chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
+				if (SecureServ.autoupgrade == 1) chanalert(s_SecureServ, "No Valid Username/Password configured for update Checking. Aborting Update Check");
 			}
 		} else {
 			chanalert(s_SecureServ, "DNS error Checking for Updates: %s", adns_strerror(ri));

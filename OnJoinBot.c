@@ -142,6 +142,29 @@ static randomnicks * GetNewBot(int resetflag)
 	lnode_t *rnn;
 	int randno, curno, i;
 
+	if(list_count(nicks) == 0) {
+		/* No bots available */
+		nlog(LOG_DEBUG1, LOG_MOD, "No bots available, giving up");
+		return NULL;
+	}
+
+	if(list_count(nicks) == 1) {
+		/* If only one bot, no need for random (which crashes with 1 anyway) 
+		 * so just return the single bot */
+		rnn = list_first(nicks);
+		if(rnn != NULL) {
+			nickname = lnode_get(rnn);
+			/* make sure no one is online with this nickname */
+			if (finduser(nickname->nick) != NULL) {
+				nlog(LOG_DEBUG1, LOG_MOD, "%s is online, can't use that nick", nickname->nick);
+				return NULL;
+			}
+			nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
+			return nickname;
+		}
+		return NULL;
+	}
+
 	for(i = 0; i < 5; i++) {
 		curno = 1;
 		randno = hrand(list_count(nicks)-1, 0 );

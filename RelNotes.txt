@@ -11,20 +11,9 @@ TODO List.
   messages in your services channel if SecureServ detects NickFloods, but it
   wont actually do anything (yet)
 
-- FloodDetection on Channels should be more Accurate now (But it still
-  doesn't actually take action)
-
-- Those people that had problems with libpcre in the 0.9 version should be
-  able to compile and use this version with no problems.
-
 - If you wish to take advantage of updated Definition files, you *MUST*
   apply for a account at http://secure.irc-chat.net/ (currently 80
   Signatures)
 
-- If you have a http://secure.irc-chat.net account and have entered your
-  username and password into SecureServ, AutoUpdate now functions. It
-  automatically downloads new dat files every 24 hours. 
-
-- Read the README file Please. It contains VERY important information. Read
-  it again if you have already read it, there are new options you need to be
-  aware of. 
+- New Set Options have been Implemented. Read the Manual for updated
+  information. 

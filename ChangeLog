@@ -6,6 +6,7 @@ TrojanServ Module for NeoStats Changelog.
  - Fixed DoOnJoin Setting. 
  - Added new option to not join Private Channels
  - fixed a bug with trying to signoff virtual bots after they had already been signed off!
+ - Fixed a bug with IRCd's that use Tokens, and Version's not getting checked. Reported by Tank. 
 
 0.9.1 - Fish - 25 May, 2003
  - Onjoin bot wasn't checking the last Onjoin Definition. Fixed. 

@@ -18,16 +18,16 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.25 2003/06/03 14:22:57 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.26 2003/06/04 12:51:17 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
 #include <fnmatch.h>
 #include <pcre.h>
+#include "stats.h"
 #include "dl.h"
 #include "log.h"
-#include "stats.h"
 #include "conf.h"
 #include "SecureServ.h"
 #include "http.h"
@@ -67,14 +67,13 @@ int new_m_version(char *origin, char **av, int ac) {
 	snumeric_cmd(351,origin, "Module SecureServ Loaded, Version: %s %s %s",my_info[0].module_version,tsversion_date,tsversion_time);
 	return 0;
 }
-
 Functions my_fn_list[] = {
 	{ MSG_VERSION,	new_m_version,	1 },
 #ifdef HAVE_TOKEN_SUP
 	{ TOK_VERSION,	new_m_version,	1 },
 #endif
 	{ MSG_NOTICE,   check_version_reply, 1},
-#ifdef HAVE_TOKEN_SUB
+#ifdef HAVE_TOKEN_SUP
 	{ TOK_NOTICE,   check_version_reply, 1},
 #endif
 	{ NULL,		NULL,		0 }

@@ -460,6 +460,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>DOPRIVCHAN</para>
+      </listitem>
+
+      <listitem>
         <para>MULTICHECK</para>
       </listitem>
 
@@ -575,12 +579,25 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>This setting decides if SecureServ should perform OnJoin Virus
       Checking. When enabled, every CYCLETIME Seconds, SecureServ will create
       a psydo user and join a random channel. When this setting is off,
-      SecureServ will not check random channels for OnJoin Virus&#39;s.
-      </para>
+      SecureServ will not check random channels for OnJoin Virus&#39;s.</para>
 
       <para>To Change this Setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set DOONJOIN &#60;ON/OFF&#62;</screen>
+    </sect2>
+
+    <sect2>
+      <title>DOPRIVCHAN Setting</title>
+
+      <para>This setting controls if SecureServ&#39;s will check Private
+      Channels. Private Channels are defined by the Channel Modes +I, +k +s +p
+      or +O. Enabling this option forces SecureServ to check these channels.
+      Disabling this feature means SecureServ will never check these channels
+      unless forced via a /msg SecureServ check &#60;chan&#62;</para>
+
+      <para>To Change this Setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set DOPRIVCHAN &#60;ON/OFF&#62;</screen>
     </sect2>
 
     <sect2>
@@ -647,7 +664,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       to be performing a &#34;nickflood&#34; and will akill the user from the
       network. This Setting Control how many nick changes in a 10 second
       period the user performs. The default is 5, which should be suitable for
-      most users. </para>
+      most users.</para>
 
       <para>To Change this Setting, issue the following Command:</para>
 

@@ -123,7 +123,7 @@ restartchans:
 		}
 		/* if we are already monitoring with a monbot, don't join */
 		if (list_find(monchans, c->name, chkmonchan)) {
-			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot");
+			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot",c->name);
 			goto restartchans;
 		}
 		strncpy(SecureServ.lastchan, c->name, CHANLEN);

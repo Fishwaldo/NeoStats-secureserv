@@ -1018,36 +1018,36 @@ void do_set(User *u, char **av, int ac) {
 		SetConf((void *)av[3], CFGSTR, "HelpChan");
 	} else if (!strcasecmp(av[2], "LIST")) {
 		prefmsg(u->nick, s_SecureServ, "Current SecureServ Settings:");
-		prefmsg(u->nick, s_SecureServ, "SplitTime: %d", SecureServ.timedif);
-		prefmsg(u->nick, s_SecureServ, "Version Checking: %s", SecureServ.doscan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Multi Checking: %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Channel Flood Protection: %s", SecureServ.FloodProt ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "SPLITTIME:    %d", SecureServ.timedif);
+		prefmsg(u->nick, s_SecureServ, "VERSION:      %s", SecureServ.doscan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "MULTICHECK:   %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "FLOODPROT:    %s", SecureServ.FloodProt ? "Enabled" : "Disabled");
 		if (SecureServ.FloodProt) {
-			prefmsg(u->nick, s_SecureServ, "Sample Threshold: %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
-			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Active For %d seconds", SecureServ.closechantime);
-			prefmsg(u->nick, s_SecureServ, "Channel Flood Protection Key: %s", SecureServ.ChanKey);
+			prefmsg(u->nick, s_SecureServ, "SAMPLETIME:   %d/%d Seconds", SecureServ.JoinThreshold, SecureServ.sampletime);
+			prefmsg(u->nick, s_SecureServ, "CHANLOCKTIME: %d seconds", SecureServ.closechantime);
+			prefmsg(u->nick, s_SecureServ, "CHANKEY:      %s", SecureServ.ChanKey);
 		}
-		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Check Private Channels?: %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Monitor bot to use: %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
-		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
-		prefmsg(u->nick, s_SecureServ, "NickFlood Count is %d in 10 seconds", SecureServ.nfcount);
-		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
-		prefmsg(u->nick, s_SecureServ, "Update Username and Password are: %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
+		prefmsg(u->nick, s_SecureServ, "DOONJOIN:     %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "DOPRIVCHAN:   %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
+		prefmsg(u->nick, s_SecureServ, "AKILL:        %s", SecureServ.doakill ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "AKILLTIME:    %d", SecureServ.akilltime);
+		prefmsg(u->nick, s_SecureServ, "NFCOUNT       %d in 10 seconds", SecureServ.nfcount);
+		prefmsg(u->nick, s_SecureServ, "DOJOIN:       %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "VERBOSE:      %s", SecureServ.verbose ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "CYCLETIME:    %d", SecureServ.stayinchantime);
+		prefmsg(u->nick, s_SecureServ, "UPDATEINFO:   %s", strlen(SecureServ.updateuname) > 0 ? "Set" : "Not Set");
 		if ((UserLevel(u) > 185) & (strlen(SecureServ.updateuname))) {
 			prefmsg(u->nick, s_SecureServ, "Update Username is %s, Password is %s", SecureServ.updateuname, SecureServ.updatepw);
 		}
-		prefmsg(u->nick, s_SecureServ, "AutoUpdate: %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Reporting: %s", SecureServ.report ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Logout Helpers if they set away: %s", SecureServ.signoutaway ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "SecureServ will join the Help Channel: %s", SecureServ.joinhelpchan ? "Enabled" : "Disabled");
-		prefmsg(u->nick, s_SecureServ, "Signon Message: %s", SecureServ.signonscanmsg);
-		prefmsg(u->nick, s_SecureServ, "Akill Information Message: %s", SecureServ.akillinfo);
-		prefmsg(u->nick, s_SecureServ, "No Help Available Message: %s", SecureServ.nohelp);
-		prefmsg(u->nick, s_SecureServ, "Virus Help Channel: %s", SecureServ.HelpChan);
+		prefmsg(u->nick, s_SecureServ, "AUTOUPDATE:   %s", SecureServ.autoupgrade ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "REPORT:       %s", SecureServ.report ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "AUTOSIGNOUT:  %s", SecureServ.signoutaway ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "JOINHELPCHAN: %s", SecureServ.joinhelpchan ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "SIGNONMSG:    %s", SecureServ.signonscanmsg);
+		prefmsg(u->nick, s_SecureServ, "AKILLMSG:     %s", SecureServ.akillinfo);
+		prefmsg(u->nick, s_SecureServ, "NOHELPMSG:    %s", SecureServ.nohelp);
+		prefmsg(u->nick, s_SecureServ, "HELPCHAN:     %s", SecureServ.HelpChan);
 		prefmsg(u->nick, s_SecureServ, "End Of List");
 		return;
 	} else {

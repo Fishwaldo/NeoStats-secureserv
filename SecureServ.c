@@ -58,7 +58,7 @@ static void save_exempts();
 int AutoUpdate();
 int CleanNickFlood();
 
-static char url_buf[URL_BUF_SIZE];
+static char ss_buf[SS_BUF_SIZE];
 
 ModuleInfo __module_info = {
 	"SecureServ",
@@ -91,7 +91,6 @@ Functions __module_functions[] = {
 int __Bot_Message(char *origin, char **argv, int argc)
 {
 	User *u;
-	char url[255];
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 	randomnicks *bots;
@@ -243,19 +242,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				exempts = lnode_get(node);
 				switch (exempts->server) {
 					case 0:
-						strncpy(url, "HostName", 255);
+						strncpy(ss_buf, "HostName", SS_BUF_SIZE);
 						break;
 					case 1:
-						strncpy(url, "Server", 255);
+						strncpy(ss_buf, "Server", SS_BUF_SIZE);
 						break;
 					case 2:
-						strncpy(url, "Channel", 255);
+						strncpy(ss_buf, "Channel", SS_BUF_SIZE);
 						break;
 					default:
-						strncpy(url, "Unknown", 255);
+						strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
 						break;
 				}
-				prefmsg(u->nick, s_SecureServ, "%d) %s (%s) Added by %s for %s", i, exempts->host, url, exempts->who, exempts->reason);
+				prefmsg(u->nick, s_SecureServ, "%d) %s (%s) Added by %s for %s", i, exempts->host, ss_buf, exempts->who, exempts->reason);
 				++i;
 				node = list_next(exempt, node);
 			}
@@ -292,20 +291,20 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			list_append(exempt, node);
 			switch (exempts->server) {
 				case 0:
-					strncpy(url, "HostName", 255);
+					strncpy(ss_buf, "HostName", SS_BUF_SIZE);
 					break;
 				case 1:
-					strncpy(url, "Server", 255);
+					strncpy(ss_buf, "Server", SS_BUF_SIZE);
 					break;
 				case 2:
-					strncpy(url, "Channel", 255);
+					strncpy(ss_buf, "Channel", SS_BUF_SIZE);
 					break;
 				default:
-					strncpy(url, "Unknown", 255);
+					strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
 					break;
 			}
-			prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, url);
-			chanalert(s_SecureServ, "%s added %s (%s) exception to list", u->nick, exempts->host, url);
+			prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, ss_buf);
+			chanalert(s_SecureServ, "%s added %s (%s) exception to list", u->nick, exempts->host, ss_buf);
 			save_exempts();
 			return 1;
 		} else if (!strcasecmp(argv[2], "DEL")) {
@@ -323,20 +322,20 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						list_delete(exempt, node);
 						switch (exempts->server) {
 							case 0:
-								strncpy(url, "HostName", 255);
+								strncpy(ss_buf, "HostName", SS_BUF_SIZE);
 								break;
 							case 1:
-								strncpy(url, "Server", 255);
+								strncpy(ss_buf, "Server", SS_BUF_SIZE);
 								break;
 							case 2:
-								strncpy(url, "Channel", 255);
+								strncpy(ss_buf, "Channel", SS_BUF_SIZE);
 								break;
 							default:
-								strncpy(url, "Unknown", 255);
+								strncpy(ss_buf, "Unknown", SS_BUF_SIZE);
 								break;
 						}
-						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, url);
-						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, url);
+						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, ss_buf);
+						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, ss_buf);
 						buf = malloc(255);
 						snprintf(buf, 255, "Exempt/%s", exempts->host);
 						DelConf(buf);
@@ -527,8 +526,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			chanalert(s_SecureServ, "%s tried to update, but Permission was denied", u->nick);
 			return -1;
 		}
-		snprintf(url, 255, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(url, 2, HFLAG_NONE, datdownload);
+		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 		chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	} else {
@@ -1178,7 +1177,6 @@ int Online(char **av, int ac) {
 void save_exempts() {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
-	char path[255];
 	int i;
 
 	node = list_first(exempt);
@@ -1186,12 +1184,12 @@ void save_exempts() {
 	while (node) {
 		exempts = lnode_get(node);
 		nlog(LOG_DEBUG1, LOG_MOD, "Saving Exempt List %s", exempts->host);
-		snprintf(path, 255, "Exempt/%s/Who", exempts->host);
-		SetConf((void *)exempts->who, CFGSTR, path);
-		snprintf(path, 255, "Exempt/%s/Reason", exempts->host);
-		SetConf((void *)exempts->reason, CFGSTR, path);
-		snprintf(path, 255, "Exempt/%s/Server", exempts->host);
-		SetConf((void *)exempts->server, CFGINT, path);
+		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Who", exempts->host);
+		SetConf((void *)exempts->who, CFGSTR, ss_buf);
+		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Reason", exempts->host);
+		SetConf((void *)exempts->reason, CFGSTR, ss_buf);
+		snprintf(ss_buf, SS_BUF_SIZE, "Exempt/%s/Server", exempts->host);
+		SetConf((void *)exempts->server, CFGINT, ss_buf);
 		node = list_next(exempt, node);
 	}
 }
@@ -2152,8 +2150,8 @@ void DownLoadDat()
 	if (SecureServ.doUpdate == 1) {
 		del_mod_timer("DownLoadNewDat");
 		SecureServ.doUpdate = 2;
-		snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(url_buf, 2, HFLAG_NONE, datdownload);
+		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILE, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 	} 
 	return;
 }
@@ -2227,11 +2225,11 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 			SecureServ.sendtohost.sin_family = AF_INET;
 			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
 
-			strncpy(SecureServ.updateurl, url, URL_BUF_SIZE);
+			strncpy(SecureServ.updateurl, url, SS_BUF_SIZE);
 			nlog(LOG_NORMAL, LOG_MOD, "Got DNS for Update Server: %s", url);
 			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
-				snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-				http_request(url_buf, 2, HFLAG_NONE, datver); 
+				snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", url, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+				http_request(ss_buf, 2, HFLAG_NONE, datver); 
 				/* add a timer for autoupdate. If its disabled, doesn't do anything anyway */
 				add_mod_timer("AutoUpdate", "AutoUpdateDat", __module_info.module_name, 86400);
 			} else {
@@ -2250,8 +2248,8 @@ static void GotHTTPAddress(char *data, adns_answer *a) {
 int AutoUpdate() 
 {
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
-		snprintf(url_buf, URL_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
-		http_request(url_buf, 2, HFLAG_NONE, datver); 
+		snprintf(ss_buf, SS_BUF_SIZE, "http://%s%s?u=%s&p=%s", SecureServ.updateurl, DATFILEVER, SecureServ.updateuname, SecureServ.updatepw);
+		http_request(ss_buf, 2, HFLAG_NONE, datver); 
 	}
 	return 0;
 }	

@@ -20,14 +20,4 @@
 /http.h eol=lf
 /install-sh -text
 /modconfig.h.in -text
-pcre/COPYING -text
-pcre/Makefile.in -text
-pcre/README -text
-pcre/dftables.c -text
-pcre/get.c -text
-pcre/internal.h -text
-pcre/maketables.c -text
-pcre/pcre.c -text
-pcre/pcre.in -text
-pcre/study.c -text
 /viri.dat -text

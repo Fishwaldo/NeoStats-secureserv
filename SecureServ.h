@@ -61,6 +61,7 @@ typedef struct virientry {
 #define DET_IDENT 3
 #define DET_REALNAME 4
 #define DET_CHAN 5
+#define DET_CHANMSG 6
 #define DET_BUILTIN 10
 
 /* Action List */
@@ -166,7 +167,7 @@ int CheckOnjoinBotKick(char **argv, int ac);
 int ScanFizzer(User *u);
 int ScanChan(User* u, Chans *c);
 int ScanUser(User *u, unsigned flags);
-int ScanMsg(User *u, char* buf);
+int ScanMsg(User *u, char* buf, int chanmsg);
 int ScanCTCP(User *u, char* buf);
 int do_list(User *u, char **av, int ac);
 int do_reload(User *u, char **av, int ac);

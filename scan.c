@@ -265,6 +265,9 @@ int do_list(User *u, char **av, int ac)
 				case DET_BUILTIN:
 					strlcpy(type, "Built-In", LOCALBUFSIZE);
 					break;
+				case DET_CHANMSG:
+					strlcpy(type, "Channel Message", LOCALBUFSIZE);
+					break;
 				default:
 					ircsnprintf(type, LOCALBUFSIZE, "Unknown(%d)", ve->dettype);
 			}
@@ -419,7 +422,7 @@ int ScanCTCP(User *u, char* buf)
 	return positive;
 }
 
-int ScanMsg(User *u, char* buf) 
+int ScanMsg(User *u, char* buf, int chanmsg) 
 {
 	int positive = 0;
 	lnode_t *node;
@@ -432,20 +435,30 @@ int ScanMsg(User *u, char* buf)
 	if (node) {
 		do {
 			viridetails = lnode_get(node);
-			if (((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20))) {
-				SecureServ.trigcounts[DET_MSG]++;
-				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
-				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
-				if (rc < -1) {
-					nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
-				} else if (rc > -1) {					
-					gotpositive(u, viridetails, DET_MSG);
-					positive++;
-					if (SecureServ.breakorcont != 0) {
-						return 1;
-					}
+			rc = -1;
+			if (chanmsg == 0) {
+				if (((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20))) {
+					SecureServ.trigcounts[DET_MSG]++;
+					nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
+					rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+				}
+			} else {
+				if (viridetails->dettype == DET_CHANMSG) {
+					SecureServ.trigcounts[DET_CHANMSG]++;
+					nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Channel Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
+					rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
 				}
 			}
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
+			} else if (rc > -1) {					
+				gotpositive(u, viridetails, chanmsg ? DET_CHANMSG : DET_MSG);
+				positive++;
+				if (SecureServ.breakorcont != 0) {
+					return 1;
+				}
+			}
+			
 		} while ((node = list_next(viri, node)) != NULL);
 	}
 	return positive;

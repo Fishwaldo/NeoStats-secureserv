@@ -346,7 +346,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 		chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
 	}
 
-	ScanMsg(u, buf);
+	ScanMsg(u, buf, 0);
 	free(buf);
 }				
 

@@ -199,6 +199,24 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	return 1;
 }
 
+int __ChanMessage(char *origin, char **argv, int argc) {
+	char *buf;
+	User *u;
+	
+	/* first, if its the services channel, just ignore it */
+	if (!strcasecmp(argv[0], me.chan)) {
+		return -1;
+	}
+	/* otherwise, just pass it to the ScanMsg function */
+	u = finduser(origin);
+	if (u) {
+		buf = joinbuf(argv, argc, 1);
+		ScanMsg(u, buf, 1);
+		free(buf);
+	}
+	return 1;
+
+}
 static int do_set(User *u, char **av, int ac) 
 {
 	int i, j;
@@ -788,6 +806,9 @@ static int do_status(User *u, char **av, int ac)
 	prefmsg(u->nick, s_SecureServ, "ChannelNames Checked: %d", SecureServ.trigcounts[DET_CHAN]);
 	prefmsg(u->nick, s_SecureServ, "ChannelNames Acted on: %d", SecureServ.actioncounts[DET_CHAN]);
 	prefmsg(u->nick, s_SecureServ, "ChannelName Definitions: %d", SecureServ.definitions[DET_CHAN]);
+	prefmsg(u->nick, s_SecureServ, "Channel Messages Checked: %d", SecureServ.trigcounts[DET_CHANMSG]);
+	prefmsg(u->nick, s_SecureServ, "Channel Messages Acted on: %d", SecureServ.actioncounts[DET_CHANMSG]);
+	prefmsg(u->nick, s_SecureServ, "Channel Messages Definitions: %d", SecureServ.definitions[DET_CHANMSG]);
 	prefmsg(u->nick, s_SecureServ, "Built-In Checks Run: %d", SecureServ.actioncounts[DET_BUILTIN]);
 	prefmsg(u->nick, s_SecureServ, "Built-In Checks Acted on: %d", SecureServ.actioncounts[DET_BUILTIN]);
 	prefmsg(u->nick, s_SecureServ, "Built-In Functions: %d", SecureServ.definitions[DET_BUILTIN]);

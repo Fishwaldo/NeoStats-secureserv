@@ -24,7 +24,6 @@
 
 #include "modconfig.h"
 #include <stdio.h>
-#include <fnmatch.h>
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #else
@@ -143,13 +142,13 @@ int SS_IsUserExempt(User *u)
 		exempts = lnode_get(node);
 		if (exempts->server == 1) {
 			/* match a server */
-			if (fnmatch(exempts->host, u->server->name, 0) == 0) {
+			if (match(exempts->host, u->server->name)) {
 				nlog(LOG_DEBUG1, LOG_MOD, "User %s exempt. Matched server entry %s in Exemptions", u->nick, exempts->host);
 				return 1;
 			}
 		} else if (exempts->server == 0) {
 			/* match a hostname */
-			if (fnmatch(exempts->host, u->hostname, 0) == 0) {
+			if (match(exempts->host, u->hostname)) {
 				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: User %s is exempt. Matched Host Entry %s in Exceptions", u->nick, exempts->host);
 				return 1;
 			}
@@ -176,7 +175,7 @@ int SS_IsChanExempt(Chans *c)
 		exempts = lnode_get(node);
 		if (exempts->server == 2) {
 			/* match a channel */
-			if (fnmatch(exempts->host, c->name, 0) == 0) {
+			if (match(exempts->host, c->name)) {
 				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Channel %s exempt. Matched Channel entry %s in Exemptions", c->name, exempts->host);
 				return 1;
 			}

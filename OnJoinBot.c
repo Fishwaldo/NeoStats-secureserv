@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.17 2003/06/03 14:22:57 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.18 2003/07/03 15:57:36 fishwaldo Exp $
 */
 
 
@@ -159,7 +159,7 @@ restartnicks:
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
-	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ") == -1) {
+	if (init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+", "SecureServ") == -1) {
 		/* hu? Nick was in use. How is that possible? */
 		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		strncpy(SecureServ.lastchan, "\0", MAXNICK);

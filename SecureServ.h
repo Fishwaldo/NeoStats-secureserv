@@ -243,7 +243,8 @@ extern const char *ts_help_set_cycletime[];
 extern const char *ts_help_set_monbot[];
 extern const char *ts_help_set_autoupdate[];
 extern const char *ts_help_set_autoupdatetime[];
-extern const char *ts_help_set_updateinfo[];
+extern const char *ts_help_set_updateuser[];
+extern const char *ts_help_set_updatepass[];
 extern const char *ts_help_set_onjoinbotmodes[];
 
 extern char onjoinbot_modes[MODESIZE];

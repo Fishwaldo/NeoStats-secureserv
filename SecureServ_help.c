@@ -179,7 +179,7 @@ const char *ts_help_helpers[] = {
 const char *ts_help_status[] = {
 	"Syntax: \2STATUS\2",
 	"",
-	"Provide you with the Current Status of SecureServ.",
+	"Provide you with the current status of SecureServ.",
 	NULL
 };
 
@@ -206,97 +206,124 @@ const char *ts_help_reload[] = {
 	NULL
 };
 
-const char *ts_help_set_updateinfo[] = {
-	"\2UPDATEINFO <username> <password>\2",
-	" - Sets the Username and Password required for updating the SecureServ",
-	" Definitions file. See the Readme file for more info",
+const char *ts_help_set_updateuser[] = {
+	"\2UPDATEUSER <username>\2",
+	"User name for updating the SecureServ definitions file.",
+	"See the Readme file for more info",
+	NULL
+};
+
+const char *ts_help_set_updatepass[] = {
+	"\2UPDATEPASS <password>\2",
+	"Password for updating the SecureServ definitions file.",
+	"See the Readme file for more info",
 	NULL
 };
 
 const char *ts_help_set_helpers[] = {
-	"\2HELPERS <ON|OFF>\2 - ",
+	"\2HELPERS <ON|OFF>\2",
+	"Whether to enable the helper system for infected users",
 	NULL
 };
 
 const char *ts_help_set_version[] = {
-	"\2VERSION <on/off>\2 - Whether to use CTCP version checking",
+	"\2VERSION <ON|OFF>\2",
+	"Whether to use CTCP version checking",
 	NULL
 };
 const char *ts_help_set_signonmsg[] = {
-	"\2SIGNONMSG <message>\2 - Set the message sent to users when they connect and CTCP version checking is enabled",
+	"\2SIGNONMSG <message>\2",
+	"Message sent to users when they connect and CTCP version checking is enabled",
 	NULL
 };
 const char *ts_help_set_botquitmsg[] = {
-	"\2BOTQUITMSG <message>\2 - Set the message sent when onjoin bots quit",
+	"\2BOTQUITMSG <message>\2",
+	"Message sent when onjoin bots quit",
 	NULL
 };
 const char *ts_help_set_akillmsg[] = {
-	"\2AKILLMSG <message>\2 - Set the message sent to users when they are akilled",
+	"\2AKILLMSG <message>\2",
+	"Message sent to users when they are akilled",
 	NULL
 };
 const char *ts_help_set_nohelpmsg[] = {
-	"\2NOHELPMSG <message>\2 - Set the message sent to users when there are no helpers logged in",
+	"\2NOHELPMSG <message>\2",
+	"Message sent to users when there are no helpers logged in",
 	NULL
 };
 const char *ts_help_set_helpchan[] = {
-	"\2HELPCHAN <channel>\2 - Set the channel that infected users are joined to if there are helpers logged in",
+	"\2HELPCHAN <channel>\2",
+	"Set the channel that infected users are joined to if there are helpers logged in",
 	NULL
 };
 const char *ts_help_set_autosignout[] = {
-	"\2AUTOSIGNOUT <on/off>\2 - Automatically sign out helpers if they set away.",
+	"\2AUTOSIGNOUT <ON|OFF>\2",
+	"Automatically sign out helpers if they set away.",
 	NULL
 };
 const char *ts_help_set_joinhelpchan[] = {
-	"\2JOINHELPCHAN <on/off>\2	- Should SecureServ join the help channel when there is at least one helper logged in",
+	"\2JOINHELPCHAN <ON|OFF>\2",
+	"Whether SecureServ joins the help channel when there is at least one helper logged in",
 	NULL
 };
 const char *ts_help_set_report[] = {
-	"\2REPORT <on/off>\2 - Enable Reporting to Secure.irc-chat.net of infected users.",
+	"\2REPORT <ON|OFF>\2",
+	"Enable Reporting to Secure.irc-chat.net of infected users.",
 	NULL
 };
 const char *ts_help_set_doprivchan[] = {
-	"\2DOPRIVCHAN <on/off>\2 - Whether onjoin bots scan private channels",
+	"\2DOPRIVCHAN <ON|OFF>\2",
+	"Whether onjoin bots scan private channels",
 	NULL
 };
 const char *ts_help_set_checkfizzer[] = {
-	"\2CHECKFIZZER <on/off>\2 - Enable Fizzer Checking. Only required if your network is affected by Fizzer",
+	"\2CHECKFIZZER <ON|OFF>\2",
+	"Enable Fizzer Checking. Only required if your network is affected by Fizzer",
 	NULL
 };
 const char *ts_help_set_multicheck[] = {
-	"\2MULTICHECK <on/off>\2 - Makes SecureServ check all Patterns when an infected user is found.",
-	"Please Read the Readme file for important Performance information",
+	"\2MULTICHECK <ON|OFF>\2",
+	"Makes SecureServ check all patterns when an infected user is found.",
+	"Please read the Readme file for important performance information",
 	NULL
 };
 const char *ts_help_set_akill[] = {
-	"\2AKILL <on/off>\2 - Set whether SecureServ will akill or send a warning message to operators",
+	"\2AKILL <ON|OFF>\2",
+	"Whether SecureServ will akill or send a warning message to operators",
 	NULL
 };
 const char *ts_help_set_akilltime[] = {
-	"\2AKILLTIME <seconds>\2 - Sets the time an AKILL will last for.",
+	"\2AKILLTIME <seconds>\2",
+	"Time an AKILL will last for.",
 	NULL
 };
 const char *ts_help_set_dojoin[] = {
-	"\2SVSJOIN <on/off>\2 - Whether SecureServ will issue a SVSJOIN. If disabled, the user is akilled instead",
+	"\2SVSJOIN <ON|OFF>\2",
+	"Whether SecureServ will issue a SVSJOIN. If disabled, the user is akilled instead",
 	NULL
 };
 const char *ts_help_set_doonjoin[] = {
-	"\2DOONJOIN <on/off>\2 - Enables on join virus checking.",
+	"\2DOONJOIN <ON|OFF>\2",
+	"Whether to do on join virus checking.",
 	NULL
 };
 const char *ts_help_set_botecho[] = {
-	"\2BOTECHO <on/off>\2 - Make the onjoin bots echo messages received to the services channel regardless of the verbose setting",
+	"\2BOTECHO <ON|OFF>\2",
+	"Make the onjoin bots echo messages received to the services channel regardless of the verbose setting",
 	NULL
 };
 const char *ts_help_set_verbose[] = {
-	"\2VERBOSE <on/off>\2 - Enable verbose mode. Prepare to be flooded!",
+	"\2VERBOSE <ON|OFF>\2",
+	"Enable verbose mode. Prepare to be flooded!",
 	NULL
 };
 const char *ts_help_set_monchancycle[] = {
-	"\2MONCHANCYCLE <on/off>\2 - Should the monitor bot cycle the channels occasionally",
+	"\2MONCHANCYCLE <ON|OFF>\2",
+	"Should the monitor bot cycle the channels occasionally",
 	NULL
 };
 const char *ts_help_set_treatchanmsgaspm[] = {
-	"\2TREATCHANMSGASPM <on/off>\2",
+	"\2TREATCHANMSGASPM <ON|OFF>\2",
 	"Make SecureServ check all channel messages against the virus signatures listed only for PM",
 	"This option will consume \2LOTS\2 of CPU time. You shouldn't need to enable this under normal",
 	"circumstances as the virus database has a seperate list of signatures for channels",
@@ -304,30 +331,34 @@ const char *ts_help_set_treatchanmsgaspm[] = {
 };
 const char *ts_help_set_monchancycletime[] = {
 	"\2MONCHANCYCLETIME <seconds>\2 ",
-	"Set how often the monitor bot cycles a single channel",
+	"How often the monitor bot cycles a single channel",
 	NULL
 };
 const char *ts_help_set_cycletime[] = {
-	"\2CYCLETIME <seconds>\2 - Set how often SecureServ checks new channels for infections.",
-	"See the Readme file for recommended Settings",
+	"\2CYCLETIME <seconds>\2",
+	"How often SecureServ checks new channels for infections.",
+	"See the Readme file for recommended settings",
 	NULL
 };
 const char *ts_help_set_monbot[] = {
-	"\2MONBOT <bot>\2 - Assign <bot> (from /msg SecureServ bots list) used for channel monitoring",
+	"\2MONBOT <bot>\2",
+	"Assign <bot> (from /msg SecureServ bots list) used for channel monitoring",
 	NULL
 };
 const char *ts_help_set_autoupdate[] = {
-	"\2AUTOUPDATE <on/off>\2 - Should SecureServ automatically update the definitions file daily, if required?",
+	"\2AUTOUPDATE <ON|OFF>\2",
+	"Should SecureServ automatically update the definitions file daily, if required?",
 	NULL
 };
 const char *ts_help_set_autoupdatetime[] = {
-	"\2AUTOUPDATETIME <seconds>\2 - How often SecureServ automatically checks for update if AUTOUPDATE is enabled",
+	"\2AUTOUPDATETIME <seconds>\2",
+	"How often SecureServ automatically checks for update if AUTOUPDATE is enabled",
 	"Min - 3600 (1 Hour) , MAX - 172800 (2 days) , Default is 7200 seconds (2 hours)",
 	NULL
 };
 const char *ts_help_set_onjoinbotmodes[] = {
 	"\2ONJOINBOTMODES <modes>\2",
-	"Sets the modes used by onjoin bots. <modes> should be a valid mode string as",
-	"you would use on IRC, e.g. -x. We recommoned that this option is not used.",
+	"Modes used by onjoin bots. <modes> should be a valid mode string as used on",
+	"IRC, e.g. -x. We recommend that this option is not used.",
 	NULL
 };

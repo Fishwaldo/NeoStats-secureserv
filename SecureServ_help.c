@@ -362,3 +362,8 @@ const char *ts_help_set_onjoinbotmodes[] = {
 	"IRC, e.g. -x. We recommend that this option is not used.",
 	NULL
 };
+const char *ts_help_set_exclusions[] = {
+	"\2EXCLUSIONS <ON|OFF>\2",
+	"Use global exclusion list in addition to local exclusion list",
+	NULL
+};

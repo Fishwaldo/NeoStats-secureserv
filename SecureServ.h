@@ -246,6 +246,7 @@ extern const char *ts_help_set_autoupdatetime[];
 extern const char *ts_help_set_updateuser[];
 extern const char *ts_help_set_updatepass[];
 extern const char *ts_help_set_onjoinbotmodes[];
+extern const char *ts_help_set_exclusions[];
 
 extern char onjoinbot_modes[MODESIZE];
 

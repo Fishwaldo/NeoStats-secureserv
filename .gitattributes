@@ -14,7 +14,6 @@
 /SecureServ_help.c eol=lf
 /configure -text
 /configure.in -text
-/exempts.c -text
 /html.css -text
 /install-sh -text
 /modconfig.h.in -text

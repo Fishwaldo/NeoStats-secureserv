@@ -156,13 +156,13 @@ static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	} else if (!strcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-		irc_chanalert (ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
+		command_report(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 1;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
 	} else if ((!strcasecmp(cmdparams->av[1], "OFF"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
-		irc_chanalert (ss_bot, "%s has disabled channel message checking", cmdparams->source);
+		command_report(ss_bot, "%s has disabled channel message checking", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 0;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;

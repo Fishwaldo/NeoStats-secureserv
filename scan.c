@@ -265,7 +265,7 @@ int ss_cmd_reload(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
-   	irc_chanalert (ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
+   	command_report(ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
 	load_dat();
 	return NS_SUCCESS;
 }

@@ -378,7 +378,6 @@ static int CheckChan(Client *u, char *requestchan)
 	}
 	irc_cloakhost (ojbotptr);
 	irc_join (ojbotptr, c->name, 0);
-
 	irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->name);
 	irc_prefmsg (ss_bot, u, "Scanning %s with %s", c->name, nickname->nick);
 	return 1;
@@ -718,7 +717,7 @@ int ss_cmd_bots_list(CmdParams *cmdparams)
  		node = list_next(nicks, node);
 	}
 	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
-	irc_chanalert (ss_bot, "%s requested Bot List", cmdparams->source->name);
+	command_report(ss_bot, "%s requested Bot List", cmdparams->source->name);
 	return NS_SUCCESS;
 }
 
@@ -744,7 +743,7 @@ int ss_cmd_bots_add(CmdParams *cmdparams)
 	lnode_create_append(nicks, bots);
 	DBAStore ("randomnicks", cmdparams->av[1], bots, sizeof(BotInfo));
 	irc_prefmsg (ss_bot, cmdparams->source, "Added %s (%s@%s - %s) Bot to Bot list", bots->nick, bots->user, bots->host, bots->realname);
-	irc_chanalert (ss_bot, "%s added %s (%s@%s - %s) Bot to Bot list", cmdparams->source->name, bots->nick, bots->user, bots->host, bots->realname);
+	command_report(ss_bot, "%s added %s (%s@%s - %s) Bot to Bot list", cmdparams->source->name, bots->nick, bots->user, bots->host, bots->realname);
 	return NS_SUCCESS;
 }
 
@@ -785,7 +784,7 @@ int ss_cmd_bots_del(CmdParams *cmdparams)
 	list_delete(nicks, node);
 	DBADelete ("randomnicks", bots->nick);				
 	irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s out of Bot list", bots->nick);
-	irc_chanalert (ss_bot, "%s deleted %s out of bot list", cmdparams->source->name, bots->nick);
+	command_report(ss_bot, "%s deleted %s out of bot list", cmdparams->source->name, bots->nick);
 	lnode_destroy(node);
 	ns_free (bots);
 	return NS_SUCCESS;
@@ -875,7 +874,7 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 		strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
 		DBAStoreConfigStr ("MonBot", SecureServ.monbot, MAXNICK);
 		irc_prefmsg (ss_bot, cmdparams->source, "Monitoring Bot set to %s", cmdparams->av[1]);
-		irc_chanalert (ss_bot, "%s set the Monitor bot to %s", cmdparams->source->name, cmdparams->av[1]);
+		command_report(ss_bot, "%s set the Monitor bot to %s", cmdparams->source->name, cmdparams->av[1]);
 		return NS_SUCCESS;
 	}
 	irc_prefmsg (ss_bot, cmdparams->source, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", cmdparams->av[1], ss_bot->name);

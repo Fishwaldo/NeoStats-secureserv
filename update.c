@@ -265,7 +265,7 @@ int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 	DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
 	strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
 	strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
-	irc_chanalert (ss_bot, "%s changed the Update Username and Password", cmdparams->source);
+	command_report(ss_bot, "%s changed the Update Username and Password", cmdparams->source);
 	irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 	return NS_SUCCESS;
 }

@@ -132,54 +132,59 @@ BotInfo ss_botinfo =
 
 static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason) 
 {
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
-	}
-	if (reason == SET_LIST) {
-		irc_prefmsg (ss_bot, cmdparams->source, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
-		return NS_SUCCESS;
-	}
-	if (cmdparams->ac < 2) {
-		return NS_ERR_NEED_MORE_PARAMS;
-	}			
-	if ((!ircstrcasecmp(cmdparams->av[1], "ON"))) {
-		irc_prefmsg (ss_bot, cmdparams->source, "\2Warning:\2");
-		irc_prefmsg (ss_bot, cmdparams->source, "This option can consume a \2LOT\2 of CPU");
-		irc_prefmsg (ss_bot, cmdparams->source, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
-		irc_prefmsg (ss_bot, cmdparams->source, "Its not a recomended configuration.");
-		irc_prefmsg (ss_bot, cmdparams->source, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", ss_bot->name);
-		return NS_SUCCESS;
-	} else if (!ircstrcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-		CommandReport(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
-		SecureServ.treatchanmsgaspm = 1;
-		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
-		return NS_SUCCESS;
-	} else if ((!ircstrcasecmp(cmdparams->av[1], "OFF"))) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
-		CommandReport(ss_bot, "%s has disabled channel message checking", cmdparams->source);
-		SecureServ.treatchanmsgaspm = 0;
-		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
-		return NS_SUCCESS;
-	} else {
-		return NS_ERR_SYNTAX_ERROR;
+	switch( reason )
+	{
+		case SET_LOAD:
+			break;
+		case SET_LIST:
+			irc_prefmsg (ss_bot, cmdparams->source, "TREATCHANMSGASPM: %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
+			break;
+		case SET_CHANGE:
+			if (cmdparams->ac < 2) {
+				return NS_ERR_NEED_MORE_PARAMS;
+			}			
+			if ((!ircstrcasecmp(cmdparams->av[1], "ON"))) {
+				irc_prefmsg (ss_bot, cmdparams->source, "\2Warning:\2");
+				irc_prefmsg (ss_bot, cmdparams->source, "This option can consume a \2LOT\2 of CPU");
+				irc_prefmsg (ss_bot, cmdparams->source, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
+				irc_prefmsg (ss_bot, cmdparams->source, "Its not a recomended configuration.");
+				irc_prefmsg (ss_bot, cmdparams->source, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", ss_bot->name);
+				return NS_SUCCESS;
+			} else if (!ircstrcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
+				irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
+				CommandReport(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
+				SecureServ.treatchanmsgaspm = 1;
+				DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
+				return NS_SUCCESS;
+			} else if ((!ircstrcasecmp(cmdparams->av[1], "OFF"))) {
+				irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
+				CommandReport(ss_bot, "%s has disabled channel message checking", cmdparams->source);
+				SecureServ.treatchanmsgaspm = 0;
+				DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
+				return NS_SUCCESS;
+			} else {
+				return NS_ERR_SYNTAX_ERROR;
+			}
+			break;
+		default:
+			break;
 	}
 	return NS_SUCCESS;
 }
 static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
+	if( reason == SET_CHANGE )
+	{
+		SetTimerInterval ("MonBotCycle", SecureServ.monchancycletime);
 	}
-	SetTimerInterval ("MonBotCycle", SecureServ.monchancycletime);
 	return NS_SUCCESS;
 }
 static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
-	if (reason == SET_LOAD) {
-		return NS_SUCCESS;
+	if( reason == SET_CHANGE )
+	{
+		SetTimerInterval ("JoinNewChan", SecureServ.stayinchantime);
 	}
-	SetTimerInterval ("JoinNewChan", SecureServ.stayinchantime);
 	return NS_SUCCESS;
 }
 

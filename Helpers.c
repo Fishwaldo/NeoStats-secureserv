@@ -355,15 +355,15 @@ int HelpersAway(CmdParams *cmdparams)
 
 int ss_cmd_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason) 
 {
-	if (reason == SET_LOAD || reason == SET_LIST) {
-		return NS_SUCCESS;
-	}
-	if (SecureServ.helpers == 1) {
-		add_bot_cmd_list (ss_bot, helper_commands);
-		add_bot_setting_list (ss_bot, helper_settings);
-	} else {
-		del_bot_cmd_list (ss_bot, helper_commands);
-		del_bot_setting_list (ss_bot, helper_settings);
+	if( reason == SET_CHANGE )
+	{
+		if (SecureServ.helpers == 1) {
+			add_bot_cmd_list (ss_bot, helper_commands);
+			add_bot_setting_list (ss_bot, helper_settings);
+		} else {
+			del_bot_cmd_list (ss_bot, helper_commands);
+			del_bot_setting_list (ss_bot, helper_settings);
+		}
 	}
 	return NS_SUCCESS;
 }

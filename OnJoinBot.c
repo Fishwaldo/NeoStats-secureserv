@@ -838,47 +838,55 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	lnode_t *rnn;
 
 	SET_SEGV_LOCATION();
-	if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
-		irc_prefmsg (ss_bot, cmdparams->source, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
-		return NS_SUCCESS;
-	}
-	if (cmdparams->ac < 2) {
-		return NS_ERR_NEED_MORE_PARAMS;
-	}			
-	/* Do not allow overwrite of the monbot if one is already 
-		* assigned and we have monchans. 
-		*/
-	if(SecureServ.monbot[0] != 0 && list_count(monchans) > 1) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
-		return NS_SUCCESS;
-	}
-	/* don't allow a monitor bot to be assigned if we don't have enough onjoin bots */
-	if (list_count(nicks) <= 2) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Not enough Onjoin bots would be left if you assign a MonBot. Please create more Onjoin Bots");
-		return NS_SUCCESS;
-	}
-	rnn = list_first(nicks);
-	while (rnn != NULL) {
-		nickname = lnode_get(rnn);
-		if (!ircstrcasecmp(nickname->nick, cmdparams->av[1])) {
-			/* ok, got the bot ! */
+	switch( reason )
+	{
+		case SET_LOAD:
 			break;
-		}
-		rnn = list_next(nicks, rnn);
+		case SET_LIST:
+			irc_prefmsg (ss_bot, cmdparams->source, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
+			break;
+		case SET_CHANGE:
+			if (cmdparams->ac < 2) {
+				return NS_ERR_NEED_MORE_PARAMS;
+			}			
+			/* Do not allow overwrite of the monbot if one is already 
+				* assigned and we have monchans. 
+				*/
+			if(SecureServ.monbot[0] != 0 && list_count(monchans) > 1) {
+				irc_prefmsg (ss_bot, cmdparams->source, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
+				return NS_SUCCESS;
+			}
+			/* don't allow a monitor bot to be assigned if we don't have enough onjoin bots */
+			if (list_count(nicks) <= 2) {
+				irc_prefmsg (ss_bot, cmdparams->source, "Not enough Onjoin bots would be left if you assign a MonBot. Please create more Onjoin Bots");
+				return NS_SUCCESS;
+			}
+			rnn = list_first(nicks);
+			while (rnn != NULL) {
+				nickname = lnode_get(rnn);
+				if (!ircstrcasecmp(nickname->nick, cmdparams->av[1])) {
+					/* ok, got the bot ! */
+					break;
+				}
+				rnn = list_next(nicks, rnn);
+			}
+			if (rnn != NULL) {
+				/* Do not allow monbot to be assigned if its online as a Onjoin bot atm */
+				if (FindUser(nickname->nick)) {
+					irc_prefmsg (ss_bot, cmdparams->source, "Can not assign a Monitor Bot while it is online as a Onjoin Bot. Please try again in a couple of minutes");
+					return NS_SUCCESS;
+				}
+				strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
+				DBAStoreConfigStr ("MonBot", SecureServ.monbot, MAXNICK);
+				irc_prefmsg (ss_bot, cmdparams->source, "Monitoring Bot set to %s", cmdparams->av[1]);
+				CommandReport(ss_bot, "%s set the Monitor bot to %s", cmdparams->source->name, cmdparams->av[1]);
+				return NS_SUCCESS;
+			}
+			irc_prefmsg (ss_bot, cmdparams->source, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", cmdparams->av[1], ss_bot->name);
+			break;
+		default:
+			break;
 	}
-	if (rnn != NULL) {
-		/* Do not allow monbot to be assigned if its online as a Onjoin bot atm */
-		if (FindUser(nickname->nick)) {
-			irc_prefmsg (ss_bot, cmdparams->source, "Can not assign a Monitor Bot while it is online as a Onjoin Bot. Please try again in a couple of minutes");
-			return NS_SUCCESS;
-		}
-		strlcpy(SecureServ.monbot, nickname->nick, MAXNICK);
-		DBAStoreConfigStr ("MonBot", SecureServ.monbot, MAXNICK);
-		irc_prefmsg (ss_bot, cmdparams->source, "Monitoring Bot set to %s", cmdparams->av[1]);
-		CommandReport(ss_bot, "%s set the Monitor bot to %s", cmdparams->source->name, cmdparams->av[1]);
-		return NS_SUCCESS;
-	}
-	irc_prefmsg (ss_bot, cmdparams->source, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", cmdparams->av[1], ss_bot->name);
 	return NS_SUCCESS;
 }
 

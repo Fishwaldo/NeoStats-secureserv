@@ -480,6 +480,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>MONBOT</para>
+      </listitem>
+
+      <listitem>
         <para>AKILL</para>
       </listitem>
 
@@ -634,7 +638,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       floodbots to gain access to your channels with a well known key. If you
       don&#39;t set this option, SecureServ uses a default Key. The length of
       this key is restricted, and if you try to set a key that is too long,
-      you will recieve a error message. </para>
+      you will recieve a error message.</para>
 
       <para>To Change this setting, issue the following command:</para>
 
@@ -649,7 +653,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       Administrotors/Operators may remove the mode set, and SecureServ will
       not mind. If after this time period (+/- 10 seconds) the channel will
       have the modes that SecureServ set automatically removed, so the channel
-      can return to normal operation. </para>
+      can return to normal operation.</para>
 
       <para>To Change this setting, issue the following command:</para>
 
@@ -673,6 +677,20 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>To Change the setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set MULTICHECK &#60;ON/OFF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>MONBOT Setting</title>
+
+      <para>SecureServ has the option to assign one of the random bots to stay
+      in a channel all the time, instead of cyling like the ONJOIN bots do.
+      This option sets which bot will be used to monitor the channels
+      specified in the MONCHAN command. A listing of available bots is
+      obtained via the Bots Command. .</para>
+
+      <para>To Change the setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set MONBOT &#60;botF&#62; </screen>
     </sect2>
 
     <sect2>
@@ -840,6 +858,14 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <listitem>
         <para>logout</para>
       </listitem>
+
+      <listitem>
+        <para>bots</para>
+      </listitem>
+
+      <listitem>
+        <para>monchan</para>
+      </listitem>
     </itemizedlist>
 
     <para>The following Sections Describe these commands in detail</para>
@@ -971,6 +997,53 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>This command is not implemented in this release. Future Versions
       will have this option.</para>
+    </sect2>
+
+    <sect2>
+      <title>bots Command</title>
+
+      <para>This option allows you to manipulate the random bot list that is
+      used to join random channels (or channels monitored with the monchan
+      command, as detailed below). The available options are:</para>
+
+      <screen>/msg SecureServ bots list</screen>
+
+      <para>This option lists all available bots. </para>
+
+      <screen>/msg SecureServ bots add &#60;nick&#62; &#60;ident&#62; &#60;host&#62; &#60;realname&#62;</screen>
+
+      <para>This option adds a bot with the nickname, ident, host and realname
+      as specified in the command to the list of bots that will be used to
+      randomly join a channel. </para>
+
+      <screen>/msg SecureServ bots del &#60;num&#62;</screen>
+
+      <para>This option lists will delete a bot from the available bots if its
+      not currently in use. </para>
+    </sect2>
+
+    <sect2>
+      <title>monchan Command</title>
+
+      <para>This option allows you to manipulate the list of channels that
+      will be monitored all the time by SecureServ for Private Messate type
+      virus&#39;s. The bot that joins these channels is specified in the
+      monbot section of the set command. </para>
+
+      <screen>/msg SecureServ monchan list</screen>
+
+      <para>This option lists all the channels that will be monitored. If the
+      channels do not exist when SecureServ is started, they will
+      automatically be deleted from this list. </para>
+
+      <screen>/msg SecureServ bots add &#60;chan&#62;</screen>
+
+      <para>This option adds a channel to be monitored. </para>
+
+      <screen>/msg SecureServ bots del &#60;chan&#62;</screen>
+
+      <para>This option lists will delete a channel from the monitored list.
+      </para>
     </sect2>
   </sect1>
 

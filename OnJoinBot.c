@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.23 2003/08/05 12:10:07 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.24 2003/08/05 12:29:33 fishwaldo Exp $
 */
 
 
@@ -328,7 +328,10 @@ int MonChan(User *u, char *requestchan) {
 		}
  		rnn = list_next(monchans, rnn);
 	}
-
+	if (list_isfull(monchans)) {
+		prefmsg(u->nick, s_SecureServ, "Can not monitor any additionally channels");
+		return -1;
+	}
 
 
 	if (findbot(SecureServ.monbot) == NULL) {
@@ -426,10 +429,8 @@ int SaveMonChans() {
 	char buf[255];
 	DelConf("MonChans");
 	node = list_first(monchans);
-printf("about to \n");
 	while (node != NULL) {
 		snprintf(buf, 255, "MonChans/%s", (char *)lnode_get(node));
-		printf("saving %s\n", buf);
 		SetConf((void *)1, CFGINT, buf);
 		node = list_next(monchans, node);
 	}

@@ -879,10 +879,10 @@ static int do_status(User *u, char **av, int ac)
 static int Online(char **av, int ac) 
 {
 	SET_SEGV_LOCATION();
-	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
+	if (init_bot(s_SecureServ,"TS",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		strlcat(s_SecureServ, "_", MAXNICK);
-		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
+		init_bot(s_SecureServ,"TS",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
 	}
 	HelpersInit();
 	if (SecureServ.verbose) {

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.9 2003/05/13 13:09:04 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.10 2003/05/14 13:53:17 fishwaldo Exp $
 */
 
 
@@ -156,6 +156,27 @@ void do_set(User *u, char **av, int ac) {
 			chanalert(s_SecureServ, "%s has disabled Version Checking");
 			SetConf((void *)0, CFGINT, "DoVersionScan");
 			SecureServ.doscan = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
+	} else if (!strcasecmp(av[2], "CHECKFIZZER")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Fizzer Virus Checking is now enabled");
+			chanalert(s_SecureServ, "%s enabled Fizzer Virus Checking", u->nick);
+			SetConf((void *)1, CFGINT, "FizzerCheck");
+			SecureServ.dofizzer = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Fizzer Checking is now disabled");
+			chanalert(s_SecureServ, "%s disabled Fizzer Checking", u->nick);
+			SetConf((void *)0, CFGINT, "FizzerCheck");
+			SecureServ.dofizzer = 0;
 			return;
 		} else {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -379,6 +400,9 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Virus Help Channel: %s", SecureServ.HelpChan);
 		prefmsg(u->nick, s_SecureServ, "End Of List");
 		return;
+	} else {
+		prefmsg(u->nick, s_SecureServ, "Unknown Set option %s. try /msg %s help set", av[2], s_SecureServ);
+		return;
 	}		
 
 
@@ -397,7 +421,7 @@ void do_list(User *u) {
 	node = list_first(viri);
 	prefmsg(u->nick, s_SecureServ, "Virus List:");
 	prefmsg(u->nick, s_SecureServ, "===========");
-	while ((node = list_next(viri, node)) != NULL) {
+	do {
 		ve = lnode_get(node);
 		i++;
 		switch (ve->dettype) {
@@ -424,7 +448,7 @@ void do_list(User *u) {
 				snprintf(action, MAXHOST, "Warn Client Only");
 		}
 		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection Via: %s. Action: %s", i, ve->name, type, action);
-	}
+	} while ((node = list_next(viri, node)) != NULL);
 	prefmsg(u->nick, s_SecureServ, "End of List.");
 }
 
@@ -453,7 +477,6 @@ void LoadTSConf() {
 	exemptinfo *exempts = NULL;
 	randomnicks *rnicks;
 	char **data;
-	int j;
 	int i;
 	char *tmp;
 	char datapath[MAXHOST];
@@ -567,14 +590,28 @@ void load_dat() {
 	/* if the list isn't empty, make it empty */
 	if (!list_isempty(viri)) {
 		node = list_first(viri);
-		while ((node = list_next(viri, node)) != NULL) {
+		do {
 			viridet = lnode_get(node);
 			list_delete(viri, node);
 			lnode_destroy(node);
 			free(viridet);
-		}
+		} while ((node = list_next(viri, node)) != NULL);
 	}
 	
+
+	/* first, add the dat for Fizzer (even if its not enabled!) */
+	viridet = malloc(sizeof(virientry));
+	snprintf(viridet->name, MAXHOST, "FizzerBot");
+	viridet->dettype = DET_BUILTIN;
+	viridet->var1 = 0;
+	viridet->var2 = 0;
+	snprintf(viridet->recvmsg, MAXHOST, "UserName is RealName Reversed");
+	snprintf(viridet->sendmsg, MAXHOST, "Your Infected with the Fizzer Virus");
+	viridet->action = ACT_AKILL;
+	viridet->nofound = 0;
+	node = lnode_create(viridet);
+	list_prepend(viri, node);
+	nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 	
 	
 	fp = fopen("data/viri.dat", "r");
@@ -597,6 +634,7 @@ void load_dat() {
 			strtok(NULL, "\"");
 			snprintf(viridet->sendmsg, MAXHOST, "%s", strtok(NULL, "\""));
 			viridet->action = atoi(strtok(NULL, ""));
+			viridet->nofound = 0;
 			node = lnode_create(viridet);
 			list_prepend(viri, node);
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
@@ -635,11 +673,11 @@ EventFnList *__module_get_events() {
 static int ScanNick(char **av, int ac) {
 	User *u;
 	lnode_t *node;
+	virientry *viridetails;
 	exemptinfo *exempts;
-#if 0
-	char username[USERLEN];
+	char username[11];
 	char *s1, *s2, *user;
-#endif
+
 	strcpy(segv_location, "TS:ScanNick");
 	/* don't do anything if NeoStats hasn't told us we are online yet */
 	if (!SecureServ.inited)
@@ -669,13 +707,29 @@ static int ScanNick(char **av, int ac) {
 		}
 		node = list_next(exempt, node);
 	}
-	#if 0
 	/* fizzer requires realname info, which we don't store yet. */
 	if (SecureServ.dofizzer == 1) {
-		strncpy(user, u->
-		s1 = 
-		snprintf(username, USERLEN, "?%s%s", u->
-	#endif
+		user = malloc(MAXREALNAME);
+		strncpy(user, u->realname, MAXREALNAME);
+		s1 = strtok(user, " ");
+		s2 = strtok(NULL, "");
+		snprintf(username, 11, "%s%s%s", u->username[0] == '~' ? "~" : "",  s2, s1);
+		free(user);
+		nlog(LOG_DEBUG2, LOG_MOD, "Fizzer RealName Check %s -> %s", username, u->username);
+		if (!strcmp(username, u->username)) {
+			nlog(LOG_NOTICE, LOG_MOD, "Fizzer Bot Detected: %s (%s -> %s)", u->nick, u->username, u->realname);
+			/* do kill */
+			node = list_first(viri);
+			do {
+				viridetails = lnode_get(node);
+				if (!strcasecmp(viridetails->name, "FizzerBot")) {
+					gotpositive(u, viridetails, DET_BUILTIN);
+					return 1;
+				}
+			} while ((node = list_next(viri, node)) != NULL);
+			return 1;
+		}
+	}							
 
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
@@ -698,10 +752,11 @@ int check_version_reply(char *origin, char **av, int ac) {
 	
 	if (!strcasecmp(av[1], "\1version")) {
 		buf = joinbuf(av, ac, 2);
+		if (SecureServ.verbose) chanalert(s_SecureServ, "Got Version Reply from %s: %s", origin, buf);
 		node = list_first(viri);
-		while ((node = list_next(viri, node)) != NULL) {
+		do {
 			viridetails = lnode_get(node);
-			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > 1)) {
+			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > 20)) {
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Version %s against %s", buf, viridetails->recvmsg);
 				if (fnmatch(viridetails->recvmsg, buf, 0) == 0) {
 					gotpositive(finduser(origin), viridetails, DET_CTCP);
@@ -712,7 +767,8 @@ int check_version_reply(char *origin, char **av, int ac) {
 				}
 		
 			}
-		}
+		} while ((node = list_next(viri, node)) != NULL);
+		free(buf);
 	}				
 	return 0;
 }
@@ -722,6 +778,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
+	ve->nofound++;
 	switch (ve->action) {
 		case ACT_AKILL:
 			if (SecureServ.doakill > 0) {
@@ -747,6 +804,9 @@ void gotpositive(User *u, virientry *ve, int type) {
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
 			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
+			break;
+		case ACT_NOTHING:
+			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
 			break;
 	}
 }
@@ -783,8 +843,9 @@ void _init() {
 	SecureServ.JoinThreshold = 5;
 	SecureServ.autoupgrade = 0;	
 	SecureServ.doUpdate = 0;
-
-
+	SecureServ.dofizzer = 1;
+	SecureServ.MaxAJPP = 0;
+	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
 }
 
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 

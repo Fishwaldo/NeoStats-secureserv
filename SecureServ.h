@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.6 2003/05/13 13:09:04 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.7 2003/05/14 13:53:17 fishwaldo Exp $
 */
 
 
@@ -33,6 +33,7 @@ typedef struct virientry {
 /* Detection Types */
 #define DET_CTCP 0
 #define DET_MSG 1
+#define DET_BUILTIN 10
 
 /* Action List */
 #define ACT_SVSJOIN 0
@@ -64,6 +65,9 @@ struct SecureServ {
 	int JoinThreshold;
 	int autoupgrade;
 	int doUpdate;
+	int dofizzer;
+	int MaxAJPP;
+	char MaxAJPPChan[CHANLEN];
 } SecureServ;
 
 

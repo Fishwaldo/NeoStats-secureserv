@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.2 2003/05/13 13:09:04 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.3 2003/05/14 13:53:17 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -64,7 +64,6 @@ int ss_new_chan(char **av, int ac) {
 		ci->c = c;
 		cn = hnode_create(ci);
 		hash_insert(FC_Chans, cn, ci->c->name);
-printf("created chan %s\n", ci->c->name);
 		return 1;
 	} else {
 		nlog(LOG_WARNING, LOG_MOD, "Ehhh, Can't find chan %s", av[0]);
@@ -104,32 +103,50 @@ int ss_join_chan(char **av, int ac) {
 	c = findchan(av[0]);
 	/* find the chan in SecureServ's list */
 	cn = hash_lookup(FC_Chans, c->name);
-	if (cn) {
+	if (!cn) {
+		/* if it doesn't exist, means we have to create it ! */
+		nlog(LOG_DEBUG2, LOG_MOD, "Creating Channel Record in JoinSection %s", c->name);
+		ci = malloc(sizeof(ChanInfo));
+		ci->ajpp = 0;
+		ci->sampletime = 0;
+		ci->c = c;
+		cn = hnode_create(ci);
+		hash_insert(FC_Chans, cn, ci->c->name);
+	} else {		
 		ci = hnode_get(cn);
-		/* XXX TODO exempt checking */
+	}
+	/* XXX TODO exempt checking */
 		
-		/* Firstly, if the last join was "SampleTime" seconds ago
-		 * then reset the time, and set ajpp to 1
-		 */
-		if ((time(NULL) - ci->sampletime) > SecureServ.sampletime) {
-			nlog(LOG_DEBUG2, LOG_MOD, "ChanJoin: SampleTime Expired, Resetting %s", av[0]);
-			ci->sampletime = time(NULL);
-			ci->ajpp = 1;
-			return 1;
-		}
+	/* Firstly, if the last join was "SampleTime" seconds ago
+	 * then reset the time, and set ajpp to 1
+	 */
+	if ((time(NULL) - ci->sampletime) > SecureServ.sampletime) {
+		nlog(LOG_DEBUG2, LOG_MOD, "ChanJoin: SampleTime Expired, Resetting %s", av[0]);
+		ci->sampletime = time(NULL);
+		ci->ajpp = 1;
+		return 1;
+	}
 		
-		/* now check if ajpp has exceeded the threshold */
-		
-		/* XXX TOTHINK should we have different thresholds for different channel 
-		 * sizes? Needs some real life testing I guess 
-		 */		
-		if (ci->ajpp > SecureServ.JoinThreshold) {
-			nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
-			chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
-			/* TODO: Something here */
+	/* now check if ajpp has exceeded the threshold */
+	
+	/* XXX TOTHINK should we have different thresholds for different channel 
+	 * sizes? Needs some real life testing I guess 
+	 */		
+	ci->ajpp++;	
+
+	if (ci->ajpp > SecureServ.JoinThreshold) {
+		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
+		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		/* TODO: Something here */
 			
-		}		
-		ci->ajpp++;	
+	}		
+
+	/* just some record keeping */
+	if (ci->ajpp > SecureServ.MaxAJPP) {
+		nlog(LOG_DEBUG1, LOG_MOD, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
+		if (SecureServ.verbose) chanalert(s_SecureServ, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
+		SecureServ.MaxAJPP = ci->ajpp;
+		strncpy(SecureServ.MaxAJPPChan, c->name, CHANLEN);
 	}
 	return 1;
 }
@@ -152,7 +169,8 @@ int ss_del_chan(char **av, int ac) {
 		free(ci);
 		hnode_destroy(cn);
 	} else {
-		nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
+		/* ignore this, as it just means since we started SecureServ, no one has joined the channel, and now the last person has left. Was just flooding logfiles */
+		//nlog(LOG_WARNING, LOG_MOD, "Can't Find Channel %s in our Hash", c->name);
 	}
 	return 1;
 }

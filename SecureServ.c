@@ -433,7 +433,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 							return -1;
 						}
 						list_delete(nicks, node);
-						buf = malloc(MAXHOST+1);
+						buf = malloc(MAXHOST);
 						ircsnprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
 						DelConf(buf);
 						free(buf);

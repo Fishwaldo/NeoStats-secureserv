@@ -1,0 +1,23 @@
+l = {
+}
+g = {
+    SecureServ: = {
+        RandomNicks = {
+            Bob = {
+                Host (S) = "cp127.ppp0.singnet.com.sg";
+                RealName (S) = "Can't Get Enough";
+                User (S) = "Blah";
+            }
+            Rubarb = {
+                Host (S) = "dialup-01.kpa.ida.myisp.id";
+                RealName (S) = "Chat to me";
+                User (S) = "ident";
+            }
+            ShangMan = {
+                Host (S) = "adsl-204-12-85-12.ma.us.rogers.com";
+                RealName (S) = "I'm to lame to read BitchX.doc";
+                User (S) = "ShangMan";
+            }
+        }
+    }
+}

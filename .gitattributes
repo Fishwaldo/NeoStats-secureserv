@@ -6,6 +6,7 @@
 /README.SecureServ -text
 /SecureServ.c -text
 /SecureServ.h -text
+/SecureServ.settings -text
 /SecureServ_help.c -text
 /configure -text
 /configure.in -text

@@ -2,6 +2,9 @@ TrojanServ Module for NeoStats Changelog.
 ==============================================================================
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)
+ - fixed bots del command crashing neo when not enough args supplied (BugID: 39)
+ - fixed a stupid typo in helpers del command. Missing Nickname param. (BugID: 36)
+ - Fixed a Doco typo with monbots command
 
 0.9.3 - Fish - 07 June, 2003
  - Found a few bugs with nickflood detection thanks to the logs from -=OrPhEuS=-

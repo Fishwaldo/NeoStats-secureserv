@@ -18,10 +18,11 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.45 2003/08/20 11:19:52 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.46 2003/08/20 12:04:39 fishwaldo Exp $
 */
 
 
+#include "modconfig.h"
 #include <stdio.h>
 #include <fnmatch.h>
 #include <pcre.h>
@@ -375,8 +376,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			prefmsg(u->nick, s_SecureServ, "End of List.");
 			chanalert(s_SecureServ, "%s requested Bot List", u->nick);
 		} else if (!strcasecmp(argv[2], "ADD")) {
-			if (argc < 6) {
-				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bot", s_SecureServ);
+			if (argc < 7) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bots", s_SecureServ);
 				return 0;
 			}
 			if (list_isfull(nicks)) {
@@ -404,8 +405,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			chanalert(s_SecureServ, "%s added %s (%s@%s - %s) Bot to Bot list", u->nick, bots->nick, bots->user, bots->host, bots->rname);
 			return 1;
 		} else if (!strcasecmp(argv[2], "DEL")) {
-			if (argc < 3) {
-				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
+			if (argc < 4) {
+				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help bots", s_SecureServ);
 				return 0;
 			}
 			if (atoi(argv[3]) != 0) {
@@ -536,7 +537,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 void do_set(User *u, char **av, int ac) {
 	int i, j;
 	char *buf;
-	randomnicks *nickname;
+	/* this is ok, its just to shut up fussy compilers */
+	randomnicks *nickname = NULL;
 	lnode_t *rnn;
 	if (ac < 3 ) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);

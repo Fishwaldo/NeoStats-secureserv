@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: Helpers.c,v 1.6 2003/08/19 14:36:05 fishwaldo Exp $
+** $Id: Helpers.c,v 1.7 2003/08/20 12:04:39 fishwaldo Exp $
 */
 
 
@@ -110,7 +110,7 @@ int Helpers_del(User *u, char *nick) {
 		DelConf(path);
 		prefmsg(u->nick, s_SecureServ, "Deleted %s from Helpers List", nick);
 	} else {
-		prefmsg(u->nick, s_SecureServ, "Error, Could not find %s in helpers list. /msg %s helpers list", s_SecureServ);
+		prefmsg(u->nick, s_SecureServ, "Error, Could not find %s in helpers list. /msg %s helpers list", nick, s_SecureServ);
 	}
 	return 1;
 	

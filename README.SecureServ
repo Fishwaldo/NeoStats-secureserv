@@ -647,7 +647,7 @@ Warning
    obtained via the Bots Command. .
 
    To Change the setting, issue the following Command:
-/msg SecureServ set MONBOT <botF>
+/msg SecureServ set MONBOT <bot>
 
 3.11. REPORT Setting
 
@@ -948,10 +948,10 @@ Warning
    This  option  lists  all  the  channels that will be monitored. If the
    channels   do   not  exist  when  SecureServ  is  started,  they  will
    automatically be deleted from this list.
-/msg SecureServ bots add <chan>
+/msg SecureServ monchan add <chan>
 
    This option adds a channel to be monitored.
-/msg SecureServ bots del <chan>
+/msg SecureServ monchan del <chan>
 
    This option lists will delete a channel from the monitored list.
 

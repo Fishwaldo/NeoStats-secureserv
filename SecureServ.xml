@@ -341,8 +341,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       so you can clean up users that are infected with simple script based
       virus&#39;s and you require their attention to help you clean their
       computer. More information about the commands available to use on
-      infected users is available via the assist command detailed below.
-      </para>
+      infected users is available via the assist command detailed below.</para>
 
       <caution>
         <para>Although SecureServ limits who a &#34;Helper&#34; may kill (only
@@ -782,7 +781,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>To Change the setting, issue the following Command:</para>
 
-      <screen>/msg SecureServ set MONBOT &#60;botF&#62; </screen>
+      <screen>/msg SecureServ set MONBOT &#60;bot&#62; </screen>
     </sect2>
 
     <sect2>
@@ -1189,11 +1188,11 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       channels do not exist when SecureServ is started, they will
       automatically be deleted from this list.</para>
 
-      <screen>/msg SecureServ bots add &#60;chan&#62;</screen>
+      <screen>/msg SecureServ monchan add &#60;chan&#62;</screen>
 
       <para>This option adds a channel to be monitored.</para>
 
-      <screen>/msg SecureServ bots del &#60;chan&#62;</screen>
+      <screen>/msg SecureServ monchan del &#60;chan&#62;</screen>
 
       <para>This option lists will delete a channel from the monitored list.</para>
     </sect2>
@@ -1210,7 +1209,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       only perform these actions on users that SecureServ has identified as
       infected with a simple virus, and automatically joined to the help
       channel. Helpers may not &#34;kill&#34; users that SecureServ has NOT
-      identified as infected. </para>
+      identified as infected.</para>
 
       <para>The format of the assist command is as follows:</para>
 
@@ -1223,7 +1222,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>The kill option removes the user from the network via a akill
       command and broadcasts a message to all opers indicating the helper that
       used the kill command, and the initial virus the users was detected as
-      having. </para>
+      having.</para>
     </sect2>
   </sect1>
 

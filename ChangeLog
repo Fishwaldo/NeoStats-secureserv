@@ -37,6 +37,7 @@ SecureServ Module for NeoStats Changelog.
  - New Option to also scan channel messages (F)
  - New Set option to specify how many interval for monbots to cycle channels if enabled (F)
  - MonBots will now Join/Part Monchans as they become active on the network (F)
+ - An option to treat channel messages as PM Messages when checking against viri list. its a IGOTLOTSOFCPU option! (F)
 
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003

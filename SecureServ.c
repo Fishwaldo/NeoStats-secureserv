@@ -293,6 +293,34 @@ static int do_set(User *u, char **av, int ac)
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return 1;
 		}
+	} else if (!strcasecmp(av[2], "TREATCHANMSGASPM")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return 1;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "\2Warning:\2");
+			prefmsg(u->nick, s_SecureServ, "This option can consume a \2LOT\2 of CPU");
+			prefmsg(u->nick, s_SecureServ, "When a Onjoin bot or MonBot is on large channel with lots of chatter");
+			prefmsg(u->nick, s_SecureServ, "Its not a recomended configuration.");
+			prefmsg(u->nick, s_SecureServ, "If you really want to enable this, type \2/msg %s SET TREATCHANMSGASPM IGOTLOTSOFCPU\2 to really enable this", s_SecureServ);
+			return 1;
+		} else if (!strcasecmp(av[3], "IGOTLOTSOFCPU")) {
+			prefmsg(u->nick, s_SecureServ, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
+			chanalert(s_SecureServ, "%s has configured %s to treat Channels messages as PM messages", u->nick, s_SecureServ);
+			SetConf((void *)1, CFGINT, "ChanMsgAsPM");
+			SecureServ.treatchanmsgaspm = 1;
+			return 1;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Version Checking is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Version Checking", u->nick);
+			SetConf((void *)0, CFGINT, "ChanMsgAsPM");
+			SecureServ.treatchanmsgaspm = 0;
+			return 1;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return 1;
+		}
 	} else if (!strcasecmp(av[2], "AUTOSIGNOUT")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -787,6 +815,8 @@ static int do_set(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "AKILLMSG:     %s", SecureServ.akillinfo);
 		prefmsg(u->nick, s_SecureServ, "NOHELPMSG:    %s", SecureServ.nohelp);
 		prefmsg(u->nick, s_SecureServ, "HELPCHAN:     %s", SecureServ.HelpChan);
+		prefmsg(u->nick, s_SecureServ, "TREATCHANMSGASPM:");
+		prefmsg(u->nick, s_SecureServ, "              %s", SecureServ.treatchanmsgaspm ? "Enabled (Warning Read Help)" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "End Of List");
 		prefmsg(u->nick, s_SecureServ, "Type /msg %s HELP SET for more information on these settings", s_SecureServ);
 		return 1;
@@ -934,6 +964,10 @@ static int LoadConfig(void)
 	}
 	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
 		/* disable autoupgrade is the default */
+		SecureServ.autoupgrade = 0;
+	}
+	if (GetConf((void *)&SecureServ.treatchanmsgaspm, CFGINT, "ChanMsgAsPM") <= 0) {
+		/* disable is the default */
 		SecureServ.autoupgrade = 0;
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "UpdateUname") <= 0) {

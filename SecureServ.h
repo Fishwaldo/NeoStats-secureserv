@@ -138,6 +138,7 @@ struct SecureServ {
 	int modnum;
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
+	int treatchanmsgaspm;
 } SecureServ;
 
 /* SecureServ.c */

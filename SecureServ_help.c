@@ -294,6 +294,10 @@ const char *ts_help_set[] = {
 	"    \2AKILLMSG <message>\2     - Changes the message sent to users when they are akilled",
 	"    \2NOHELPMSG <message>\2    - Changes the message sent to users when their are no helpers logged in",
 	"    \2HELPCHAN <channel>\2     - Changes the Channel that Virus infected users are joined to if there are helpers logged in",
+	"    \2TREATCHANMSGASPM <on/off>\2",
+	"                               - This option makes SecureServ check all channel messages against the virus signatures listed only for PM",
+	"                                 This option will consume \2LOTS\2 of CPU time. You Shouldn't need to enable this under normal circumstances",
+	"                                 as the Virus Database has a seperate list of signatures for channels",
 	NULL
 };
 

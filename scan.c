@@ -428,37 +428,37 @@ int ScanMsg(User *u, char* buf, int chanmsg)
 	lnode_t *node;
 	virientry *viridetails;
 	int rc;
+	int doscan;
 
 	SET_SEGV_LOCATION();
-
 	node = list_first(viri);
 	if (node) {
 		do {
+			doscan = 0;
 			viridetails = lnode_get(node);
 			rc = -1;
-			if (chanmsg == 0) {
-				if (((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20))) {
+			if (viridetails->dettype == DET_MSG) {
+				if ((chanmsg == 0) || (SecureServ.treatchanmsgaspm == 1)) {
 					SecureServ.trigcounts[DET_MSG]++;
-					nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
-					rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+					doscan = 1;
 				}
-			} else {
-				if (viridetails->dettype == DET_CHANMSG) {
-					SecureServ.trigcounts[DET_CHANMSG]++;
-					nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Channel Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
-					rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
-				}
-			}
-			if (rc < -1) {
-				nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
-			} else if (rc > -1) {					
-				gotpositive(u, viridetails, chanmsg ? DET_CHANMSG : DET_MSG);
-				positive++;
-				if (SecureServ.breakorcont != 0) {
-					return 1;
-				}
-			}
+			} else if ((viridetails->dettype == DET_CHANMSG) && (chanmsg == 1)) {
+				SecureServ.trigcounts[DET_CHANMSG]++;
+				doscan = 1;
+			}			
 			
+			if (doscan == 1) {
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+				if (rc < -1) {
+					nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
+				} else if (rc > -1) {					
+					gotpositive(u, viridetails, chanmsg ? DET_CHANMSG : DET_MSG);
+					positive++;
+					if (SecureServ.breakorcont != 0) {
+						return 1;
+					}
+				}
+			}	
 		} while ((node = list_next(viri, node)) != NULL);
 	}
 	return positive;

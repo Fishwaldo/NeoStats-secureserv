@@ -397,7 +397,6 @@ int CheckOnjoinBotKick(char **argv, int ac)
 int MonJoin(Chans *c) {
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
-	char *buf;
 
 	if (SecureServ.monbot[0] == 0) {
 		return -1;

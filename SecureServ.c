@@ -456,14 +456,10 @@ static int event_private(CmdParams *cmdparams)
 static int event_notice(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
-	if (cmdparams->av[0][0] != '\1') {
-		/* Check it is intended for an onjoin bot */
-		if(strcasecmp(SecureServ.monbot, cmdparams->source->name) == 0 || strcasecmp(SecureServ.lastnick, cmdparams->source->name) == 0) {
-			OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
-		}		
-		return NS_SUCCESS;
-	}
+	/* Check it is intended for an onjoin bot */
+	if(strcasecmp(SecureServ.monbot, cmdparams->source->name) == 0 || strcasecmp(SecureServ.lastnick, cmdparams->source->name) == 0) {
+		OnJoinBotMsg(cmdparams->source, cmdparams->source->name, cmdparams->param);
+	}		
 	return NS_SUCCESS;
 }
 
@@ -479,7 +475,7 @@ static int event_cprivate(CmdParams *cmdparams)
 		return -1;
 	}
 	/* otherwise, just pass it to the ScanMsg function */
-	ScanMsg(cmdparams->source, cmdparams->av[0], 1);
+	ScanMsg(cmdparams->source, cmdparams->param, 1);
 	return NS_SUCCESS;
 }
 
@@ -495,7 +491,7 @@ static int event_cnotice(CmdParams *cmdparams)
 		return -1;
 	}
 	/* otherwise, just pass it to the ScanMsg function */
-	ScanMsg(cmdparams->source, cmdparams->av[0], 1);
+	ScanMsg(cmdparams->source, cmdparams->param, 1);
 	return NS_SUCCESS;
 }
 

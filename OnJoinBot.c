@@ -37,6 +37,12 @@ unsigned hrand(unsigned upperbound, unsigned lowerbound) {
 	return ((unsigned)(rand()%((int)(upperbound-lowerbound+1))-((int)(lowerbound-1))));
 }
   
+int chkmonchan (const void *key1, const void *key2) {
+	char *chan = (char *)key1;
+	char *chk = (char *)key2;
+	return (strcasecmp(chan, chk));
+}
+
 
 Chans *GetRandomChan() {
 	hscan_t cs;
@@ -113,6 +119,11 @@ restartchans:
 		}
 		/* if the channel is exempt, restart */
 		if (Chan_Exempt(c) > 0) {
+			goto restartchans;
+		}
+		/* if we are already monitoring with a monbot, don't join */
+		if (list_find(monchans, c->name, chkmonchan)) {
+			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s as we are monitoring it with a monbot");
 			goto restartchans;
 		}
 		strncpy(SecureServ.lastchan, c->name, CHANLEN);

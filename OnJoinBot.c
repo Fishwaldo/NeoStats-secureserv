@@ -396,41 +396,47 @@ int CheckOnjoinBotKick(char **argv, int ac)
 }		
 int MonJoin(Chans *c) {
 	randomnicks *nickname = NULL;
-	lnode_t *rnn;
+	lnode_t *rnn, *mn;
 
 	if (SecureServ.monbot[0] == 0) {
 		return -1;
 	}
-
-	if (findbot(SecureServ.monbot) == NULL) {
-		/* the monbot isn't online. Initilze it */
-		rnn = list_first(nicks);
-		while (rnn != NULL) {
-			nickname = lnode_get(rnn);
-			if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
-				/* its our bot */
-				break;
+	mn = list_first(monchans);
+	while (mn != NULL) {
+		if (!strcasecmp(c->name, lnode_get(mn))) {
+			if (findbot(SecureServ.monbot) == NULL) {
+				/* the monbot isn't online. Initilze it */
+				rnn = list_first(nicks);
+				while (rnn != NULL) {
+					nickname = lnode_get(rnn);
+					if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+						/* its our bot */
+						break;
+					}
+					rnn = list_next(nicks, rnn);
+				}
+				if (rnn != NULL) {
+					init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
+					CloakHost(findbot(nickname->nick));
+				} else {
+					nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
+					return -1;
+				}
 			}
-			rnn = list_next(nicks, rnn);
-		}
-		if (rnn != NULL) {
-			init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
-			CloakHost(findbot(nickname->nick));
-		} else {
-			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
-			return -1;
-		}
-	}
-	/* restore segvinmodules */
-	SET_SEGV_INMODULE("SecureServ");
+			/* restore segvinmodules */
+			SET_SEGV_INMODULE("SecureServ");
 
-	/* if they the monbot is not a member of the channel, join it. */
-	if (!IsChanMember(c, finduser(SecureServ.monbot))) {
-		/* join the monitor bot to the new channel */
-		join_bot_to_chan (SecureServ.monbot, c->name, 0);
-		/* restore segvinmodules */
-		SET_SEGV_INMODULE("SecureServ");
-	}	
+			/* if they the monbot is not a member of the channel, join it. */
+			if (!IsChanMember(c, finduser(SecureServ.monbot))) {
+				/* join the monitor bot to the new channel */
+				join_bot_to_chan (SecureServ.monbot, c->name, 0);
+				/* restore segvinmodules */
+				SET_SEGV_INMODULE("SecureServ");
+			}	
+		return 1;
+		}
+		mn = list_next(monchans, mn);
+	}
 	return 1;
 }	
 int MonBotDelChan(Chans *c) 
@@ -453,7 +459,7 @@ static int MonChan(User *u, char *requestchan)
 {
 	Chans *c;
 	randomnicks *nickname = NULL;
-	lnode_t *rnn;
+	lnode_t *rnn, *mn;
 	char *buf;
 	
 	SET_SEGV_LOCATION();
@@ -464,12 +470,21 @@ static int MonChan(User *u, char *requestchan)
 		return -1;
 	}
 
+	mn = list_first(monchans);
+	while (mn != NULL) {
+		if (!strcasecmp(requestchan, lnode_get(mn))) {
+			if (u) prefmsg(u->nick, s_SecureServ, "Already Monitoring Channel %s", requestchan);
+			return 1;
+		}
+		mn = list_next(monchans, mn);
+	}
 
 	/* append it to the list */
 	buf = malloc(CHANLEN);
 	strlcpy(buf, requestchan, CHANLEN);
 	rnn = lnode_create(buf);
 	list_append(monchans, rnn);
+
 
 
 	c = findchan(requestchan);
@@ -493,6 +508,7 @@ static int MonChan(User *u, char *requestchan)
 		if (u) prefmsg(u->nick, s_SecureServ, "Already Monitoring %s",	(char*)lnode_get(rnn));
 		return -1;
 	}
+
 
 
 	if (findbot(SecureServ.monbot) == NULL) {

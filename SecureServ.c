@@ -1094,6 +1094,13 @@ int ss_join_chan(char **av, int ac)
 	}
 	
 	/* first, check if this is a *bad* channel only if its the first person to join.*/
+	/* NOTE: if its a monchan, c->cur_users will be 2 here, as our MonBot would have joined above 
+	 * but we only check for 1 users. Why? Easy, because chances are, a MonChan is not going to trigger a 
+	 * Signature is it? So this has the side effect of reducing our cpu consuption
+	 * and the reason we only check if there is one user, is that we only need to check
+	 * a channel name once, not everytime someone joins the channel. 
+	 * -Fish
+	 */
 	if(c->cur_users == 1)
 		ScanChan(u, c);
 

@@ -266,6 +266,9 @@ int do_list(User *u, char **av, int ac)
 				case ACT_AKILL:
 					strlcpy(action, "Akill", LOCALBUFSIZE);
 					break;
+				case ACT_KILL:
+					strlcpy(action, "Kill", LOCALBUFSIZE);
+					break;
 				case ACT_WARN:
 					strlcpy(action, "OpersWarn", LOCALBUFSIZE);
 					break;
@@ -515,6 +518,9 @@ void gotpositive(User *u, virientry *ve, int type)
 		case ACT_AKILL:
 			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan or War Script called %s", s_SecureServ, ve->name);
 			break;
+		case ACT_KILL:
+			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan or War Script called %s", s_SecureServ, ve->name);
+			break;
 		case ACT_WARN:
 			prefmsg(u->nick, s_SecureServ, "%s has detected that you or your client is sending unsolicted messages to other users", s_SecureServ);
 			break;
@@ -586,6 +592,16 @@ void gotpositive(User *u, virientry *ve, int type)
 				nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 				break;
 			}
+		case ACT_KILL:
+			prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
+			chanalert(s_SecureServ, "Kkilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+			if(ve->iscustom) {
+				skill_cmd(s_SecureServ, u->nick, "Infected with: %s ", ve->name);
+			} else {
+				skill_cmd(s_SecureServ, u->nick, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
+			}
+			nlog(LOG_NOTICE, LOG_MOD, "Killing %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+			break;
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
 			if(ve->iscustom) {

@@ -69,6 +69,7 @@ typedef struct virientry {
 #define ACT_AKILL 1
 #define ACT_WARN 2
 #define ACT_NOTHING 3
+#define ACT_KILL 4
 
 /* Scanner flags for User scanning */
 #define SCAN_NICK		0x00000001

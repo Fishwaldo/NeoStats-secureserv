@@ -6,6 +6,8 @@ SecureServ Module for NeoStats Changelog.
  - Fix for bug 115, monchan bots now reinit if killed (M)
  - Add set option for onjoin bot modes so users can specify their own modes (M)
  - OnJoin bots will now leave channels when the last user leaves (M)
+ - Add a KILL action for viri. Useful to keep the akill list manageable by not 
+   adding bots that do not rejoin after kill (e.g. WebCamSpam) (M)
 
 1.2 - Fish (F) and Mark (M) - 12 Feb, 2004
  - Fix up a monbot channel cycle crash (M)

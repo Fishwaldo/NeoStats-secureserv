@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.1 2003/04/19 07:53:00 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.2 2003/04/21 10:34:20 fishwaldo Exp $
 */
 
 
@@ -124,14 +124,14 @@ restartnicks:
 	nlog(LOG_DEBUG1, LOG_MOD, "RandomNick is %s", nickname->nick);
 
 	/* ok, init the new bot. */
-	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+xi", "SecureServ");
+	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, "+i", "SecureServ");
 #ifdef ULTIMATE3
 	sjoin_cmd(nickname->nick, c->name, "");
 #else
 	sjoin_cmd(nickname->nick, c->name);
 #endif
 
-	if (SecureServ.verbose) chanalert(nickname->nick, "Scanning %s for OnJoin Virus's", c->name);
+	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s for OnJoin Virus's", c->name);
 	
 	
 	

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.3 2003/04/19 07:52:15 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.4 2003/04/21 10:34:20 fishwaldo Exp $
 */
 
 
@@ -151,10 +151,10 @@ void do_list(User *u) {
 int Online(char **av, int ac) {
 
 	strcpy(segv_location, "TS:Online");
-	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name) == -1 ) {
+	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		s_SecureServ = strcat(s_SecureServ, "_");
-		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+xd", my_info[0].module_name);
+		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", my_info[0].module_name);
 	}
 	LoadTSConf();
 	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));

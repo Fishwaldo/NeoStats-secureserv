@@ -745,6 +745,17 @@ static int event_notice(char **av, int ac)
 	return 1;
 }
 
+static int event_botkill(char **av, int ac) 
+{
+	SET_SEGV_LOCATION();
+	/* Check the mon bot first */
+	if(CheckMonBotKill(av[0])!=0) {
+		return 1;
+	}
+	/* What else should we check? */
+	return 1;
+}
+
 EventFnList __module_events[] = {
  	{ EVENT_ONLINE, 	Online},
 	{ EVENT_SIGNON, 	ScanNick},
@@ -763,6 +774,7 @@ EventFnList __module_events[] = {
 #endif
 	{ EVENT_PRIVATE, 	event_private},
 	{ EVENT_NOTICE, 	event_notice},
+	{ EVENT_BOTKILL, 	event_botkill},
 	{ NULL, 			NULL}
 };
 

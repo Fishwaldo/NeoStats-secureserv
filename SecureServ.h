@@ -178,7 +178,7 @@ int do_set_monbot(User* u, char **argv, int argc);
 int CheckOnjoinBotKick(char **argv, int ac);
 int MonJoin(Chans *c);
 int MonBotDelChan(Chans *);
-
+int CheckMonBotKill(char* nick);
 
 /* scan.c */
 int ScanFizzer(User *u);

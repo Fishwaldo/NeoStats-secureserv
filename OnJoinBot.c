@@ -959,3 +959,59 @@ int do_set_monbot(User* u, char **av, int ac)
 	prefmsg(u->nick, s_SecureServ, "Can't find Bot %s in bot list. /msg %s bot list for Bot List", av[3], s_SecureServ);
 	return 1;
 }
+
+int CheckMonBotKill(char* nick)
+{
+	randomnicks *nickname = NULL;
+	lnode_t *rnn;
+	lnode_t *mcnode;
+	Chans *c;
+	char *chan;
+
+	if (SecureServ.monbot[0] == 0) {
+		return 0;
+	}
+	if (!strcasecmp(nick, SecureServ.monbot)) {
+		return 0;
+	}
+	if (findbot(SecureServ.monbot) == NULL) {
+		/* the monbot isn't online. Initilze it */
+		rnn = list_first(nicks);
+		while (rnn != NULL) {
+			nickname = lnode_get(rnn);
+			if (!strcasecmp(nickname->nick, SecureServ.monbot)) {
+				/* its our bot */
+				break;
+			}
+			rnn = list_next(nicks, rnn);
+		}
+		if (rnn != NULL) {
+			init_bot(nickname->nick, nickname->user, nickname->host, nickname->realname, onjoinbot_modes, "SecureServ");
+			CloakHost(findbot(nickname->nick));
+		} else {
+			nlog(LOG_WARNING, LOG_MOD, "Warning, MonBot %s isn't available!", SecureServ.monbot);			
+			return -1;
+		}
+	}
+	/* restore segvinmodules */
+	SET_SEGV_INMODULE("SecureServ");
+
+	mcnode = list_first(monchans);
+	while (mcnode != NULL) {
+		chan = lnode_get(mcnode);
+		if (!chan) {
+			nlog(LOG_WARNING, LOG_MOD, "MonChans has a empty node?");
+			mcnode = list_next(monchans, mcnode);
+			continue;
+		}
+		c = findchan(chan);
+		if (!c) {
+			/* channel isn't online atm, ignore */
+			mcnode = list_next(monchans, mcnode);
+			continue;
+		}
+		join_bot_to_chan(SecureServ.monbot, c->name, 0);
+		mcnode = list_next(monchans, mcnode);		
+	}
+	return 1;
+}

@@ -4,6 +4,7 @@ TrojanServ Module for NeoStats Changelog.
  - Fixed a problem with users signing off while NeoStats was still booting.
  - Fixed a typo in help set (BugID #42)
  - Fixed a problem with Exclude lists not being saved after a delete (BugID #41)
+ - HTTP agent wasn't reporting correct version to website
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

@@ -1096,10 +1096,6 @@ int ss_new_chan(char **av, int ac)
 	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
-	/* if we not even inited, exit this */
-	if (!SecureServ.inited) {
-		return -1;
-	}
 	/* find the chan in the Core */
 	c = findchan(av[0]);
 	if (!c) {

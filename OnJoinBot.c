@@ -33,9 +33,9 @@ list_t *monchans;
 int SaveMonChans();
 
 #ifdef UMODE_HIDE
-static char onjoinbot_modes[]="+ix";
+static char onjoinbot_modes[]="+x";
 #else
-static char onjoinbot_modes[]="+i";
+static char onjoinbot_modes[]="+";
 #endif
 
 unsigned hrand(unsigned upperbound, unsigned lowerbound) {

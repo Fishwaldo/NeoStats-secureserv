@@ -4,5 +4,10 @@
 #undef HAVE_CRYPT_H
 
 /* Version number of package */
-#undef SECURESERV_VERSION
+#undef MODULE_VERSION
 
+/* Major Version */
+#undef MODULE_MAJOR
+
+/* Minor Version */
+#undef MODULE_MINOR

@@ -47,7 +47,7 @@ static ModUser *ss_bot;
 ModuleInfo __module_info = {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	SECURESERV_VERSION,
+	MODULE_VERSION,
 	__DATE__,
 	__TIME__
 };

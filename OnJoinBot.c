@@ -464,11 +464,11 @@ int LoadMonChans() {
 
 int SaveMonChans() {
 	lnode_t *node;
-	char buf[255];
+	char buf[CONFBUFSIZE];
 	DelConf("MonChans");
 	node = list_first(monchans);
 	while (node != NULL) {
-		ircsnprintf(buf, 255, "MonChans/%s", (char *)lnode_get(node));
+		ircsnprintf(buf, CONFBUFSIZE, "MonChans/%s", (char *)lnode_get(node));
 		SetConf((void *)1, CFGINT, buf);
 		node = list_next(monchans, node);
 	}

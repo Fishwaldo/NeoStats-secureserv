@@ -338,8 +338,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 						}
 						prefmsg(u->nick, s_SecureServ, "Deleted %s %s out of exception list", exempts->host, ss_buf);
 						chanalert(s_SecureServ, "%s deleted %s %s out of exception list", u->nick, exempts->host, ss_buf);
-						buf = malloc(255);
-						ircsnprintf(buf, 255, "Exempt/%s", exempts->host);
+						buf = malloc(CONFBUFSIZE);
+						ircsnprintf(buf, CONFBUFSIZE, "Exempt/%s", exempts->host);
 						DelConf(buf);
 						free(exempts);
 						save_exempts();

@@ -114,7 +114,7 @@ static Chans * GetNewChan ()
 				continue;
 			}
 			/* if the channel is exempt, restart */
-			if (IsChanExempt(c) > 0) {
+			if (SS_IsChanExempt(c) > 0) {
 				continue;
 			}
 			/* if we are already monitoring with a monbot, don't join */
@@ -343,7 +343,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac)
 	}	
 
 	/* check if this user is exempt */
-	if (IsUserExempt(u) > 0) {
+	if (SS_IsUserExempt(u) > 0) {
 		nlog(LOG_DEBUG1, LOG_MOD, "User %s is exempt from Message Checking", u->nick);
 		return;
 	}
@@ -494,7 +494,7 @@ static int MonChan(User *u, char *requestchan)
 		return -1;
 	}			
 	/* dont allow excepted channels */
-	if (IsChanExempt(c) > 0) {
+	if (SS_IsChanExempt(c) > 0) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Can not monitor a channel listed as a Exempt Channel");
 		return -1;
 	}

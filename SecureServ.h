@@ -180,10 +180,10 @@ void InitScanner(void);
 void load_dat(void);
 
 /* exempts.c */
-int IsChanExempt(Chans *c);
-int IsUserExempt(User *u);
-int do_exempt(User* u, char **argv, int argc);
-int InitExempts(void);
+int SS_IsChanExempt(Chans *c);
+int SS_IsUserExempt(User *u);
+int SS_do_exempt(User* u, char **argv, int argc);
+int SS_InitExempts(void);
 
 /* FloodCheck.c */
 int InitJoinFlood(void);

@@ -52,18 +52,18 @@ static char ss_buf[SS_BUF_SIZE];
 /* this is the list of exempted hosts/servers */
 static list_t *exempt;
 
-static void load_exempts(void);
+static void SS_load_exempts(void);
 
-int InitExempts(void)
+int SS_InitExempts(void)
 {
 	SET_SEGV_LOCATION();
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
-	load_exempts();
+	SS_load_exempts();
 	return 1;
 }
 
-static void save_exempts() 
+static void SS_save_exempts() 
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
@@ -85,7 +85,7 @@ static void save_exempts()
 	}
 }
 
-static void load_exempts(void)
+static void SS_load_exempts(void)
 {
 	exemptinfo *exempts = NULL;
 	lnode_t *node;
@@ -129,7 +129,7 @@ static void load_exempts(void)
 	}
 }
 
-int IsUserExempt(User *u) 
+int SS_IsUserExempt(User *u) 
 {
 	lnode_t *node;
 	exemptinfo *exempts;
@@ -162,7 +162,7 @@ int IsUserExempt(User *u)
 	return -1;
 }
 
-int IsChanExempt(Chans *c) 
+int SS_IsChanExempt(Chans *c) 
 {
 	lnode_t *node;
 	exemptinfo *exempts;
@@ -189,7 +189,7 @@ int IsChanExempt(Chans *c)
 	return -1;
 }
 
-static int do_exempt_list(User* u, char **argv, int argc)
+static int SS_do_exempt_list(User* u, char **argv, int argc)
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
@@ -224,7 +224,7 @@ static int do_exempt_list(User* u, char **argv, int argc)
 	return 1;
 }
 
-static int do_exempt_add(User* u, char **argv, int argc)
+static int SS_do_exempt_add(User* u, char **argv, int argc)
 {
 	char *buf;
 	lnode_t *node;
@@ -275,11 +275,11 @@ static int do_exempt_add(User* u, char **argv, int argc)
 	}
 	prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, ss_buf);
 	chanalert(s_SecureServ, "%s added %s (%s) exception to list", u->nick, exempts->host, ss_buf);
-	save_exempts();
+	SS_save_exempts();
 	return 1;
 }
 
-static int do_exempt_del(User* u, char **argv, int argc)
+static int SS_do_exempt_del(User* u, char **argv, int argc)
 {
 	char *buf;
 	lnode_t *node;
@@ -319,7 +319,7 @@ static int do_exempt_del(User* u, char **argv, int argc)
 				ircsnprintf(buf, CONFBUFSIZE, "Exempt/%s", exempts->host);
 				DelConf(buf);
 				free(exempts);
-				save_exempts();
+				SS_save_exempts();
 				return 1;
 			}
 			++i;
@@ -335,7 +335,7 @@ static int do_exempt_del(User* u, char **argv, int argc)
 	return 1;
 }
 
-int do_exempt(User* u, char **argv, int argc)
+int SS_do_exempt(User* u, char **argv, int argc)
 {
 	SET_SEGV_LOCATION();
 	if (UserLevel(u) < 50) {
@@ -348,13 +348,13 @@ int do_exempt(User* u, char **argv, int argc)
 		return 0;
 	}
 	if (!strcasecmp(argv[2], "LIST")) {
-		do_exempt_list(u, argv, argc);
+		SS_do_exempt_list(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[2], "ADD")) {
-		do_exempt_add(u, argv, argc);
+		SS_do_exempt_add(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[2], "DEL")) {
-		do_exempt_del(u, argv, argc);
+		SS_do_exempt_del(u, argv, argc);
 		return 1;
 	}
     prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);

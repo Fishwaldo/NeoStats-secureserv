@@ -47,6 +47,26 @@ static int DownLoadDat(void);
 
 static char ss_buf[SS_BUF_SIZE];
 
+/* @brief This is the list of possible errors for dat file updates. 
+**
+*/
+char *downloaderror(int errcode) {
+	switch (errcode) {
+		case -1:
+				return "Invalid UserName/Password.";
+				break;
+		case -2:
+				return "Account Disabled. Please contact admin@lists.neostats.net";
+				break;
+		case -3:
+				return "Your copy of SecureServ is too old. Please Upgrade";
+				break;
+		default:
+				return "Unknown Reason.";
+				break;
+	}
+}
+
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
 ** whats local, and if website is higher, either prompts for an upgrade, or does an automatic one :)
 ** It just compares version numbers of the dat file, and if they are different, starts a new download. 
@@ -55,6 +75,9 @@ static char ss_buf[SS_BUF_SIZE];
 void datver(void *data, int status, char *ver, int versize) 
 {
 	int myversion;
+	User *u = (void *)data;
+	
+	u = NULL;
 
 	SET_SEGV_LOCATION();
 	SET_SEGV_INMODULE("SecureServ");
@@ -63,23 +86,29 @@ void datver(void *data, int status, char *ver, int versize)
 		myversion = atoi(ver);
 		if (myversion <= 0) {
 			nlog(LOG_NORMAL, LOG_MOD, "When Trying to Check Dat File Version, we got Permission Denied: %d", myversion);
-			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version: %d", myversion);
+			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version: %s", downloaderror(myversion));
+			if (u) prefmsg(u->nick, s_SecureServ, "Permission Denied when trying to check Dat File Version: %s", downloaderror(myversion));
+			printf("%d\n", (unsigned int) atoi(ver));
 			return;
 		}			
 		nlog(LOG_DEBUG1, LOG_MOD, "LocalDat Version %d, WebSite %d", SecureServ.viriversion, myversion);
 		if (myversion > SecureServ.viriversion) {
-			if (SecureServ.autoupgrade > 0) {
+			if (SecureServ.autoupgrade > 0 || u) {
 				SecureServ.doUpdate = 1;
 				DownLoadDat();
+				if (u) prefmsg(u->nick, s_SecureServ, "A new Dat file version %d is being downloaded. Please Monitor the Services Channel", myversion);
 			 } else
 				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
-		} else {
+				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
+			 } else {
 			chanalert(s_SecureServ, "SecureServ is operating with the most recent Dat file. No Need to update");
-		}
+			if (u) prefmsg(u->nick, s_SecureServ, "SecureServ is operating with the most recent Dat file. No need to update");
+			}
 		return;
 	} else {
 		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", ver);
 		chanalert(s_SecureServ, "Virus Definition Check failed: %s", ver);
+		if (u) prefmsg(u->nick, s_SecureServ, "Virus Definition Check failed. %s", ver);
 		return;
 	}
 	CLEAR_SEGV_INMODULE();
@@ -210,13 +239,13 @@ int do_update(User *u, char **av, int ac)
 	}
 	bzero(ss_buf, SS_BUF_SIZE);
 	ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-	if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver) != NS_SUCCESS) {
+	if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", u, datver) != NS_SUCCESS) {
 		prefmsg(u->nick, s_SecureServ, "Definition Download Failed. Check Log Files");
 		nlog(LOG_WARNING, LOG_MOD, "Definition Download failed.");
 		chanalert(s_SecureServ, "Definition Download failed. Check log files");
 		return NS_FAILURE;
 	}	
-	prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
+	prefmsg(u->nick, s_SecureServ, "Requesting New Dat File.");
 	chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
 	return 1;
 }

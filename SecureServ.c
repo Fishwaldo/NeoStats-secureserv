@@ -167,7 +167,7 @@ int __BotMessage(char *origin, char **argv, int argc)
 		HelpersAssist(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[1], "EXCLUDE")) {
-		do_exempt(u, argv, argc);
+		SS_do_exempt(u, argv, argc);
 		return 1;
 	} else if (!strcasecmp(argv[1], "BOTS")) {
 		do_bots(u, argv, argc);
@@ -1074,7 +1074,7 @@ int ss_join_chan(char **av, int ac)
 	}
 	
 	/* is it exempt? */
-	if (IsChanExempt(c) > 0) {
+	if (SS_IsChanExempt(c) > 0) {
 		return -1;
 	}
 
@@ -1089,7 +1089,7 @@ int ss_join_chan(char **av, int ac)
 		MonJoin(c);
 	
 	/* how about the user, is he exempt? */
-	if (IsUserExempt(u) > 0) {
+	if (SS_IsUserExempt(u) > 0) {
 		return -1;
 	}
 	
@@ -1194,7 +1194,7 @@ static int NickChange(char **av, int ac)
 	/* Possible memory leak here if a helper changes nick? */
 	u->moddata[SecureServ.modnum] = NULL;
 	
-	if (IsUserExempt(u) > 0) {
+	if (SS_IsUserExempt(u) > 0) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Bye, I'm Exempt %s", u->nick);
 		return -1;
 	}
@@ -1225,7 +1225,7 @@ static int ScanNick(char **av, int ac)
 		return -1;
 	}
 	
-	if (IsUserExempt(u) > 0) {
+	if (SS_IsUserExempt(u) > 0) {
 		return -1;
 	}
 
@@ -1334,7 +1334,7 @@ int __ModInit(int modnum, int apiversion)
 	SecureServ.modnum = modnum;
 
 	LoadConfig();
-	InitExempts();
+	SS_InitExempts();
 	InitScanner();
 	InitOnJoinBots();
 	InitJoinFlood();

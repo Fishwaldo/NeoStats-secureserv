@@ -311,7 +311,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			save_exempts();
 			return 1;
 		} else if (!strcasecmp(argv[2], "DEL")) {
-			if (argc < 3) {
+			if (argc < 4) {
 				prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help exclude", s_SecureServ);
 				return 0;
 			}

@@ -1923,6 +1923,8 @@ void gotpositive(User *u, virientry *ve, int type) {
 	UserDetail *ud;
 	int i;
 
+	if (!u) /* User not found */
+		return;
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
 	prefmsg(u->nick, s_SecureServ, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);

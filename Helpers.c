@@ -247,6 +247,8 @@ int Helpers_signoff(User *u) {
 	
 	if (HlpsOk == 0) 
 		return -1;
+	if (!u) /* User not found */
+		return -1;
 
 
 	hash_scan_begin(&hlps, helperhash);
@@ -285,6 +287,8 @@ int Helpers_away(char **av, int ac) {
 		return 1;
 	}
 	u = finduser(av[0]);
+	if (!u) /* User not found */
+		return 1;
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);
@@ -329,6 +333,8 @@ int Helpers_Assist(User *u, char **av, int ac) {
 	}
 	/* if we get here, they are ok, so check the target user*/
 	tu = finduser(av[3]);
+	if (!tu) /* User not found */
+		return 1;
 
 	if (tu->moddata[SecureServ.modnum] == NULL) {
 		prefmsg(u->nick, s_SecureServ, "Invalid User %s. Not Recorded as requiring assistance", tu->nick);

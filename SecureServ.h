@@ -34,16 +34,21 @@
 
 #define REQUIREDAPIVER 1
 
+#define MAXVIRNAME		64
+#define MAXREASON		128
+#define MAXCTCPTYPE		64
+#define LOCALBUFSIZE	32
+
 typedef struct virientry {
-	char name[MAXHOST];
+	char name[MAXVIRNAME];
 	int dettype;
 	int var1;
 	int var2;
-	char ctcptype[MAXHOST];
-	char recvmsg[MAXHOST];
+	char ctcptype[MAXCTCPTYPE];
+	char recvmsg[BUFSIZE];
 	pcre *pattern;
 	pcre_extra *patternextra;
-	char sendmsg[MAXHOST];
+	char sendmsg[BUFSIZE];
 	int action;
 	int nofound;
 	int noopen;
@@ -133,7 +138,7 @@ struct exempts {
 	char host[MAXHOST];
 	int server;
 	char who[MAXNICK];
-	char reason[MAXHOST];
+	char reason[MAXREASON];
 };
 
 typedef struct exempts exemptinfo;

@@ -287,7 +287,7 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			exempts->server = atoi(argv[4]);
 			strlcpy(exempts->who, u->nick, MAXNICK);
 			buf = joinbuf(argv, argc, 5);
-			strlcpy(exempts->reason, buf, MAXHOST);
+			strlcpy(exempts->reason, buf, MAXREASON);
 			free(buf);
 			node = lnode_create(exempts);
 			list_append(exempt, node);
@@ -390,12 +390,12 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				prefmsg(u->nick, s_SecureServ, "Error, Bot list is full");
 				return 0;
 			}
-			buf = malloc(MAXHOST+1);
-			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/User", argv[3]);
+			buf = malloc(CONFBUFSIZE);
+			ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/User", argv[3]);
 			SetConf((void *)argv[4], CFGSTR, buf);
-			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/Host", argv[3]);
+			ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/Host", argv[3]);
 			SetConf((void *)argv[5], CFGSTR, buf);
-			ircsnprintf(buf, MAXHOST, "RandomNicks/%s/RealName", argv[3]);
+			ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s/RealName", argv[3]);
 			buf2 = joinbuf(argv, argc, 6);			
 			SetConf((void *)buf2, CFGSTR, buf);
 			free(buf);
@@ -433,8 +433,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 							return -1;
 						}
 						list_delete(nicks, node);
-						buf = malloc(MAXHOST);
-						ircsnprintf(buf, MAXHOST, "RandomNicks/%s", bots->nick);
+						buf = malloc(CONFBUFSIZE);
+						ircsnprintf(buf, CONFBUFSIZE, "RandomNicks/%s", bots->nick);
 						DelConf(buf);
 						free(buf);
 						prefmsg(u->nick, s_SecureServ, "Deleted %s out of Bot list", bots->nick);
@@ -1127,12 +1127,11 @@ void do_status(User *u) {
 	
 }
 
-
 void do_list(User *u) {
 	lnode_t *node;
 	virientry *ve;
-	char type[MAXHOST];
-	char action[MAXHOST];
+	char type[LOCALBUFSIZE];
+	char action[LOCALBUFSIZE];
 	int i;
 
 	i = 0;
@@ -1144,41 +1143,41 @@ void do_list(User *u) {
 		i++;
 		switch (ve->dettype) {
 			case DET_CTCP:
-				strlcpy(type, "Version", MAXHOST);
+				strlcpy(type, "Version", LOCALBUFSIZE);
 				break;
 			case DET_MSG:
-				strlcpy(type, "PM", MAXHOST);
+				strlcpy(type, "PM", LOCALBUFSIZE);
 				break;
 			case DET_NICK:
-				strlcpy(type, "Nick", MAXHOST);
+				strlcpy(type, "Nick", LOCALBUFSIZE);
 				break;
 			case DET_IDENT:
-				strlcpy(type, "Ident", MAXHOST);
+				strlcpy(type, "Ident", LOCALBUFSIZE);
 				break;
 			case DET_REALNAME:
-				strlcpy(type, "RealName", MAXHOST);
+				strlcpy(type, "RealName", LOCALBUFSIZE);
 				break;
 			case DET_CHAN:
-				strlcpy(type, "Chan", MAXHOST);
+				strlcpy(type, "Chan", LOCALBUFSIZE);
 				break;
 			case DET_BUILTIN:
-				strlcpy(type, "Built-In", MAXHOST);
+				strlcpy(type, "Built-In", LOCALBUFSIZE);
 				break;
 			default:
-				ircsnprintf(type, MAXHOST, "Unknown(%d)", ve->dettype);
+				ircsnprintf(type, LOCALBUFSIZE, "Unknown(%d)", ve->dettype);
 		}
 		switch (ve->action) {
 			case ACT_SVSJOIN:
-				strlcpy(action, "SVSjoin", MAXHOST);
+				strlcpy(action, "SVSjoin", LOCALBUFSIZE);
 				break;
 			case ACT_AKILL:
-				strlcpy(action, "Akill", MAXHOST);
+				strlcpy(action, "Akill", LOCALBUFSIZE);
 				break;
 			case ACT_WARN:
-				strlcpy(action, "OpersWarn", MAXHOST);
+				strlcpy(action, "OpersWarn", LOCALBUFSIZE);
 				break;
 			default:
-				strlcpy(action, "ClientWarn", MAXHOST);
+				strlcpy(action, "ClientWarn", LOCALBUFSIZE);
 		}
 		prefmsg(u->nick, s_SecureServ, "%d) Virus: %s. Detection: %s. Action: %s Hits: %d", i, ve->name, type, action, ve->nofound);
 	} while ((node = list_next(viri, node)) != NULL);
@@ -1237,7 +1236,7 @@ void LoadTSConf() {
 	char **data;
 	int i;
 	char *tmp;
-	char datapath[MAXHOST];
+	char datapath[CONFBUFSIZE];
 	SET_SEGV_LOCATION();
 
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
@@ -1379,7 +1378,7 @@ void LoadTSConf() {
 			exempts = malloc(sizeof(exemptinfo));
 			strlcpy(exempts->host, data[i], MAXHOST);
 	
-			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "Exempt/%s/Who", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
@@ -1387,15 +1386,15 @@ void LoadTSConf() {
 				strlcpy(exempts->who, tmp, MAXNICK);
 				free(tmp);
 			}
-			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "Exempt/%s/Reason", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
 			} else {
-				strlcpy(exempts->reason, tmp, MAXHOST);
+				strlcpy(exempts->reason, tmp, MAXREASON);
 				free(tmp);
 			}
-			ircsnprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "Exempt/%s/Server", data[i]);
 			if (GetConf((void *)&exempts->server, CFGINT, datapath) <= 0) {
 				free(exempts);
 				continue;
@@ -1413,7 +1412,7 @@ void LoadTSConf() {
 			rnicks = malloc(sizeof(randomnicks));
 			strlcpy(rnicks->nick, data[i], MAXNICK);
 	
-			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "RandomNicks/%s/User", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(rnicks);
 				continue;
@@ -1421,7 +1420,7 @@ void LoadTSConf() {
 				strlcpy(rnicks->user, tmp, MAXUSER);
 				free(tmp);
 			}
-			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "RandomNicks/%s/Host", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(rnicks);
 				continue;
@@ -1429,7 +1428,7 @@ void LoadTSConf() {
 				strlcpy(rnicks->host, tmp, MAXHOST);
 				free(tmp);
 			}
-			ircsnprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
+			ircsnprintf(datapath, CONFBUFSIZE, "RandomNicks/%s/RealName", data[i]);
 			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
 				free(exempts);
 				continue;
@@ -1517,12 +1516,12 @@ void load_dat() {
 
 	/* first, add the dat for Fizzer (even if its not enabled!) */
 	viridet = malloc(sizeof(virientry));
-	strlcpy(viridet->name, "FizzerBot", MAXHOST);
+	strlcpy(viridet->name, "FizzerBot", MAXVIRNAME);
 	viridet->dettype = DET_BUILTIN;
 	viridet->var1 = 0;
 	viridet->var2 = 0;
-	strlcpy(viridet->recvmsg, "UserName is RealName Reversed", MAXHOST);
-	strlcpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", MAXHOST);
+	strlcpy(viridet->recvmsg, "UserName is RealName Reversed", BUFSIZE);
+	strlcpy(viridet->sendmsg, "You're Infected with the Fizzer Virus", BUFSIZE);
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
 	SecureServ.definitions[DET_BUILTIN]++;
@@ -1575,12 +1574,12 @@ void load_dat() {
 				}
 				
 				pcre_get_substring_list(buf, ovector, rc, &subs);		
-				strlcpy(viridet->name, subs[1], MAXHOST);
+				strlcpy(viridet->name, subs[1], MAXVIRNAME);
 				viridet->dettype = atoi(subs[2]);
 				viridet->var1 = atoi(subs[3]);
 				viridet->var2 = atoi(subs[4]);
-				strlcpy(viridet->recvmsg, subs[5], MAXHOST);
-				strlcpy(viridet->sendmsg, subs[6], MAXHOST);
+				strlcpy(viridet->recvmsg, subs[5], BUFSIZE);
+				strlcpy(viridet->sendmsg, subs[6], BUFSIZE);
 				viridet->action = atoi(subs[7]);
 				viridet->nofound = 0;
 				viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);

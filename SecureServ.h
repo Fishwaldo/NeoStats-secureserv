@@ -179,6 +179,7 @@ int CheckOnjoinBotKick(char **argv, int ac);
 int MonJoin(Chans *c);
 int MonBotDelChan(Chans *);
 int CheckMonBotKill(char* nick);
+void OnJoinDelChan(Chans* c);
 
 /* scan.c */
 int ScanFizzer(User *u);

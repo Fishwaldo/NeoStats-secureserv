@@ -673,6 +673,8 @@ int ss_del_chan(char **av, int ac)
 
 	JoinFloodDelChan(c);
 
+	OnJoinDelChan(c);
+
 	return 1;
 }
 

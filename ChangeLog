@@ -5,6 +5,7 @@ SecureServ Module for NeoStats Changelog.
  - SET interface for nick/user/host/realname added (M)
  - Fix for bug 115, monchan bots now reinit if killed (M)
  - Add set option for onjoin bot modes so users can specify their own modes (M)
+ - OnJoin bots will now leave channels when the last user leaves (M)
 
 1.2 - Fish (F) and Mark (M) - 12 Feb, 2004
  - Fix up a monbot channel cycle crash (M)

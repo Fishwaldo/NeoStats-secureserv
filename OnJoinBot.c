@@ -1009,3 +1009,20 @@ int CheckMonBotKill(char* nick)
 	}
 	return 1;
 }
+
+void OnJoinDelChan(Chans* c) 
+{
+	SET_SEGV_LOCATION();
+
+	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
+	if (SecureServ.lastnick[0] != 0) {
+		if (finduser(SecureServ.lastnick)) {
+			if (SecureServ.lastchan[0] != 0 && strcasecmp(SecureServ.lastchan, c->name) == 0) {
+				spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+			}
+			del_bot(SecureServ.lastnick, "Finished Scanning");
+			SecureServ.lastchan[0] = 0;
+			SecureServ.lastnick[0] = 0;
+		}
+	}
+}

@@ -1068,7 +1068,7 @@ void do_status(User *u) {
 	prefmsg(u->nick, s_SecureServ, "CTCP Version Messages Scanned: %d", SecureServ.trigcounts[DET_CTCP]);
 	prefmsg(u->nick, s_SecureServ, "CTCP Messages Acted On: %d", SecureServ.actioncounts[DET_CTCP]);
 	prefmsg(u->nick, s_SecureServ, "CTCP Definitions: %d", SecureServ.definitions[DET_CTCP]);
-	prefmsg(u->nick, s_SecureServ, "Private Messages Recieved: %d", SecureServ.trigcounts[DET_MSG]);
+	prefmsg(u->nick, s_SecureServ, "Private Messages Received: %d", SecureServ.trigcounts[DET_MSG]);
 	prefmsg(u->nick, s_SecureServ, "Private Messages Acted on: %d", SecureServ.actioncounts[DET_MSG]);
 	prefmsg(u->nick, s_SecureServ, "Private Message Definitions: %d", SecureServ.definitions[DET_MSG]);
 	prefmsg(u->nick, s_SecureServ, "NickNames Checked: %d", SecureServ.trigcounts[DET_NICK]);
@@ -1470,7 +1470,7 @@ void load_dat() {
 	viridet->var1 = 0;
 	viridet->var2 = 0;
 	snprintf(viridet->recvmsg, MAXHOST, "UserName is RealName Reversed");
-	snprintf(viridet->sendmsg, MAXHOST, "Your Infected with the Fizzer Virus");
+	snprintf(viridet->sendmsg, MAXHOST, "You're Infected with the Fizzer Virus");
 	viridet->action = ACT_AKILL;
 	viridet->nofound = 0;
 	SecureServ.definitions[DET_BUILTIN]++;

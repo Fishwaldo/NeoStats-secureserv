@@ -172,7 +172,7 @@ restartnicks:
 	sjoin_cmd(nickname->nick, c->name);
 #endif
 
-	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Virus's", c->name, nickname->nick);
+	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
 	
 	
 	
@@ -245,7 +245,7 @@ restartnicksondemand:
 	sjoin_cmd(nickname->nick, c->name);
 #endif
 
-	chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Virus's by request of %s", c->name, nickname->nick, u->nick);
+	chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->nick);
 	prefmsg(u->nick, s_SecureServ, "Scanning %s with %s", c->name, nickname->nick);
 	return 1;
 }
@@ -270,8 +270,8 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 
 	buf = joinbuf(argv, ac, 1);
 	node = list_first(viri);
-	nlog(LOG_NORMAL, LOG_MOD, "Recieved Messaage from %s to OnJoin Bot: %s", u->nick, buf);
-	if (SecureServ.verbose) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Recieved Private Message from %s: %s", argv[0], u->nick, buf);
+	nlog(LOG_NORMAL, LOG_MOD, "Received message from %s to OnJoin Bot: %s", u->nick, buf);
+	if (SecureServ.verbose) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Received Private Message from %s: %s", argv[0], u->nick, buf);
 	do {
 		viridetails = lnode_get(node);
 		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20)) {
@@ -366,7 +366,7 @@ int MonChan(User *u, char *requestchan) {
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
 
-	chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Virus's by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
+	chanalert(me.allbots ? SecureServ.monbot : s_SecureServ, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->nick : s_SecureServ);
 	if (u) prefmsg(u->nick, s_SecureServ, "Monitoring %s with %s", c->name, SecureServ.monbot);
 	
 	buf = malloc(CHANLEN);

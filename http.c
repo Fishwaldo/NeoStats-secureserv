@@ -389,7 +389,7 @@ extern int http_read(int socknum, char *sockname) {
         	return -1;
         } else if (i == 0) {
 //		free(buf);
-        	nlog(LOG_DEBUG1, LOG_MOD, "HttpGet Successfull");
+        	nlog(LOG_DEBUG1, LOG_MOD, "HttpGet Successful");
 
 	    	h_end_ptr = find_header_end( hd->pBase, hd->total_bytes );
 

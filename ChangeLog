@@ -52,7 +52,7 @@ TrojanServ Module for NeoStats Changelog.
  - Fixed a problem with Matched channels in new_chan code. Re-Arranged Join_Chan code instead.
  - Fixed a problem with "Definitions count" after a update
  - AutoUpgrade now works
- - Messages recieved by the onjoinbot are now dumped into the logfile
+ - Messages received by the onjoinbot are now dumped into the logfile
  - Fixed a problem with restoring some string settings
  - Updated a bit the Channel Flood Checking. Now also checks the TS of the server to determine if its a flood.
  - NickFlood Checking is now Enabled

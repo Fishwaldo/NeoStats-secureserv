@@ -174,10 +174,10 @@ int ss_join_chan(char **av, int ac) {
 	ci->ajpp++;	
 
 	if (ci->ajpp > SecureServ.JoinThreshold) {
-		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
-		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
-		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Chan. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
-		prefmsg(ci->c->name, s_SecureServ, "Temporarly closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
+		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
+		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		prefmsg(ci->c->name, s_SecureServ, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
 		/* uh oh, channel is under attack. Close it down. */
 		schmode_cmd(s_SecureServ, ci->c->name, "+ik", SecureServ.ChanKey);
 		ci->locked = time(NULL);
@@ -233,7 +233,7 @@ int CheckLockChan() {
 			schmode_cmd(s_SecureServ, ci->c->name, "-ik", SecureServ.ChanKey);
 			chanalert(s_SecureServ, "Unlocking %s after floodprotection timeout", ci->c->name);
 			globops(s_SecureServ, "Unlocking %s after flood protection timeout", ci->c->name);
-			prefmsg(ci->c->name, s_SecureServ, "Unlocking the Channel now");
+			prefmsg(ci->c->name, s_SecureServ, "Unlocking the channel now");
 			ci->locked = 0;
 		}					
 	}

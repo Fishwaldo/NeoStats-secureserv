@@ -286,6 +286,6 @@ const char *ts_help_set[] = {
 	"    \2SIGNONMSG <message>\2    - Changes the message sent to users when they connect if Version Checking is enabled",
 	"    \2AKILLMSG <message>\2     - Changes the message sent to users when they are akilled",
 	"    \2NOHELPMSG <message>\2    - Changes the message sent to users when their are no helpers logged in",
-	"    \2HELPCHAN <channel>\2     - Changes the Channel that Virus's infected users are joined to if there are helpers logged in",
+	"    \2HELPCHAN <channel>\2     - Changes the Channel that Virus infected users are joined to if there are helpers logged in",
 	NULL
 };

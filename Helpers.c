@@ -177,7 +177,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 			ud->type = USER_HELPER;
 			ud->data = (void *) helper;
 			u->moddata[SecureServ.modnum] = (void *)ud;
-			prefmsg(u->nick, s_SecureServ, "Login Successfull");
+			prefmsg(u->nick, s_SecureServ, "Login Successful");
 			if (IsChanMember(findchan(SecureServ.HelpChan), u) != 1) {
 				prefmsg(u->nick, s_SecureServ, "Joining you to the Help Channel");
 				ssvsjoin_cmd(u->nick, SecureServ.HelpChan);

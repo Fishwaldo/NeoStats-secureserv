@@ -18,12 +18,13 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.10 2003/05/14 13:53:17 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.11 2003/05/16 13:56:28 fishwaldo Exp $
 */
 
 
 #include <stdio.h>
 #include <fnmatch.h>
+#include <pcre.h>
 #include "dl.h"
 #include "log.h"
 #include "stats.h"
@@ -47,6 +48,8 @@ void do_list(User *u);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
 void load_dat();
+int is_exempt(User *u);
+static int CheckNick(char **av, int ac);
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
@@ -585,7 +588,12 @@ void load_dat() {
 	char buf[512];
 	virientry *viridet;
 	lnode_t *node;
-
+	const char *error;
+	int errofset;
+	pcre *re;
+	int rc;
+	int ovector[24];
+	const char **subs;
 
 	/* if the list isn't empty, make it empty */
 	if (!list_isempty(viri)) {
@@ -620,24 +628,54 @@ void load_dat() {
 		chanalert(s_SecureServ, "Error not viri.dat file found, %s is disabled", s_SecureServ);
 		return;
 	} else {
+		re = pcre_compile("^([a-zA-Z0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) \"(.*)\" \"(.*)\" ([0-9]*).*" , 0, &error, &errofset, NULL);
+		if (re == NULL) {
+			nlog(LOG_CRITICAL, LOG_MOD, "PCRE_COMPILE of dat file format failed bigtime! %s at %d", error, errofset);		
+			return;
+		}
+		/* first fgets always returns the version number */
 		fgets(buf, 512, fp);
 		SecureServ.viriversion = atoi(buf);
 		while (fgets(buf, 512, fp)) {
 			if (list_isfull(viri))
 				break;
 			viridet = malloc(sizeof(virientry));
-			snprintf(viridet->name, MAXHOST, "%s", strtok(buf, " "));
-			viridet->dettype = atoi(strtok(NULL, " "));
-			viridet->var1 = atoi(strtok(NULL, " "));
-			viridet->var2 = atoi(strtok(NULL, " "));
-			snprintf(viridet->recvmsg, MAXHOST, "%s", strtok(NULL, "\""));
-			strtok(NULL, "\"");
-			snprintf(viridet->sendmsg, MAXHOST, "%s", strtok(NULL, "\""));
-			viridet->action = atoi(strtok(NULL, ""));
+			rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
+			if (rc <= 0) {
+				nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space!");
+				free(viridet);
+				continue;
+			} else if (rc != 8) {
+				nlog(LOG_WARNING, LOG_MOD, "Didn't get required number of Subs (%d)", rc);
+				continue;
+			}
+			
+			pcre_get_substring_list(buf, ovector, rc, &subs);		
+			snprintf(viridet->name, MAXHOST, "%s", subs[1]);
+			viridet->dettype = atoi(subs[2]);
+			viridet->var1 = atoi(subs[3]);
+			viridet->var2 = atoi(subs[4]);
+			snprintf(viridet->recvmsg, MAXHOST, "%s", subs[5]);
+			snprintf(viridet->sendmsg, MAXHOST, "%s", subs[6]);
+			viridet->action = atoi(subs[7]);
 			viridet->nofound = 0;
+			viridet->pattern = pcre_compile(viridet->recvmsg, 0, &error, &errofset, NULL);
+			if (viridet->pattern == NULL) {
+				/* it failed for some reason */
+				nlog(LOG_WARNING, LOG_MOD, "Regular Expression Compile of %s Failed: %s at %d", viridet->name, error, errofset);
+				free(subs);
+				free(viridet);
+				continue;
+			}	
+			viridet->patternextra = pcre_study(viridet->pattern, 0, &error);
+			if (error != NULL) {
+				nlog(LOG_WARNING, LOG_MOD, "Regular Expression Study for %s failed: %s", viridet->name, error);
+				/* don't exit */
+			}
 			node = lnode_create(viridet);
 			list_prepend(viri, node);
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
+			free(subs);
 		}
 	}
 
@@ -651,6 +689,7 @@ EventFnList my_event_list[] = {
 	{ "NEWCHAN",	ss_new_chan},
 	{ "JOINCHAN", 	ss_join_chan},
 	{ "DELCHAN",	ss_del_chan},
+	{ "NICK_CHANGE", CheckNick},
 	{ NULL, 	NULL}
 };
 
@@ -668,15 +707,85 @@ EventFnList *__module_get_events() {
 	return my_event_list;
 };
 
+int is_exempt(User *u) {
+	lnode_t *node;
+	exemptinfo *exempts;
 
-/* scan the nickname */
+	if (!strcasecmp(u->server->name, me.name)) {
+		nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: User %s Exempt. its Me!", u->nick);
+		return 1;
+	}
+
+	/* don't scan users from a server that is excluded */
+	node = list_first(exempt);
+	while (node) {
+		exempts = lnode_get(node);
+		if (exempts->server == 1) {
+			/* match a server */
+			if (fnmatch(exempts->host, u->server->name, 0) == 0) {
+				nlog(LOG_DEBUG1, LOG_MOD, "TS: User %s exempt. Matched server entry %s in Exemptions", u->nick, exempts->host);
+				return 1;
+			}
+		} else {
+			/* match a hostname */
+			if (fnmatch(exempts->host, u->hostname, 0) == 0) {
+				nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: User %s is exempt. Matched Host Entry %s in Exceptions", u->nick, exempts->host);
+				return 1;
+			}
+		}				
+		node = list_next(exempt, node);
+	}
+	return -1;
+}
+
+/* scan nickname changes */
+static int CheckNick(char **av, int ac) {
+	User *u;
+	lnode_t *node;
+	virientry *viridetails;
+	int rc;
+
+	u = finduser(av[1]);
+	if (!u) {
+		nlog(LOG_WARNING, LOG_MOD, "Cant Find user %s", av[1]);
+		return 1;
+	}
+	if (is_exempt(u) > 0) {
+		nlog(LOG_DEBUG1, LOG_MOD, "Bye, I'm Exempt %s", u->nick);
+		return -1;
+	}
+
+	/* check the nickname, ident, realname */
+	node = list_first(viri);
+	do {
+		viridetails = lnode_get(node);
+		if (viridetails->dettype == DET_NICK) {
+			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Nick %s against %s", u->nick, viridetails->recvmsg);
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch Nick Failed: (%d)", rc);
+				continue;
+			}
+			if (rc > -1) {					
+				gotpositive(u, viridetails, DET_NICK);
+				if (SecureServ.breakorcont == 0)
+					continue;
+				else 
+					return 1;
+			}
+		} 
+	} while ((node = list_next(viri, node)) != NULL);
+	return -1;
+}
+
+/* scan someone connecting */
 static int ScanNick(char **av, int ac) {
 	User *u;
 	lnode_t *node;
 	virientry *viridetails;
-	exemptinfo *exempts;
 	char username[11];
 	char *s1, *s2, *user;
+	int rc;
 
 	strcpy(segv_location, "TS:ScanNick");
 	/* don't do anything if NeoStats hasn't told us we are online yet */
@@ -689,24 +798,10 @@ static int ScanNick(char **av, int ac) {
 		return -1;
 	}
 	
-	/* don't scan users from my own server */
-	if (!strcasecmp(u->server->name, me.name)) {
+	if (is_exempt(u)) {
 		return -1;
 	}
 
-	/* don't scan users from a server that is excluded */
-	node = list_first(exempt);
-	while (node) {
-		exempts = lnode_get(node);
-		if (exempts->server == 1) {
-			/* match a server */
-			if (fnmatch(exempts->host, u->server->name, 0) == 0) {
-				nlog(LOG_DEBUG1, LOG_MOD, "TS: User %s exempt. Matched server entry %s in Exemptions", u->nick, exempts->host);
-				return -1;
-			}
-		}
-		node = list_next(exempt, node);
-	}
 	/* fizzer requires realname info, which we don't store yet. */
 	if (SecureServ.dofizzer == 1) {
 		user = malloc(MAXREALNAME);
@@ -730,6 +825,55 @@ static int ScanNick(char **av, int ac) {
 			return 1;
 		}
 	}							
+	/* check the nickname, ident, realname */
+	node = list_first(viri);
+	do {
+		viridetails = lnode_get(node);
+		if (viridetails->dettype == DET_NICK) {
+			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Nick %s against %s", u->nick, viridetails->recvmsg);
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->nick, strlen(u->nick), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch Nick Failed: (%d)", rc);
+				continue;
+			}
+			if (rc > -1) {					
+				gotpositive(u, viridetails, DET_NICK);
+				if (SecureServ.breakorcont == 0)
+					continue;
+				else 
+					return 1;
+			}
+		} else if (viridetails->dettype == DET_IDENT) {
+			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking ident %s against %s", u->username, viridetails->recvmsg);
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->username, strlen(u->username), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch UserName Failed: (%d)", rc);
+				continue;
+			}
+			if (rc > -1) {					
+				gotpositive(u, viridetails, DET_IDENT);
+				if (SecureServ.breakorcont == 0)
+					continue;
+				else 
+					return 1;
+			}
+		} else if (viridetails->dettype == DET_REALNAME) {
+			nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Realname %s against %s", u->realname, viridetails->recvmsg);
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, u->realname, strlen(u->realname), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch RealName Failed: (%d)", rc);
+				continue;
+			}
+			if (rc > -1) {					
+				gotpositive(u, viridetails, DET_REALNAME);
+				if (SecureServ.breakorcont == 0)
+					continue;
+				else 
+					return 1;
+			}
+		}
+	} while ((node = list_next(viri, node)) != NULL);
+
 
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
@@ -745,6 +889,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 	char *buf;
 	lnode_t *node;
 	virientry *viridetails;
+	int rc;
 	
 	/* if its not a ctcp message, forget it */
 	if (av[1][0] != '\1') 
@@ -758,7 +903,12 @@ int check_version_reply(char *origin, char **av, int ac) {
 			viridetails = lnode_get(node);
 			if ((viridetails->dettype == DET_CTCP) || (viridetails->dettype > 20)) {
 				nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Version %s against %s", buf, viridetails->recvmsg);
-				if (fnmatch(viridetails->recvmsg, buf, 0) == 0) {
+				rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+				if (rc < -1) {
+					nlog(LOG_WARNING, LOG_MOD, "PatternMatch CTCP Version Failed: (%d)", rc);
+					continue;
+				}
+				if (rc > -1) {					
 					gotpositive(finduser(origin), viridetails, DET_CTCP);
 					if (SecureServ.breakorcont == 0)
 						continue;

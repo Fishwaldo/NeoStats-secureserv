@@ -4,7 +4,7 @@
 ** Based from GeoStats 1.1.0 by Johnathan George net@lite.net
 *
 ** NetStats CVS Identification
-** $Id: SecureServ.h,v 1.7 2003/05/14 13:53:17 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.8 2003/05/16 13:56:29 fishwaldo Exp $
 */
 
 
@@ -12,7 +12,7 @@
 #define TS_H
 
 #include "modconfig.h"
-
+#include <pcre.h>
 
 
 
@@ -24,6 +24,8 @@ typedef struct virientry {
 	int var2;
 	char ctcptype[MAXHOST];
 	char recvmsg[MAXHOST];
+	pcre *pattern;
+	pcre_extra *patternextra;
 	char sendmsg[MAXHOST];
 	int action;
 	int nofound;
@@ -33,6 +35,10 @@ typedef struct virientry {
 /* Detection Types */
 #define DET_CTCP 0
 #define DET_MSG 1
+#define DET_NICK 2
+#define DET_IDENT 3
+#define DET_REALNAME 4
+#define DET_CHAN 5
 #define DET_BUILTIN 10
 
 /* Action List */

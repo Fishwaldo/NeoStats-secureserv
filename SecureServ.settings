@@ -18,6 +18,21 @@ g = {
                 RealName (S) = "I'm to lame to read BitchX.doc";
                 User (S) = "ShangMan";
             }
+            VJTD3 = {
+                Host (S) = "ppp203.net267.fl.sprint-hsd.net";
+                RealName (S) = "VJTD3";
+                User (S) = "VJTD3";
+            }
+            static = {
+                Host (S) = "adsl463.lqd.adsl.inernode.on.net";
+                RealName (S) = "Tim";
+                User (S) = "nobody";
+            }
+            BluD = {
+                Host (S) = "592-12.021.popsite.net";
+                RealName (S) = "BluD";
+                User (S) = "~blud";
+            }
         }
     }
 }

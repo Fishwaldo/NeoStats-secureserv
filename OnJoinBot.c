@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.7 2003/05/14 14:17:58 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.8 2003/05/16 13:56:28 fishwaldo Exp $
 */
 
 
@@ -145,6 +145,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	char *buf;
 	lnode_t *node;
 	virientry *viridetails;
+	int rc;
 	
 	buf = joinbuf(argv, ac, 1);
 	node = list_first(viri);
@@ -153,7 +154,12 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 		viridetails = lnode_get(node);
 		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 20)) {
 			nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
-			if (fnmatch(viridetails->recvmsg, buf, 0) == 0) {
+			rc = pcre_exec(viridetails->pattern, viridetails->patternextra, buf, strlen(buf), 0, 0, NULL, 0);
+			if (rc < -1) {
+				nlog(LOG_WARNING, LOG_MOD, "PatternMatch PrivateMessage Failed: (%d)", rc);
+				continue;
+			}
+			if (rc > -1) {					
 				gotpositive(u, viridetails, DET_MSG);
 				if (SecureServ.breakorcont == 0)
 					continue;

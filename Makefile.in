@@ -1,7 +1,7 @@
 #Neostats Module Makefile!
 CC=@CC@
 CFLAGS=@CFLAGS@
-LDFLAGS= @LIBS@
+LDFLAGS= @LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
@@ -10,7 +10,7 @@ INCLUDES=-I@DIRINST@/include/ -I.
 
 SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c
 OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
-TARGET= SecureServ.so                 
+TARGET= SecureServ.so 
 DOCS=README.SecureServ
 DATA=
 DISTFILES = $(SOURCES) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h

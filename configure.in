@@ -10,6 +10,11 @@ CFLAGS="$CFLAGS -O2 -Wall"
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL 
+AC_CHECK_LIB(pcre, pcre_compile,
+[CFLAGS="$CFLAGS `pcre-config --cflags`" LDFLAGS="$LDFLAGS `pcre-config --libs`"],
+[AC_MSG_ERROR(This program required libpcre.)])
+
+
 
 AC_MSG_CHECKING(Location of NeoStats...)
 AC_ARG_WITH(neostats, 
@@ -32,7 +37,7 @@ AC_TRY_RUN(
 int main(void) {
 	if (MAJOR >= 2) {
 		if (MINOR >= 5) {
-			if (REV >= 2) {
+			if (REV >= 3) {
 				exit(0);
 			}
 		}
@@ -67,6 +72,7 @@ AC_MSG_RESULT(no)
 
 AC_SUBST(DIRINST)
 AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_OUTPUT(Makefile)

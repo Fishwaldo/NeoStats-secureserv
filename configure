@@ -2199,6 +2199,71 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 
+echo "$as_me:$LINENO: checking for pcre_compile in -lpcre" >&5
+echo $ECHO_N "checking for pcre_compile in -lpcre... $ECHO_C" >&6
+if test "${ac_cv_lib_pcre_pcre_compile+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpcre  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char pcre_compile ();
+int
+main ()
+{
+pcre_compile ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pcre_pcre_compile=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_pcre_pcre_compile=no
+fi
+rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_pcre_pcre_compile" >&5
+echo "${ECHO_T}$ac_cv_lib_pcre_pcre_compile" >&6
+if test $ac_cv_lib_pcre_pcre_compile = yes; then
+  CFLAGS="$CFLAGS `pcre-config --cflags`" LDFLAGS="$LDFLAGS `pcre-config --libs`"
+else
+  { { echo "$as_me:$LINENO: error: This program required libpcre." >&5
+echo "$as_me: error: This program required libpcre." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+
+
+
 echo "$as_me:$LINENO: checking Location of NeoStats..." >&5
 echo $ECHO_N "checking Location of NeoStats...... $ECHO_C" >&6
 
@@ -2241,7 +2306,6 @@ fi
 CPPFLAGS="$CPPFLAGS -I$INCLUDEDIR"
 echo "$as_me:$LINENO: checking Version of NeoStats..." >&5
 echo $ECHO_N "checking Version of NeoStats...... $ECHO_C" >&6
-
 if test "$cross_compiling" = yes; then
   ns_version_ok='no'
 else
@@ -2258,7 +2322,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int main(void) {
 	if (MAJOR >= 2) {
 		if (MINOR >= 5) {
-			if (REV >= 2) {
+			if (REV >= 3) {
 				exit(0);
 			}
 		}
@@ -2323,6 +2387,7 @@ else
 echo "${ECHO_T}no" >&6
 
 fi;
+
 
 
 

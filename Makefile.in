@@ -23,7 +23,7 @@ all:	 module
 	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
 
 module:	 $(OBJECTS)
-	 $(LD) -shared -o $(TARGET) $(LDFLAGS) $(OBJECTS)
+	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS)
 
 clean:
 	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h

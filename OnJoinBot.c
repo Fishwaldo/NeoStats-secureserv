@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.9 2003/05/16 16:53:33 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.10 2003/05/20 08:50:07 fishwaldo Exp $
 */
 
 
@@ -151,6 +151,7 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	
 	buf = joinbuf(argv, ac, 1);
 	node = list_first(viri);
+	nlog(LOG_NORMAL, LOG_MOD, "Recieved Messaage from %s to OnJoin Bot: %s", u->nick, buf);
 	if (SecureServ.verbose) chanalert(me.allbots ? argv[0] : s_SecureServ, "OnJoin Bot %s Recieved Private Message from %s: %s", argv[0], u->nick, buf);
 	while ((node = list_next(viri, node)) != NULL) {
 		viridetails = lnode_get(node);

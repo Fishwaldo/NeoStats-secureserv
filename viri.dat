@@ -13,5 +13,24 @@ Mirc6ASCtime 0 0 0 ".*mIRC v6\.02 .*" "The Version of Mirc you are using has Sec
 MircGondRonk 1 0 0 ".*http://www.geocities.com/sayangku_anty/.*" "It appears you are infected with a Virus. (GondRonk - GeoCities)" 0
 LitMusBot 0 0 0 ".*Litmus.*" "Your the LitMus Bot. Your Bad. GoodBye" 1
 SDBOT 0 0 0 ".*sdbot.*" "Your the SDBot. Your Bad. GoodBye" 1
-DTHN 3 0 0 ".javauser" "DTHN Trojan" 1
+DTHN 3 0 0 ".javauser" "Your Ident Matches the DTHN Trojan, Please Change your Ident" 1
 Trojan1 2 0 0 "SELECTRealnicks" "Another Trojan" 1
+Botnet1 3 0 0 ".\[pA\]-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet2 3 0 0 ".\[MB\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet3 3 0 0 ".|\[g0dz\]|.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet4 3 0 0 ".CET-ABC" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet5 3 0 0 ".\[SYN\]-\[.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet6 3 0 0 ".r0x0r" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet7 3 0 0 ".Ph33r" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet8 3 0 0 ".XDCC-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet9 3 0 0 ".\[b0t\]-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet10 3 0 0 ".\[CB\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet11 3 0 0 ".j0sh.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet12 3 0 0 ".lE-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet13 3 0 0 ".\[ddos\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet14 3 0 0 ".\[pong\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet15 3 0 0 ".\[DrDos\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet16 3 0 0 ".\[XA\].*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet17 3 0 0 ".\].\[-.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+Botnet18 3 0 0 ".\[SYN\]-\[.*" "Your Ident Matches a Known Trojan/BotNet. Please Change your Ident" 1
+GondRonkChan 5 0 0 "#Â.*" "This Channel is associated with a Trojan. Don't Join it if you don't want to be killed", 1

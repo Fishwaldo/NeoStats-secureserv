@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.12 2003/05/16 16:53:34 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.13 2003/05/20 08:50:07 fishwaldo Exp $
 */
 
 
@@ -1054,6 +1054,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
+	prefmsg(u->nick, s_SecureServ, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
 	ve->nofound++;
 	SecureServ.actioncounts[type]++;
 	switch (ve->action) {

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: FloodCheck.c,v 1.3 2003/05/14 13:53:17 fishwaldo Exp $
+** $Id: FloodCheck.c,v 1.4 2003/05/20 08:50:06 fishwaldo Exp $
 */
 
 /* http://sourceforge.net/projects/muhstik/ */
@@ -55,9 +55,35 @@ int ss_new_chan(char **av, int ac) {
 	ChanInfo *ci;
 	hnode_t *cn;
 	Chans *c;
+        lnode_t *node;
+        virientry *viridetails;
+	int rc;
+	                
 	
 	c = findchan(av[0]);
 	if (c) {
+		/* first, check if this is a *bad* channel */
+	        node = list_first(viri);
+                do {
+                	viridetails = lnode_get(node);
+                	if (viridetails->dettype == DET_CHAN) {
+                		SecureServ.trigcounts[DET_CHAN]++;
+                                nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
+                                rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
+                                if (rc < -1) {
+	                                nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
+                                        continue;
+                                }
+                                if (rc > -1) {
+	                                gotpositive(finduser(av[1]), viridetails, DET_CHAN);
+                                        if (SecureServ.breakorcont == 0)
+	                                        continue;
+                                        else
+                                                return 1;
+                                }
+                        }
+                } while ((node = list_next(viri, node)) != NULL);
+
 		ci = malloc(sizeof(ChanInfo));
 		ci->ajpp = 0;
 		ci->sampletime = 0;
@@ -78,6 +104,9 @@ int ss_join_chan(char **av, int ac) {
 	Chans *c;
 	ChanInfo *ci;
 	hnode_t *cn;
+        lnode_t *node;
+        virientry *viridetails;
+        int rc;
 	
 	
 	u = finduser(av[1]);
@@ -104,6 +133,28 @@ int ss_join_chan(char **av, int ac) {
 	/* find the chan in SecureServ's list */
 	cn = hash_lookup(FC_Chans, c->name);
 	if (!cn) {
+		/* first, check if this is a *bad* channel */
+	        node = list_first(viri);
+                do {
+                	viridetails = lnode_get(node);
+                	if (viridetails->dettype == DET_CHAN) {
+                		SecureServ.trigcounts[DET_CHAN]++;
+                                nlog(LOG_DEBUG1, LOG_MOD, "TS: Checking Chan %s against %s", c->name, viridetails->recvmsg);
+                                rc = pcre_exec(viridetails->pattern, viridetails->patternextra, c->name, strlen(c->name), 0, 0, NULL, 0);
+                                if (rc < -1) {
+	                                nlog(LOG_WARNING, LOG_MOD, "PatternMatch Chan Failed: (%d)", rc);
+                                        continue;
+                                }
+                                if (rc > -1) {
+	                                gotpositive(finduser(av[1]), viridetails, DET_CHAN);
+                                        if (SecureServ.breakorcont == 0)
+	                                        continue;
+                                        else
+                                                return 1;
+                                }
+                        }
+                } while ((node = list_next(viri, node)) != NULL);
+
 		/* if it doesn't exist, means we have to create it ! */
 		nlog(LOG_DEBUG2, LOG_MOD, "Creating Channel Record in JoinSection %s", c->name);
 		ci = malloc(sizeof(ChanInfo));

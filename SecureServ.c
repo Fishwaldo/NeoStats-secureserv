@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.17 2003/05/26 11:30:11 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.18 2003/05/27 11:42:32 fishwaldo Exp $
 */
 
 
@@ -963,7 +963,8 @@ void load_dat() {
 		list_destroy_nodes(viri);
 	}
 	
-	for (rc = 0; rc > 20; rc++) {
+	for (rc = 0; rc < 20; rc++) {
+		printf("doing %d\n", rc);
 		SecureServ.definitions[rc] = 0;
 	}	
 

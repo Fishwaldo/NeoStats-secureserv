@@ -102,7 +102,7 @@ struct SecureServ {
 	char user[MAXUSER]; 
 	char host[MAXHOST]; 
 	char rname[MAXREALNAME]; 
-	int inited;
+	int isonline;
 	int timedif;
 	int doscan;
 	int viriversion;

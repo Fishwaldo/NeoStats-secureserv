@@ -906,7 +906,7 @@ static int Online(char **av, int ac)
 	add_mod_timer("CleanNickFlood", "CleanNickFlood", __module_info.module_name, 60);
 	add_mod_timer("CheckLockChan", "CheckLockedChans", __module_info.module_name, 60);
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
-	SecureServ.inited = 1;
+	SecureServ.isonline = 1;
 	LoadMonChans();
 
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
@@ -1139,8 +1139,8 @@ int ss_join_chan(char **av, int ac)
 	ChannelDetail *cd;
 
 	SET_SEGV_LOCATION();
-	/* if we not even inited, exit this */
-	if (!SecureServ.inited) {
+	/* if we are not online, exit this */
+	if (!SecureServ.isonline) {
 		return -1;
 	}
 
@@ -1306,7 +1306,7 @@ static int NickChange(char **av, int ac)
 	User *u;
 	
 	SET_SEGV_LOCATION();
-	if (!SecureServ.inited) {
+	if (!SecureServ.isonline) {
 		return 1;
 	}
 	
@@ -1344,7 +1344,7 @@ static int ScanNick(char **av, int ac)
 
 	SET_SEGV_LOCATION();
 	/* don't do anything if NeoStats hasn't told us we are online yet */
-	if (!SecureServ.inited)
+	if (!SecureServ.isonline)
 		return 0;
 							
 	u = finduser(av[0]);
@@ -1470,7 +1470,7 @@ int __ModInit(int modnum, int apiversion)
 	}
 	strlcpy(s_SecureServ, "SecureServ", MAXNICK);
 	
-	SecureServ.inited = 0;			
+	SecureServ.isonline = 0;			
 	SecureServ.helpcount = 0;
 	SecureServ.doUpdate = 0;
 	SecureServ.MaxAJPP = 0;

@@ -90,24 +90,6 @@ int __ModuleAuth (User * u)
 	return 0;
 }
 
-int __ChanMessage(char *origin, char **argv, int argc) {
-	char *buf;
-	User *u;
-	
-	/* first, if its the services channel, just ignore it */
-	if (!strcasecmp(argv[0], me.chan)) {
-		return -1;
-	}
-	/* otherwise, just pass it to the ScanMsg function */
-	u = finduser(origin);
-	if (u) {
-		buf = joinbuf(argv, argc, 1);
-		ScanMsg(u, buf, 1);
-		free(buf);
-	}
-	return 1;
-}
-
 static int do_set_updateinfo(User *u, char **av, int ac) 
 {
 	SET_SEGV_LOCATION();
@@ -761,6 +743,49 @@ static int event_notice(char **av, int ac)
 	return 1;
 }
 
+static int event_cprivate(char **av, int ac) 
+{
+	User *u;
+
+	SET_SEGV_LOCATION();
+
+	/* first, if its the services channel, just ignore it */
+	if (!strcasecmp(av[1], me.chan)) {
+		return -1;
+	}
+
+	u = finduser(av[0]); 
+	if (!u) { 
+		return -1; 
+	} 
+
+	/* otherwise, just pass it to the ScanMsg function */
+	ScanMsg(u, av[2], 1);
+	return 1;
+}
+
+static int event_cnotice(char **av, int ac) 
+{
+	User *u;
+
+	SET_SEGV_LOCATION();
+
+	/* first, if its the services channel, just ignore it */
+	if (!strcasecmp(av[1], me.chan)) {
+		return -1;
+	}
+
+	u = finduser(av[0]); 
+	if(!u) {
+		return -1; 
+	}
+
+	/* otherwise, just pass it to the ScanMsg function */
+	ScanMsg(u, av[2], 1);
+
+	return 1;
+}
+
 static int event_botkill(char **av, int ac) 
 {
 	SET_SEGV_LOCATION();
@@ -790,6 +815,8 @@ EventFnList __module_events[] = {
 #endif
 	{ EVENT_PRIVATE, 	event_private},
 	{ EVENT_NOTICE, 	event_notice},
+	{ EVENT_CPRIVATE, 	event_cprivate},
+	{ EVENT_CNOTICE, 	event_cnotice},
 	{ EVENT_BOTKILL, 	event_botkill},
 	{ NULL, 			NULL}
 };

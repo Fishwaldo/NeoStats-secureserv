@@ -236,11 +236,11 @@ static bot_setting ss_settings[]=
 	{"SPLITTIME",	&SecureServ.timedif,	SET_TYPE_INT,		0,	1000,		NS_ULEVEL_ADMIN, "SplitTime",	NULL,	ts_help_set_splittime, NULL },
 	{"CHANKEY",		&SecureServ.ChanKey,	SET_TYPE_STRING,	0,	CHANLEN,	NS_ULEVEL_ADMIN, "ChanKey",		NULL,	ts_help_set_chankey, NULL },
 	{"VERSION",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoVersionScan",NULL,	ts_help_set_version, NULL },
-	{"SIGNONMSG",	&SecureServ.signonscanmsg,	SET_TYPE_MSG,	0,	0,			NS_ULEVEL_ADMIN,"SignOnMsg",	NULL,	ts_help_set_signonmsg, NULL },
-	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL },
-	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL },
-	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	0,			NS_ULEVEL_ADMIN,"NoHelpMsg",	NULL,	ts_help_set_nohelpmsg, NULL },
-	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	0,			NS_ULEVEL_ADMIN,"HelpChan",		NULL,	ts_help_set_helpchan, NULL },
+	{"SIGNONMSG",	&SecureServ.signonscanmsg,	SET_TYPE_MSG,	0,	BUFSIZE,	NS_ULEVEL_ADMIN,"SignOnMsg",	NULL,	ts_help_set_signonmsg, NULL },
+	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"BotQuitMsg",	NULL,	ts_help_set_botquitmsg, NULL },
+	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"AkillMsg",		NULL,	ts_help_set_akillmsg, NULL },
+	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,"NoHelpMsg",	NULL,	ts_help_set_nohelpmsg, NULL },
+	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	CHANLEN,	NS_ULEVEL_ADMIN,"HelpChan",		NULL,	ts_help_set_helpchan, NULL },
 	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoAwaySignOut",NULL,	ts_help_set_autosignout, NULL },
 	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoJoinHelpChan",NULL,	ts_help_set_joinhelpchan, NULL },
 	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,"DoReport",		NULL,	ts_help_set_report, NULL },
@@ -714,7 +714,7 @@ static int event_private(char **av, int ac)
 	SET_SEGV_LOCATION();
 	u = finduser(av[0]); 
 	if (!u) { 
-		nlog(LOG_WARNING, LOG_CORE, "Unable to find user %s (ts)", av[0]); 
+		nlog(LOG_WARNING, LOG_MOD, "Unable to find user %s (ts)", av[0]); 
 		return -1; 
 	} 
 	/* first, figure out what bot its too */

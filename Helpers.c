@@ -387,7 +387,7 @@ int HelpersAssist(User *u, char **av, int ac)
 		ve = (virientry *)td->data;
 		prefmsg(u->nick, s_SecureServ, "Akilling %s as they are infected with %s", tu->nick, ve->name);	
 		chanalert(s_SecureServ, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
-		nlog(LOG_NORMAL, LOG_CORE, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
+		nlog(LOG_NORMAL, LOG_MOD, "%s used assist kill on %s!%s@%s (infected with %s)", u->nick, tu->nick, tu->username, tu->hostname, ve->name);
 		if(ve->iscustom) {
 			globops(s_SecureServ, "Akilling %s for Virus %s (Helper %s performed Assist Kill)", tu->nick, ve->name, u->nick);
 			sakill_cmd(tu->hostname, tu->username, s_SecureServ, SecureServ.akilltime, "Infected with Virus/Trojan %s. (HelperAssist by %s)", ve->name, u->nick);

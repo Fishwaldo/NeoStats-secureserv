@@ -35,7 +35,7 @@ clean:
 install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
-	 $(INSTALL) -m 644 $(DATA) $(DIRECTORY)../data/
+	if ! test -f $(DIRECTORY)../kpconf/data/viri.dat ; then $(INSTALL) -m 644 $(DATA) $(DIRECTORY)../data/ ; fi 
 	 @cd $(DIRECTORY)..; \
 	if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i doc/SecureServ.settings; fi
 

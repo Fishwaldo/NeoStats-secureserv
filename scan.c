@@ -594,7 +594,7 @@ void gotpositive(User *u, virientry *ve, int type)
 			}
 		case ACT_KILL:
 			prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
-			chanalert(s_SecureServ, "Kkilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+			chanalert(s_SecureServ, "Killing %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 			if(ve->iscustom) {
 				skill_cmd(s_SecureServ, u->nick, "Infected with: %s ", ve->name);
 			} else {

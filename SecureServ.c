@@ -1200,7 +1200,7 @@ int __ModInit(int modnum, int apiversion)
 void __ModFini() 
 {
 	SET_SEGV_LOCATION();
-
+	ExitOnJoinBots();
 };
 
 int ss_kick_chan(char **argv, int ac) 

@@ -352,7 +352,7 @@ int MonChan(User *u, char *requestchan)
 		if (u) prefmsg(u->nick, s_SecureServ, "Can not find Channel %s, It has to have Some Users!", requestchan);
 		return -1;
 	}			
-	if (SecureServ.monbot[0] ==0) {
+	if (SecureServ.monbot[0] == 0) {
 		if (u) prefmsg(u->nick, s_SecureServ, "Warning, No Monitor Bot set. /msg %s help set", s_SecureServ);
 		return -1;
 	}
@@ -565,6 +565,26 @@ int InitOnJoinBots(void)
 	/* init CTCP version response */
 	strlcpy(SecureServ.sampleversion, DEFAULT_VERSION_RESPONSE, SS_BUF_SIZE);
 	OnJoinBotConf();
+	return 1;
+}
+
+int ExitOnJoinBots(void)
+{
+	SET_SEGV_LOCATION();
+	if (finduser(SecureServ.lastnick)) {
+		chanalert(s_SecureServ, "SecureServ is unloading, OnJoinBot %s leaving", SecureServ.lastnick);
+		if (SecureServ.lastchan[0] != 0) {
+			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+		}
+		del_bot(SecureServ.lastnick, "Leaving");
+		SecureServ.lastchan[0] = 0;
+		SecureServ.lastnick[0] = 0;
+	}
+	if (SecureServ.monbot[0] != 0) {
+		chanalert(s_SecureServ, "SecureServ is unloading, monitor bot %s leaving", SecureServ.monbot);
+		del_bot(SecureServ.monbot, "Leaving");
+		return -1;
+	}
 	return 1;
 }
 

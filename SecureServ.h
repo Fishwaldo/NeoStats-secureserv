@@ -155,6 +155,7 @@ int MonChanCount(void);
 int OnJoinBotConf(void);
 int ViriCount(void);
 int InitOnJoinBots(void);
+int ExitOnJoinBots(void);
 int do_bots(User* u, char **argv, int argc);
 int do_checkchan(User* u, char **argv, int argc);
 int do_monchan(User* u, char **argv, int argc);
@@ -191,7 +192,6 @@ int CleanNickFlood(void);
 int NickFloodSignOff(char * n);
 int CheckNickFlood(User* u);
  
-
 /* Helpers.c */
 int HelpersInit(void);
 int HelpersLogin(User *u, char **av, int ac);

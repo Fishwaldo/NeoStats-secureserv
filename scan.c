@@ -99,7 +99,7 @@ void load_dat(void)
 				}
 				free(viridet);
 			}
-			node = list_next(viri, node));
+			node = list_next(viri, node);
 		} 
 		list_destroy_nodes(viri);
 	}

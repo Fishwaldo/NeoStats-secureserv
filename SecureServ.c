@@ -728,7 +728,10 @@ static int event_private(char **av, int ac)
 	} 
 	/* first, figure out what bot its too */
 	if (strcasecmp(av[1], s_SecureServ)) {
-		OnJoinBotMsg(u, av[1], av[2]);
+		/* Check it is intended for an onjoin bot */
+		if(strcasecmp(SecureServ.monbot, av[1]) == 0 || strcasecmp(SecureServ.lastnick, av[1]) == 0) {
+			OnJoinBotMsg(u, av[1], av[2]);
+		}		
 		return -1;
 	}
 	return 1;
@@ -745,7 +748,10 @@ static int event_notice(char **av, int ac)
 	}
 	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
 	if (av[2][0] != '\1') {
-		OnJoinBotMsg(u, av[1], av[2]);
+		/* Check it is intended for an onjoin bot */
+		if(strcasecmp(SecureServ.monbot, av[1]) == 0 || strcasecmp(SecureServ.lastnick, av[1]) == 0) {
+			OnJoinBotMsg(u, av[1], av[2]);
+		}		
 		return 0;
 	}
 

@@ -137,14 +137,12 @@ struct SecureServ {
 } SecureServ;
 
 
-struct exempts {
+typedef struct exemptinfo {
 	char host[MAXHOST];
 	int server;
 	char who[MAXNICK];
 	char reason[MAXREASON];
-};
-
-typedef struct exempts exemptinfo;
+}exemptinfo;
 
 typedef struct randomnicks {
 	char nick[MAXNICK];
@@ -165,8 +163,6 @@ list_t *exempt;
 #define MAX_NICKS	100
 
 /* SecureServ.c */
-int Chan_Exempt(Chans *c);
-int is_exempt(User *u);
 
 /* OnJoin.c */
 void JoinNewChan();
@@ -181,6 +177,10 @@ int MonChanCount(void);
 int OnJoinBotConf(void);
 int ViriCount(void);
 int InitOnJoinBots(void);
+int do_bots(User* u, char **argv, int argc);
+int do_checkchan(User* u, char **argv, int argc);
+int do_monchan(User* u, char **argv, int argc);
+int do_cycle(User* u, char **argv, int argc);
 
 /* scan.c */
 int ScanFizzer(User *u);
@@ -188,9 +188,16 @@ int ScanChan(User* u, Chans *c);
 int ScanUser(User *u, unsigned flags);
 int ScanMsg(User *u, char* buf);
 int ScanCTCP(User *u, char* buf);
-void do_list(User *u);
+int do_list(User *u, char **av, int ac);
 void InitScanner(void);
-void load_dat();
+void load_dat(void);
+
+/* exempts.c */
+int IsChanExempt(Chans *c);
+int IsUserExempt(User *u);
+void save_exempts(void);
+void load_exempts(void);
+int do_exempt(User* u, char **argv, int argc);
 
 /* FloodCheck.c */
 void InitJoinFloodHash(void);
@@ -209,10 +216,11 @@ int Helpers_del(User *u, char *nick);
 int Helpers_list(User *u);
 int Helpers_chpass(User *u, char **av, int ac);
 int Helpers_Login(User *u, char **av, int ac);
-int Helpers_Logout(User *u);
+int Helpers_Logout(User *u, char **av, int ac);
 int Helpers_signoff(User *u);
 int Helpers_away(char **av, int ac);
 int Helpers_Assist(User *u, char **av, int ac);
+int do_helpers(User *u, char **av, int ac);
 
 /* SecureServ_help.c */
 extern const char *ts_help[];

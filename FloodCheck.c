@@ -83,11 +83,11 @@ int ss_join_chan(char **av, int ac)
 	}
 
 	/* is it exempt? */
-	if (Chan_Exempt(c) > 0) {
+	if (IsChanExempt(c) > 0) {
 		return -1;
 	}
 	/* how about the user, is he exempt? */
-	if (is_exempt(u) > 0) {
+	if (IsUserExempt(u) > 0) {
 		return -1;
 	}
 	

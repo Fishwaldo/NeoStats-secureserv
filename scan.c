@@ -192,13 +192,19 @@ void load_dat() {
 	}	
 }
 
-void do_list(User *u) 
+int do_list(User *u, char **av, int ac) 
 {
 	lnode_t *node;
 	virientry *ve;
 	char type[LOCALBUFSIZE];
 	char action[LOCALBUFSIZE];
 	int i;
+
+	if (UserLevel(u) < NS_ULEVEL_OPER) {
+		prefmsg(u->nick, s_SecureServ, "Permission Denied");
+		chanalert(s_SecureServ, "%s tried to list, but Permission was denied", u->nick);
+		return -1;
+	}			
 
 	i = 0;
 	node = list_first(viri);
@@ -252,6 +258,7 @@ void do_list(User *u)
 	} else {
 		prefmsg(u->nick, s_SecureServ, "No definitions found.");
 	}
+	return 1;
 }
 
 int ScanFizzer(User *u) 

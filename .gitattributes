@@ -15,6 +15,7 @@
 /SecureServ_help.c eol=lf
 /configure -text
 /configure.in -text
+/exempts.c -text
 /html.css -text
 /http.c eol=lf
 /http.h eol=lf

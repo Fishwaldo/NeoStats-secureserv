@@ -8,8 +8,8 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY=@DIRINST@/dl/
 INCLUDES=-I@DIRINST@/include/ -I.
 
-SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c scan.c
-OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o scan.o
+SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c scan.c exempt.c
+OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o scan.o exempt.o
 TARGET= secureserv.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
 DATA=viri.dat customviri.dat
@@ -60,3 +60,4 @@ OnJoinBot.o:		SecureServ.h modconfig.h
 FloodCheck.o:		SecureServ.h modconfig.h 
 Helpers.o:		SecureServ.h modconfig.h 
 scan.o:		SecureServ.h modconfig.h 
+exempt.o:		SecureServ.h modconfig.h 

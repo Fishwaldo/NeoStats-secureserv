@@ -152,6 +152,11 @@ int Helpers_Login(User *u, char **av, int ac)
 	hscan_t hlps;
 	UserDetail *ud;
 
+	if (ac < 4) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help login for more info", s_SecureServ);
+		return -1;
+	}
+
 	if (IsHelpersInit == 0) 
 		return -1;
 
@@ -200,7 +205,7 @@ int Helpers_Login(User *u, char **av, int ac)
 	return -1;
 }
 
-int Helpers_Logout(User *u) 
+int Helpers_Logout(User *u, char **av, int ac)
 {
 	hscan_t hlps;
 	hnode_t *node;
@@ -311,6 +316,11 @@ int Helpers_Assist(User *u, char **av, int ac)
 	User *tu;
 	virientry *ve;
 
+	if (ac < 4) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
+		return -1;
+	}
+
 	if (IsHelpersInit == 0) 
 		return -1;
 
@@ -368,4 +378,36 @@ int Helpers_Assist(User *u, char **av, int ac)
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help assist", s_SecureServ);
 		return -1;
 	}		
+}	
+
+int do_helpers(User *u, char **av, int ac)
+{
+	if (UserLevel(u) < NS_ULEVEL_ADMIN) {
+		prefmsg(u->nick, s_SecureServ, "Permission Denied");
+		chanalert(s_SecureServ, "%s tried to use Helpers, but Permission was denied", u->nick);
+		return -1;
+	}			
+	if (ac < 3) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+		return -1;
+	}
+	if (!strcasecmp(av[2], "add")) {
+		Helpers_add(u, av, ac);
+		return 1;
+	} else if (!strcasecmp(av[2], "del")) {
+		if (ac == 4) {
+			Helpers_del(u, av[3]);
+			return 1;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+			return -1;
+		}
+	} else if (!strcasecmp(av[2], "list")) {
+		Helpers_list(u);
+		return 1;
+	} else {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+		return -1;
+	}
+	return 1;
 }	

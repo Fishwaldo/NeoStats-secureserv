@@ -18,12 +18,16 @@ all:	 libpcre.a
 .c.o:	
 	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
 
-maketable:
+dftables.o: dftables.c maketables.c internal.h pcre.h ../modconfig.h Makefile
 	$(CC) -c $(CFLAGS) $(INCLUDES) dftables.c
+
+dftables:       dftables.o
 	$(CC) $(LDFLAGS) dftables.o -o dftables
+
+chartables.c:   dftables
 	./dftables >./chartables.c
 
-libpcre.a: maketable $(OBJECTS) 
+libpcre.a: ${OBJECTS}
 	ar cru $(TARGET) ${OBJECTS}
 	ranlib $(TARGET)
 

@@ -1,6 +1,7 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
 1.3 - Fish (F) and Mark (M) - 27 Aug, 2004
+ - Fix bug 183 - secureserv echoing messages for other module bots. (M)
  - Fix bug 190 - wrong message displayed for chan message off. (M)
  - Fix bug 176 - monchans and excludes (M)
  - Ported to core command processor (M)

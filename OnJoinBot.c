@@ -59,7 +59,7 @@ static int chkmonchan (const void *key1, const void *key2)
 	return (strcasecmp(chan, chk));
 }
 
-static int is_monchan(char* chan)
+int is_monchan(char* chan)
 {
 	if (list_find(monchans, chan, chkmonchan)) {
 		return(1);

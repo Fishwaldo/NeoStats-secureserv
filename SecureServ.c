@@ -763,6 +763,11 @@ static int event_cprivate(char **av, int ac)
 		return -1;
 	}
 
+	/* Not an onjoin bot channel */
+	if (strcasecmp(av[1], SecureServ.lastchan) !=0 && !is_monchan(av[1])) {
+		return -1;
+	}
+
 	u = finduser(av[0]); 
 	if (!u) { 
 		return -1; 
@@ -785,6 +790,11 @@ static int event_cnotice(char **av, int ac)
 
 	/* first, if its the services channel, just ignore it */
 	if (!strcasecmp(av[1], me.chan)) {
+		return -1;
+	}
+
+	/* Not an onjoin bot channel */
+	if (strcasecmp(av[1], SecureServ.lastchan) !=0 && !is_monchan(av[1])) {
 		return -1;
 	}
 

@@ -286,6 +286,9 @@ extern const char *ts_help_set_onjoinbotmodes[];
 
 extern char onjoinbot_modes[MODESIZE];
 
+
+int is_monchan(char* chan);
+
 /* these are needed for 2.5.14 compatibility */
 #ifndef EVENT_SERVER
 #define EVENT_SERVER EVENT_NEWSERVER

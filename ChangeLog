@@ -14,7 +14,8 @@ SecureServ Module for NeoStats Changelog.
  - Nick flood code tidied up and moved to floodcheck.c (M)
  - Create #define DEFAULT_VERSION_RESPONSE so users can more easily change default version 
    response of onjoin bots - should this be a config option? (M)
- - Add hidden host support but ircd support required in core (M)
+ - Add hidden host support but ircd support required in core; this will also fix hostname 
+   problems found in 1.0 for ircds with UMODE_HIDE (+x) (M)
  - Updated code to use new 2.5.11 ircd updates - SecureServ is now ircd independent (M)
  - Generic scaning functions created for use by SecureServ to avoid repeating code (M)
  - Scanning and related code move to scan.c (M)
@@ -25,6 +26,7 @@ SecureServ Module for NeoStats Changelog.
  - Tidy up bot_msg for future port to core function (M)
  - Fix bot CTCP version replies; they should not come from SecureServ! (M)
  - Fix missing fizzer status in SET LIST (M)
+ - Move update code into update.c; should help with porting to libcurl (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

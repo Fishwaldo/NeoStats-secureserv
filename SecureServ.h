@@ -138,6 +138,11 @@ struct SecureServ {
 
 /* SecureServ.c */
 
+/* update.c */
+int do_update(User *u, char **av, int ac);
+void GotHTTPAddress(char *data, adns_answer *a);
+
+
 /* OnJoin.c */
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );

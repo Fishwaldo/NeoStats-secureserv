@@ -147,6 +147,9 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
+				RelativePath=".\modconfigwin32.h">
+			</File>
+			<File
 				RelativePath=".\SecureServ.h">
 			</File>
 		</Filter>
@@ -178,9 +181,6 @@
 		</File>
 		<File
 			RelativePath=".\Relnotes">
-		</File>
-		<File
-			RelativePath=".\SecureServ.settings">
 		</File>
 		<File
 			RelativePath=".\SecureServ.xml">

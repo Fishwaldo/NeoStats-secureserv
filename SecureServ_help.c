@@ -419,3 +419,9 @@ const char *ts_help_set_sampletime[] = {
 	"Sets the threshold for flood checking. Read the Readme file for more information",
 	NULL
 };
+const char *ts_help_set_onjoinbotmodes[] = {
+	"\2ONJOINBOTMODES <modes>\2",
+	"Sets the modes used by onjoin bots. <modes> should be a valid mode string as",
+	"you would use on IRC, e.g. -x. We recommoned that this option is not used.",
+	NULL
+};

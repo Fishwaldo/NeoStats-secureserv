@@ -279,6 +279,7 @@ static bot_setting ss_settings[]=
 	{"AUTOUPDATE",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_autoupdate, do_set_autoupdate },
 	{"SAMPLETIME",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_sampletime, do_set_sampletime },
 	{"UPDATEINFO",	NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,			NULL,	ts_help_set_updateinfo, do_set_updateinfo },
+	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,"OnJoinBotModes",NULL,	ts_help_set_onjoinbotmodes, NULL },
 	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
 };
 
@@ -398,9 +399,15 @@ static int LoadConfig(void)
 		free(tmp);
 	}
 	if (GetConf((void *) &tmp, CFGSTR, "RealName") < 0) {
-		ircsnprintf(SecureServ.realname, MAXREALNAME, "Trojan Scanning Bot");
+		strlcpy(SecureServ.realname, MAXREALNAME, "Trojan Scanning Bot");
 	} else {
 		strlcpy(SecureServ.realname, tmp, MAXREALNAME);
+		free(tmp);
+	}
+	if (GetConf((void *) &tmp, CFGSTR, "OnJoinBotModes") < 0) {
+		strlcpy(SecureServ.onjoinbot_modes, "+", MODESIZE);
+	} else {
+		strlcpy(SecureServ.onjoinbot_modes, tmp, MODESIZE);
 		free(tmp);
 	}
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
@@ -528,7 +535,7 @@ static int LoadConfig(void)
 		free(tmp);
 	}
 	if (GetConf((void *)&tmp, CFGSTR, "BotQuitMsg") <= 0) {
-		ircsnprintf(SecureServ.botquitmsg, BUFSIZE, "Client quit");
+		strlcpy(SecureServ.botquitmsg, BUFSIZE, "Client quit");
 	} else {
 		strlcpy(SecureServ.botquitmsg, tmp, BUFSIZE);
 		free(tmp);
@@ -626,8 +633,12 @@ int ss_join_chan(char **av, int ac)
 	cd = c->moddata[SecureServ.modnum];
 	/* if cd doesn't exist, soemthing major is wrong */
 	if(cd && cd->scanned == 0) {
-		ScanChan(u, c);
-		cd->scanned = 1;
+		/* Only set the channel to scanned if it is a clean channel 
+		 * otherwise we may miss scans
+		 */
+		if(ScanChan(u, c) == 0) {
+			cd->scanned = 1;
+		}
 	}
 	if(JoinFloodJoinChan(u, c))
 		return 1;
@@ -699,7 +710,7 @@ int ss_quit_server(char **av, int ac)
 	Server *s;
 	s = findserver(av[0]);
 	if (s) {
-			free(s->moddata[SecureServ.modnum]);
+		free(s->moddata[SecureServ.modnum]);
 	}
 	return 1;
 }

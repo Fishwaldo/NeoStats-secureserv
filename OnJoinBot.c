@@ -43,7 +43,7 @@ static list_t *monchans;
 static int SaveMonChans();
 /* this is the list of random nicknames */
 static list_t *nicks;
-static char onjoinbot_modes[] = "+";
+char onjoinbot_modes[MODESIZE] = "+";
 static lnode_t *lastmonchan;
 
 

@@ -280,6 +280,9 @@ extern const char *ts_help_set_monbot[];
 extern const char *ts_help_set_autoupdate[];
 extern const char *ts_help_set_sampletime[];
 extern const char *ts_help_set_updateinfo[];
+extern const char *ts_help_set_onjoinbotmodes[];
+
+extern char onjoinbot_modes[MODESIZE];
 
 /* these are needed for 2.5.14 compatibility */
 #ifndef EVENT_SERVER

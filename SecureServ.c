@@ -856,6 +856,7 @@ void do_set(User *u, char **av, int ac) {
 			SecureServ.DoOnJoin = 1;
 			return;
 		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			return;
 			prefmsg(u->nick, s_SecureServ, "OnJoin Virus Checking is now disabled");
 			chanalert(s_SecureServ, "%s disabled OnJoin Virus Checking", u->nick);
 			SetConf((void *)0, CFGINT, "DoOnJoin");
@@ -1961,7 +1962,21 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 	if (!u) /* User not found */
 		return;
-	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerable Script called %s", s_SecureServ, ve->name);
+	/* Initial message is based on an assumption that the action determines the threat level */
+	switch(ve->action) {
+		case ACT_SVSJOIN:
+			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is an infected IRC client called %s", s_SecureServ, ve->name);
+			break;
+		case ACT_AKILL:
+			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan or War Script called %s", s_SecureServ, ve->name);
+			break;
+		case ACT_WARN:
+			prefmsg(u->nick, s_SecureServ, "%s has detected that you or your client is sending unsolicted messages to other users", s_SecureServ);
+			break;
+		case ACT_NOTHING:
+			prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a vulnerable script or client called %s", s_SecureServ, ve->name);
+			break;
+	} 		
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
 	/* Do not generate a URL for local custom definitions since it will not exist*/
 	if(!ve->iscustom)

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ_help.c,v 1.3 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: SecureServ_help.c,v 1.4 2003/06/03 14:22:57 fishwaldo Exp $
 */
 
 #include "stats.h"
@@ -155,6 +155,7 @@ const char *ts_help_set[] = {
 "    \2DOONJOIN <on/off>\2      - This turns on and off the Onjoin Virus Checking.",
 "    \2AKILL <on/off>\2         - This option tells SecureServ to never issue a Akill on your Network. A warning message is sent to the operators instead",
 "    \2DOJOIN <on/off>\2        - This option tells SecureServ to never issue a SVSJOIN when a virus is detected. The User is Akilled instead",
+"    \2DOPRIVCHAN <on/off>\2	- This option tells SecureServ not to join Private Channels",
 "    \2UPDATEINFO <username> <password>\2",
 "                               - This Option Sets the Username and Password required for updating the SecureServ",
 "                                 Definitions file. See the Readme file for more info",

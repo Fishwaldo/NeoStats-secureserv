@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.12 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.13 2003/06/03 14:22:57 fishwaldo Exp $
 */
 
 
@@ -98,6 +98,7 @@ struct SecureServ {
 	char lastchan[CHANLEN];
 	char lastnick[MAXNICK];
 	int nfcount;
+	int doprivchan;
 } SecureServ;
 
 
@@ -141,6 +142,29 @@ struct nicktrack_ {
 typedef struct nicktrack_ nicktrack;
 
 hash_t *nickflood;
+
+/* this is a mess, but its aim is to handle the different IRCd's support */
+
+#ifndef MODE_ADMONLY
+#define MODE_ADMONLY 0
+#endif
+
+#ifndef MODE_OPERSONLY
+#define MODE_OPERSONLY 0
+#endif
+
+
+#ifndef MODE_OPERONLY
+#define MODE_OPERONLY MODE_OPERSONLY
+#endif
+
+#ifndef MODE_INVITE
+#define MODE_INVITE MODE_INVITEONLY
+#endif
+
+/* a Macro for determing if the channel is public */
+#define is_pub_chan(x) ((x) && (x->modes & (MODE_PRIVATE|MODE_SECRET|MODE_ADMONLY|MODE_OPERONLY|MODE_INVITE|MODE_KEY)))
+
 
 
 /* this is the size of the exempt list */

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.24 2003/06/03 11:38:43 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.25 2003/06/03 14:22:57 fishwaldo Exp $
 */
 
 
@@ -389,6 +389,27 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return;
 		}
+	} else if (!strcasecmp(av[2], "DOPRIVCHAN")) {
+		if (ac < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}			
+		if ((!strcasecmp(av[3], "YES")) || (!strcasecmp(av[3], "ON"))) {
+			prefmsg(u->nick, s_SecureServ, "Private Channel Checking is now enabled");
+			chanalert(s_SecureServ, "%s has enabled Private Channel Checking", u->nick);
+			SetConf((void *)1, CFGINT, "DoPrivChan");
+			SecureServ.doprivchan = 1;
+			return;
+		} else if ((!strcasecmp(av[3], "NO")) || (!strcasecmp(av[3], "OFF"))) {
+			prefmsg(u->nick, s_SecureServ, "Private Channel Checking is now Disabled");
+			chanalert(s_SecureServ, "%s has disabled Private Channel Checking", u->nick);
+			SetConf((void *)0, CFGINT, "DoPrivChan");
+			SecureServ.doprivchan = 0;
+			return;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
+			return;
+		}
 	} else if (!strcasecmp(av[2], "CHECKFIZZER")) {
 		if (ac < 4) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
@@ -658,6 +679,7 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Version Checking: %s", SecureServ.doscan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Multi Checking: %s", SecureServ.breakorcont ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
+		prefmsg(u->nick, s_SecureServ, "Check Private Channels?: %s", SecureServ.doprivchan ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
 		prefmsg(u->nick, s_SecureServ, "NickFlood Count is %d in 10 seconds", SecureServ.nfcount);
@@ -833,6 +855,11 @@ void LoadTSConf() {
 		/* not configured, don't scan */
 		SecureServ.doscan = 0;
 	} 
+	if(GetConf((void *)&SecureServ.doprivchan, CFGINT, "DoPrivChan") <= 0) {
+		/* not configured, do scan */
+		SecureServ.doprivchan = 1;
+	} 
+	
 	if (GetConf((void *)&SecureServ.timedif, CFGINT, "SplitTime") <= 0) {
 		/* use Default */
 		SecureServ.timedif = 300;

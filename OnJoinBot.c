@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.16 2003/06/03 11:38:43 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.17 2003/06/03 14:22:57 fishwaldo Exp $
 */
 
 
@@ -67,8 +67,13 @@ void JoinNewChan() {
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
 	if (strlen(SecureServ.lastchan) > 1) {
-		spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
-		del_bot(SecureServ.lastnick, "Finished Scanning");
+		if (finduser(SecureServ.lastnick)) {
+			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
+			del_bot(SecureServ.lastnick, "Finished Scanning");
+		} else {
+			strncpy(SecureServ.lastchan, "\0", CHANLEN);
+			strncpy(SecureServ.lastnick, "\0", MAXNICK);
+		}
 	}
 	/* restore segvinmodules */
 	strcpy(segvinmodule, "SecureServ");
@@ -93,6 +98,14 @@ restartchans:
 	c = GetRandomChan();
 	if (c != NULL) {
 		nlog(LOG_DEBUG1, LOG_MOD, "Random Chan is %s", c->name);
+
+		/* if channel is private and setting is enabled, don't join */
+		if ((SecureServ.doprivchan == 0) && (is_pub_chan(c))) {
+			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as its a private channel", c->name);
+			goto restartchans;
+		}
+
+
 		if (!strcasecmp(SecureServ.lastchan, c->name) || !strcasecmp(me.chan, c->name)) {
 			/* this was the last channel we joined, don't join it again */
 			nlog(LOG_DEBUG1, LOG_MOD, "Not Scanning %s, as we just did it", c->name);

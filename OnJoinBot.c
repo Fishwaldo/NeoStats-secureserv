@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.24 2003/08/05 12:29:33 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.25 2003/08/07 15:02:19 fishwaldo Exp $
 */
 
 
@@ -257,6 +257,10 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	lnode_t *node;
 	virientry *viridetails;
 	int rc;
+
+	if (!u) {
+		return;
+	}
 	
 	/* check if this user is exempt */
 	if (is_exempt(u) > 0) {

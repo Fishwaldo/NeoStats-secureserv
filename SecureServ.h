@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.21 2003/08/07 12:30:35 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.22 2003/08/07 15:02:19 fishwaldo Exp $
 */
 
 
@@ -190,6 +190,15 @@ void ss_init_chan_hash();
 int ss_join_chan(char **av, int ac);
 int ss_del_chan(char **av, int ac);
 int CheckLockChan();
+
+/* Helpers.c */
+void Helpers_init();
+int Helpers_add(User *, char **, int);
+int Helpers_del(User *, char *);
+int Helpers_list(User *);
+int Helpers_chpass(User *, char **, int);
+int Helpers_Login(User *, char **, int);
+int Helpers_Logout(User *);
 
 /* SecureServ_help.c */
 extern const char *ts_help[];

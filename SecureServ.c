@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.36 2003/08/07 12:46:02 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.37 2003/08/07 15:02:19 fishwaldo Exp $
 */
 
 
@@ -142,9 +142,45 @@ int __Bot_Message(char *origin, char **argv, int argc)
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 		}
 		return 1;
-	} else if ((!strcasecmp(argv[1], "login")) || (!strcasecmp(argv[1], "logout"))) {
-		prefmsg(u->nick, s_SecureServ, "Hey, this is a Beta version, you dont expect everything to work do you?");
+	} else if (!strcasecmp(argv[1], "login")) {
+		if (argc < 4) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help login for more info", s_SecureServ);
+			return -1;
+		}
+		Helpers_Login(u, argv, argc);
 		return 1;		
+ 	} else if (!strcasecmp(argv[1], "logout")) {
+		Helpers_Logout(u);
+ 		return 1;
+	} else if (!strcasecmp(argv[1], "helpers")) {
+		if (UserLevel(u) < 185) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to use Helpers, but Permission was denied", u->nick);
+			return -1;
+		}			
+		if (argc < 3) {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+			return -1;
+		}
+		if (!strcasecmp(argv[2], "add")) {
+			Helpers_add(u, argv, argc);
+			return 1;
+		} else if (!strcasecmp(argv[2], "del")) {
+			if (argc == 4) {
+				Helpers_del(u, argv[3]);
+				return 1;
+			} else {
+				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+				return -1;
+			}
+		} else if (!strcasecmp(argv[2], "list")) {
+			Helpers_list(u);
+			return 1;
+		} else {
+			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help helpers for more info", s_SecureServ);
+			return -1;
+		}
+
 	} else if (!strcasecmp(argv[1], "list")) {
 		if (UserLevel(u) < 40) {
 			prefmsg(u->nick, s_SecureServ, "Permission Denied");
@@ -1019,6 +1055,7 @@ int Online(char **av, int ac) {
 	}
 	LoadTSConf();
 	LoadMonChans();
+	Helpers_init();
 	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
@@ -1769,6 +1806,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 
 
 void gotpositive(User *u, virientry *ve, int type) {
+	char chan[CHANLEN];
 
 	prefmsg(u->nick, s_SecureServ, "%s has detected that your client is a Trojan/Infected IRC client/Vulnerble Script called %s", s_SecureServ, ve->name);
 	prefmsg(u->nick, s_SecureServ, ve->sendmsg);
@@ -1781,7 +1819,11 @@ void gotpositive(User *u, virientry *ve, int type) {
 				if (SecureServ.helpcount > 0) {		
 					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
-					ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
+					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
+						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
+					}
+					snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
@@ -1801,6 +1843,10 @@ void gotpositive(User *u, virientry *ve, int type) {
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
 			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->nick, ve->name, ve->name);
+			if (SecureServ.helpcount > 0) {
+				snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
+				prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
+			}
 			break;
 		case ACT_NOTHING:
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);

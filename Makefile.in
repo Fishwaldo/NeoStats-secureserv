@@ -8,8 +8,8 @@ INSTALL_DATA = @INSTALL_DATA@
 DIRECTORY=@DIRINST@/dl/
 INCLUDES=-I@DIRINST@/include/ -I.
 
-SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c
-OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
+SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c
+OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o
 TARGET= SecureServ.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
 DATA=viri.dat
@@ -59,7 +59,8 @@ dist:
 
 $(OBJECTS): Makefile
 
-SecureServ.c:		SecureServ.h SecureServ_help.c modconfig.h 
-SecureServ_help.c: 	SecureServ.h modconfig.h
-OnJoinBot.c:		SecureServ.h
-FloodCheck.c:		SecureServ.h
+SecureServ.o:		SecureServ.h SecureServ_help.c modconfig.h 
+SecureServ_help.o: 	SecureServ.h modconfig.h
+OnJoinBot.o:		SecureServ.h
+FloodCheck.o:		SecureServ.h
+Helpers.o:		SecureServ.h

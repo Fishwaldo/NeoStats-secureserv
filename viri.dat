@@ -1,0 +1,8 @@
+5 
+Virus1 1 2 0 "Mirc 6.03 haha" "you are infected with a virus" 3
+Virus2 2 4 1 "visit this website neostats" "you are infected with a virus" 2
+Virus3 3 0 2 "*IRC: .NET IRC Client (v1.0)*" "you are infected with a virus" 1
+Virus4 4 1 0 "visit this website" "you are infected with a virus" 0
+testviri 0 0 0 "ctcp version check" "ctcp autojoin " 0
+blahviris 0 0 1 "*.jpg" "you got a trojan" 1
+fishvirus 0 0 2 "Unknown Message" "BlahBlah, you got a fish virus" 2

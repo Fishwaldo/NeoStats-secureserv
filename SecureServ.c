@@ -407,7 +407,7 @@ int ModSynch (void)
 	/* kick of the autojoin timer */
 	AddTimer (TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime);
 	AddTimer (TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime);
-	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
+	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, NULL);
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {
 		AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime);

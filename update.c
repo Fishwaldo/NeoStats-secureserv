@@ -35,7 +35,6 @@
 
 void datver(void *data, int status, char *ver, int versize);
 void datdownload(void *data, int status, char *ver, int versize);
-void GotHTTPAddress(char *data, adns_answer *a);
 static int DownLoadDat(void);
 
 static char ss_buf[SS_BUF_SIZE];
@@ -165,7 +164,7 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 	}
 }
 	
-void GotHTTPAddress(char *data, adns_answer *a) 
+void GotHTTPAddress(void *data, adns_answer *a) 
 {
 	char *url;
 	int i, len, ri;

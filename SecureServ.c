@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.26 2003/06/04 12:51:17 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.27 2003/06/06 17:02:21 fishwaldo Exp $
 */
 
 
@@ -51,6 +51,7 @@ void datdownload(HTTP_Response *response);
 void load_dat();
 int is_exempt(User *u);
 static int CheckNick(char **av, int ac);
+static int DelNick(char **av, int ac);
 static void GotHTTPAddress(char *data, adns_answer *a);
 static void save_exempts();
 int AutoUpdate();
@@ -1137,6 +1138,8 @@ void load_dat() {
 EventFnList my_event_list[] = {
 	{ "ONLINE", 	Online},
 	{ "SIGNON", 	ScanNick},
+	{ "SIGNOFF", 	DelNick},
+	{ "KILL", 	DelNick},
 	{ "JOINCHAN", 	ss_join_chan},
 	{ "DELCHAN",	ss_del_chan},
 	{ "NICK_CHANGE", CheckNick},
@@ -1213,6 +1216,22 @@ int Chan_Exempt(Chans *c) {
 	}
 	return -1;
 }
+static int DelNick(char **av, int ac) {
+	hnode_t *nfnode;
+	nicktrack *nick;
+	nlog(LOG_DEBUG2, LOG_MOD, "DelNick: looking for %s\n", av[0]);
+	nfnode = hash_lookup(nickflood, av[0]);
+	if (nfnode) {
+		nick = hnode_get(nfnode);
+		hash_delete(nickflood, nfnode);
+       		hnode_destroy(nfnode);
+		free(nick);
+	}
+}
+
+
+
+
 /* scan nickname changes */
 static int CheckNick(char **av, int ac) {
 	User *u;
@@ -1221,6 +1240,11 @@ static int CheckNick(char **av, int ac) {
 	nicktrack *nick;
 	virientry *viridetails;
 	int rc;
+	
+	if (SecureServ.inited != 1) {
+		return 1;
+	}
+	
 	u = finduser(av[1]);
 	if (!u) {
 		nlog(LOG_WARNING, LOG_MOD, "Cant Find user %s", av[1]);
@@ -1314,7 +1338,6 @@ int CleanNickFlood() {
         		/* delete the nickname */
 			nlog(LOG_DEBUG2, LOG_MOD, "Deleting %s out of NickFlood Hash", nick->nick);
         		hash_scan_delete(nickflood, nfnode);
-        		hnode_destroy(nfnode);
         		free(nick);
         	}
         }

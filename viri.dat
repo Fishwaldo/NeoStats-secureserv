@@ -1,8 +1,15 @@
-5 
-Virus1 1 2 0 "Mirc 6.03 haha" "you are infected with a virus" 3
-Virus2 2 4 1 "visit this website neostats" "you are infected with a virus" 2
-Virus3 3 0 2 "*IRC: .NET IRC Client (v1.0)*" "you are infected with a virus" 1
-Virus4 4 1 0 "visit this website" "you are infected with a virus" 0
-testviri 0 0 0 "ctcp version check" "ctcp autojoin " 0
-blahviris 0 0 1 "*.jpg" "you got a trojan" 1
-fishvirus 0 0 2 "Unknown Message" "BlahBlah, you got a fish virus" 2
+1 
+HTTPSpam 2 0 0 "*visit*http://*" "Sending People URL's when they don't request it is bad. IRCops have been warned of your actions." 2
+IRCSpam 2 0 0 "/server *" "Spamming other IRC networks is considered Bad. The IRCOperators have been Notified" 2
+Mirc2BUF 0 0 0 "Mirc32 2*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc3BUF 0 0 0 "Mirc32 3*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc4BUF 0 0 0 "Mirc32 4*" "The Version of Mirc you are using is Very Old. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc5BUF 0 0 0 "Mirc32 5*" "The Version of Mirc you are using is Vulnerable to Hacking. Visit http://www.securityfocus.com/bid/4027/discussion/" 3
+Mirc6DCC 0 0 0 "Mirc32 6.0 *" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
+Mirc6DCC 0 0 0 "Mirc32 6.0.1 *" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/4247/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "Mirc32 6.0 *" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "Mirc32 6.0.1 *" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+Mirc6ASCtime 0 0 0 "Mirc32 6.0.2 *" "The Version of Mirc you are using has Security Problems. Visit http://www.securityfocus.com/bid/5576/discussion/ for more Info" 3
+MircGondRonk 0 0 0 "*http://www.geocities.com/sayangku_anty/*" "It appears you are infected with a Virus. (GondRonk - GeoCities)" 0
+LitMusBot 0 0 0 "*Litmus*" "Your the LitMus Bot. Your Bad. GoodBye" 1
+SDBOT 0 0 0 "*sdbot*" "Your the SDBot. Your Bad. GoodBye" 1

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.7 2003/05/02 14:37:49 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.8 2003/05/02 15:36:21 fishwaldo Exp $
 */
 
 
@@ -83,9 +83,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		return -1; 
 	} 
 	/* first, figure out what bot its too */
-	if (strcasecmp(argv[0], s_SecureServ)) {
+	if (strcasecmp(argv[0], s_SecureServ) {
 		OnJoinBotMsg(u, argv, argc);
-		return 1;
+		return;
 	}
 
 

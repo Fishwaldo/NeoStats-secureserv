@@ -176,8 +176,8 @@ int ss_join_chan(char **av, int ac) {
 	ci->ajpp++;	
 
 	if ((ci->ajpp > SecureServ.JoinThreshold) && (ci->locked > 0)) {
-		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
-		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
+		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);
+		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
 		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime), SecureServ.sampletime);			
 		prefmsg(ci->c->name, s_SecureServ, "Temporarily closing channel due to possible floodbot attack. Channel will be re-opened in %d seconds", SecureServ.closechantime);
 		/* uh oh, channel is under attack. Close it down. */
@@ -187,8 +187,8 @@ int ss_join_chan(char **av, int ac) {
 
 	/* just some record keeping */
 	if (ci->ajpp > SecureServ.MaxAJPP) {
-		nlog(LOG_DEBUG1, LOG_MOD, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
-		if (SecureServ.verbose) chanalert(s_SecureServ, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, time(NULL) - ci->sampletime);
+		nlog(LOG_DEBUG1, LOG_MOD, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
+		if (SecureServ.verbose) chanalert(s_SecureServ, "New AJPP record on %s at %d Joins in %d Seconds", c->name, ci->ajpp, (int)(time(NULL) - ci->sampletime));
 		SecureServ.MaxAJPP = ci->ajpp;
 		strlcpy(SecureServ.MaxAJPPChan, c->name, CHANLEN);
 	}

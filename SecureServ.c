@@ -1195,7 +1195,7 @@ int Online(char **av, int ac) {
 	}
 	LoadMonChans();
 	Helpers_init();
-	if (SecureServ.verbose) chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
+	if (SecureServ.verbose) chanalert(s_SecureServ, "%d Trojans Patterns loaded", (int)list_count(viri));
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", __module_info.module_name, SecureServ.stayinchantime);
@@ -1924,7 +1924,7 @@ static int ScanNick(char **av, int ac) {
 		return -1;
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
-		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning %d > %d", av[0], time(NULL) - u->TS, SecureServ.timedif);
+		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning %d > %d", av[0], (int)(time(NULL) - u->TS), SecureServ.timedif);
 		return -1;
 	}
 	
@@ -2163,7 +2163,7 @@ void datver(HTTP_Response *response) {
 		myversion = atoi(response->pData);
 		if (myversion <= 0) {
 			nlog(LOG_NORMAL, LOG_MOD, "When Trying to Check Dat File Version, we got Permission Denied: %d", myversion);
-			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version:", myversion);
+			chanalert(s_SecureServ, "Permission Denied when trying to check Dat File Version: %d", myversion);
 			return;
 		}			
 		nlog(LOG_DEBUG1, LOG_MOD, "LocalDat Version %d, WebSite %d", SecureServ.viriversion, myversion);

@@ -26,7 +26,6 @@
 #define TS_H
 
 #include "modconfig.h"
-#include <pcre.h>
 
 #define VIRI_DAT_DIR		"data"
 #define VIRI_DAT_NAME		"data/viri.dat"

@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DIRINST BUILDPCRE PACKAGE VERSION HAVE_MEMMOVE HAVE_STRERROR LINK_SIZE MATCH_LIMIT NEWLINE PCRE_MAJOR PCRE_MINOR PCRE_DATE PCRE_VERSION PCRE_LIB_VERSION PCRE_POSIXLIB_VERSION POSIX_MALLOC_THRESHOLD UTF8 LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CPP EGREP DIRINST BUILDPCRE PACKAGE VERSION HAVE_MEMMOVE HAVE_STRERROR LINK_SIZE MATCH_LIMIT NEWLINE POSIX_MALLOC_THRESHOLD UTF8 LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1265,7 +1265,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
           ac_config_headers="$ac_config_headers modconfig.h"
 
 PACKAGE=SecureServ
-VERSION=0.9.4
+VERSION=0.9.5
 DIRINST=~/NeoStats/
 
 CFLAGS="$CFLAGS -O2 -Wall"
@@ -2240,11 +2240,6 @@ test -z "$INSTALL_SCRIPT" && INSTALL_SCRIPT='${INSTALL}'
 
 test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
-
-PCRE_MAJOR=4
-PCRE_MINOR=3
-PCRE_DATE=21-May-2003
-PCRE_VERSION=${PCRE_MAJOR}.${PCRE_MINOR}
 
 
 cat >>confdefs.h <<\_ACEOF
@@ -3517,31 +3512,6 @@ echo "${ECHO_T}no" >&6
 
 fi;
 
-as_ac_File=`echo "ac_cv_file_$DIRINST/include/pcre.h" | $as_tr_sh`
-echo "$as_me:$LINENO: checking for $DIRINST/include/pcre.h" >&5
-echo $ECHO_N "checking for $DIRINST/include/pcre.h... $ECHO_C" >&6
-if eval "test \"\${$as_ac_File+set}\" = set"; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "$DIRINST/include/pcre.h"; then
-  eval "$as_ac_File=yes"
-else
-  eval "$as_ac_File=no"
-fi
-fi
-echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_File'}'`" >&5
-echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
-if test `eval echo '${'$as_ac_File'}'` = yes; then
-  :
-else
-  BUILDPCRE="libpcre.a"
-CFLAGS="$CFLAGS -Ipcre"
-
-fi
 
 
 
@@ -3555,17 +3525,7 @@ fi
 
 
 
-
-
-
-
-
-
-
-
-
-
-                              ac_config_files="$ac_config_files Makefile pcre/Makefile pcre/pcre.h:pcre/pcre.in"
+          ac_config_files="$ac_config_files Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -4091,8 +4051,6 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-  "pcre/Makefile" ) CONFIG_FILES="$CONFIG_FILES pcre/Makefile" ;;
-  "pcre/pcre.h" ) CONFIG_FILES="$CONFIG_FILES pcre/pcre.h:pcre/pcre.in" ;;
   "modconfig.h" ) CONFIG_HEADERS="$CONFIG_HEADERS modconfig.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -4199,12 +4157,6 @@ s,@HAVE_STRERROR@,$HAVE_STRERROR,;t t
 s,@LINK_SIZE@,$LINK_SIZE,;t t
 s,@MATCH_LIMIT@,$MATCH_LIMIT,;t t
 s,@NEWLINE@,$NEWLINE,;t t
-s,@PCRE_MAJOR@,$PCRE_MAJOR,;t t
-s,@PCRE_MINOR@,$PCRE_MINOR,;t t
-s,@PCRE_DATE@,$PCRE_DATE,;t t
-s,@PCRE_VERSION@,$PCRE_VERSION,;t t
-s,@PCRE_LIB_VERSION@,$PCRE_LIB_VERSION,;t t
-s,@PCRE_POSIXLIB_VERSION@,$PCRE_POSIXLIB_VERSION,;t t
 s,@POSIX_MALLOC_THRESHOLD@,$POSIX_MALLOC_THRESHOLD,;t t
 s,@UTF8@,$UTF8,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

@@ -1,4 +1,4 @@
-#Neostats Module Makefile!
+#SecureServ Makefile!
 CC=@CC@
 CFLAGS=@CFLAGS@
 LDFLAGS= @LDFLAGS@
@@ -9,33 +9,32 @@ DIRECTORY=@DIRINST@/dl/
 INCLUDES=-I@DIRINST@/include/ -I.
 
 SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c Helpers.c
-OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o @BUILDPCRE@
+OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o Helpers.o
 TARGET= secureserv.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
-DATA=viri.dat
-DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h RelNotes.txt pcre/*.c pcre/*.h pcre/*.in pcre/README pcre/COPYING
+DATA=viri.dat customviri.dat
+DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h RelNotes.txt
 distdir = @PACKAGE@-@VERSION@
-
 
 all:	 module
 
 .c.o:	
 	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
 
-libpcre.a:
-	 (cd pcre; $(MAKE) $@)
-
 module:	 $(OBJECTS)
-	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS) @BUILDPCRE@
+	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS)
 
 clean:
-	 (cd pcre; $(MAKE) $@)
 	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
 
 install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
-	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 $(DATA) $(DIRECTORY)../data/ ; fi 
+# Note after 1.0 release, change these
+	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
+	if ! test -f $(DIRECTORY)../data/customviri.dat ; then $(INSTALL) -m 644 customviri.dat $(DIRECTORY)../data/ ; fi 
+# to this
+#	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
 	 @cd $(DIRECTORY)..; \
 	if ! test -f $(DIRECTORY)../kpconf/SecureServ ; then ./kptool -i doc/SecureServ.settings; fi
 
@@ -43,9 +42,8 @@ dist:
 	@echo -n "Creating Directories"
 	@-rm -rf $(distdir)
 	@mkdir $(distdir)
-	@mkdir $(distdir)/pcre
 	@echo "Done"
-	@echo -n "Coping Core Distribution Files"
+	@echo -n "Copying Core Distribution Files"
 	@for file in $(DISTFILES); do \
 		echo -n "."; \
 		cp -pr $$file $(distdir)/$$file; \
@@ -54,12 +52,10 @@ dist:
 	@tar -czf $(distdir).tar.gz $(distdir)/*
 	@echo "Tar file $(distdir).tar.gz created, Freshmeat Time"
 
-
-
 $(OBJECTS): Makefile
 
-SecureServ.o:		SecureServ.h SecureServ_help.c modconfig.h 
+SecureServ.o:		SecureServ.h modconfig.h 
 SecureServ_help.o: 	SecureServ.h modconfig.h
-OnJoinBot.o:		SecureServ.h
-FloodCheck.o:		SecureServ.h
-Helpers.o:		SecureServ.h
+OnJoinBot.o:		SecureServ.h modconfig.h 
+FloodCheck.o:		SecureServ.h modconfig.h 
+Helpers.o:		SecureServ.h modconfig.h 

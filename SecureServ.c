@@ -25,7 +25,6 @@
 #include "modconfig.h"
 #include <stdio.h>
 #include <fnmatch.h>
-#include <pcre.h>
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #else

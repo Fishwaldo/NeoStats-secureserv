@@ -207,6 +207,8 @@ int HelpersSignoff(User *u);
 int HelpersAway(char **av, int ac);
 int HelpersAssist(User *u, char **av, int ac);
 int do_helpers(User *u, char **av, int ac);
+int HelpersChpass(User *u, char **av, int ac);
+
 
 /* SecureServ_help.c */
 extern const char *ts_help[];
@@ -216,6 +218,7 @@ extern const char *ts_help_set[];
 extern const char *ts_help_checkchan[];
 extern const char *ts_help_login[];
 extern const char *ts_help_logout[];
+extern const char *ts_help_chpass[];
 extern const char *ts_help_cycle[];
 extern const char *ts_help_update[];
 extern const char *ts_help_status[];

@@ -44,6 +44,7 @@ SecureServ Module for NeoStats Changelog.
  - if we are using SecureServ netsplit detection (and not the NeoStats 2.5.15 method) and 
    we continue to get netsplit users from a particular server (10 in a row) send a message 
    to the channel warning about possible time issues (F) 
+ - Helpers ChangePassword function finally implemented (F)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

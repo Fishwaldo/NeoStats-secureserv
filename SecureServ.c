@@ -124,6 +124,8 @@ int __BotMessage(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_login);
 			} else if (!strcasecmp(argv[2], "logout")) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_logout);
+			} else if (!strcasecmp(argv[2], "chpass")) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_chpass);
 			} else if ((!strcasecmp(argv[2], "helpers")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_helpers);
 			} else if ((!strcasecmp(argv[2], "list")) && (UserLevel(u) >= NS_ULEVEL_OPER)) {
@@ -157,6 +159,9 @@ int __BotMessage(char *origin, char **argv, int argc)
  	} else if (!strcasecmp(argv[1], "logout")) {
 		HelpersLogout(u, argv, argc);
  		return 1;
+	} else if (!strcasecmp(argv[1], "chpass")) {
+		HelpersChpass(u, argv, argc);
+		return 1;
 	} else if (!strcasecmp(argv[1], "helpers")) {
 		do_helpers(u, argv, argc);
  		return 1;

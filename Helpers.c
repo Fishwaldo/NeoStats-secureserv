@@ -32,7 +32,7 @@
 static int HelpersAdd(User *u, char **av, int ac);
 static int HelpersDel(User *u, char *nick);
 static int HelpersList(User *u);
-static int HelpersChpass(User *u, char **av, int ac);
+
 
 typedef struct SSHelpers{
 	char nick[MAXNICK];
@@ -149,9 +149,34 @@ static int HelpersList(User *u)
 	return -1;
 }
 
-static int HelpersChpass(User *u, char **av, int ac) 
+int HelpersChpass(User *u, char **av, int ac) 
 {
+	hnode_t *node;
+	SSHelpers *helper;
+	hscan_t hlps;
+
 	SET_SEGV_LOCATION();
+	if (ac < 3) {
+		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help chpass for more info", s_SecureServ);
+		return -1;
+	}
+
+	if (IsHelpersInit == 0) 
+		return -1;
+
+	hash_scan_begin(&hlps, helperhash);
+	while ((node = hash_scan_next(&hlps)) != NULL) {
+		helper = hnode_get(node);
+		if (helper->u == u) {
+			strlcpy(helper->pass, av[2], MAXNICK);
+			ircsnprintf(confpath, CONFBUFSIZE, "Helper/%s/Pass", helper->nick);
+			SetConf((void *)helper->pass, CFGSTR, confpath);
+			prefmsg(u->nick, s_SecureServ, "Successfully Changed your Password");
+			chanalert(s_SecureServ, "%s changed their helper password", u->nick);
+			return 1;
+		}
+	}
+	prefmsg(u->nick, s_SecureServ, "You must be logged in to change your Helper Password");
 	return 1;
 }
 
@@ -424,4 +449,4 @@ int do_helpers(User *u, char **av, int ac)
 		return -1;
 	}
 	return 1;
-}	
+}

@@ -32,6 +32,7 @@ const char *ts_help[] = {
 	"",
 	"    LOGIN      Login as a helper",
 	"    LOGOUT     Logout as a helper",
+	"    CHPASS     Change your Helper Password",
 	NULL
 };
 
@@ -93,6 +94,13 @@ const char *ts_help_logout[] = {
 	"This command logs you out of SecureServ's Antivirus Helper",
 	"System. You should issue this command if you are logged in"
 	"and are unable to provide any Antivirus help at this time.",
+	NULL
+};
+const char *ts_help_chpass[] = {
+	"Syntax: \2CHPASS <newpassword>\2",
+	"",
+	"This command changes your Helper Password.",
+	"You must be logged into the SecureServ Helper System to use this command",
 	NULL
 };
 
@@ -308,4 +316,3 @@ const char *ts_help_reload[] = {
 	"Used after manual updates to viri.dat or customviri.dat.",
 	NULL
 };
-

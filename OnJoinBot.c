@@ -367,7 +367,7 @@ static int MonChan(User *u, char *requestchan)
  		rnn = list_next(monchans, rnn);
 	}
 	if (list_isfull(monchans)) {
-		prefmsg(u->nick, s_SecureServ, "Can not monitor any additionally channels");
+		prefmsg(u->nick, s_SecureServ, "Can not monitor any additional channels");
 		return -1;
 	}
 

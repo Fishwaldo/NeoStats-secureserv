@@ -39,6 +39,7 @@
 #include "http.h"
 
 static char confbuf[CONFBUFSIZE];
+static char ss_buf[SS_BUF_SIZE];
 
 void save_exempts() 
 {
@@ -162,10 +163,11 @@ int IsChanExempt(Chans *c)
 	return -1;
 }
 
-void do_exempt_list(User* u, char **argv, int argc)
+int do_exempt_list(User* u, char **argv, int argc)
 {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
+	int i;
 
 	node = list_first(exempt);
 	i = 1;
@@ -192,10 +194,12 @@ void do_exempt_list(User* u, char **argv, int argc)
 	}
 	prefmsg(u->nick, s_SecureServ, "End of List.");
 	chanalert(s_SecureServ, "%s requested Exception List", u->nick);
+	return 1;
 }
 
-void do_exempt_add(User* u, char **argv, int argc)
+int do_exempt_add(User* u, char **argv, int argc)
 {
+	char *buf;
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 
@@ -244,10 +248,12 @@ void do_exempt_add(User* u, char **argv, int argc)
 	prefmsg(u->nick, s_SecureServ, "Added %s (%s) exception to list", exempts->host, ss_buf);
 	chanalert(s_SecureServ, "%s added %s (%s) exception to list", u->nick, exempts->host, ss_buf);
 	save_exempts();
+	return 1;
 }
 
-void do_exempt_del(User* u, char **argv, int argc)
+int do_exempt_del(User* u, char **argv, int argc)
 {
+	char *buf;
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 
@@ -296,6 +302,7 @@ void do_exempt_del(User* u, char **argv, int argc)
 		prefmsg(u->nick, s_SecureServ, "Error, Out of Range");
 		return 0;
 	}
+	return 1;
 }
 
 int do_exempt(User* u, char **argv, int argc)

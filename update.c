@@ -77,8 +77,6 @@ void datver(void *data, int status, char *ver, int versize)
 	int myversion;
 	User *u = (void *)data;
 	
-	u = NULL;
-
 	SET_SEGV_LOCATION();
 	SET_SEGV_INMODULE("SecureServ");
 	/* check there was no error */

@@ -910,15 +910,15 @@ int do_cycle(User* u, char **argv, int argc)
 
 int do_set_monbot(User* u, char **av, int ac)
 {
-	if (!strcasecmp(av[2], "LIST")) {
-		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
-		return 1;
-	}
 	/* this is ok, its just to shut up fussy compilers */
 	randomnicks *nickname = NULL;
 	lnode_t *rnn;
 
 	SET_SEGV_LOCATION();
+	if (!strcasecmp(av[2], "LIST")) {
+		prefmsg(u->nick, s_SecureServ, "MONBOT:       %s", (strlen(SecureServ.monbot) > 0) ? SecureServ.monbot : "Not Set");
+		return 1;
+	}
 	if (ac < 4) {
 		prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 		return 1;

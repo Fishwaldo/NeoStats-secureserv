@@ -407,7 +407,7 @@ static int LoadConfig(void)
 		strlcpy(onjoinbot_modes, tmp, MODESIZE);
 		free(tmp);
 	}
-	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
+	if(GetConf((void *)&SecureServ.FloodProt, CFGBOOL, "DoFloodProt") <= 0) {
 		/* not configured, then enable */
 		SecureServ.FloodProt = 1;
 	} 
@@ -421,11 +421,11 @@ static int LoadConfig(void)
 		strlcpy(SecureServ.ChanKey, tmp, CHANLEN);
 		free(tmp);
 	}
-	if(GetConf((void *)&SecureServ.doscan, CFGINT, "DoVersionScan") <= 0) {
+	if(GetConf((void *)&SecureServ.doscan, CFGBOOL, "DoVersionScan") <= 0) {
 		/* not configured, don't scan */
 		SecureServ.doscan = 0;
 	} 
-	if(GetConf((void *)&SecureServ.doprivchan, CFGINT, "DoPrivChan") <= 0) {
+	if(GetConf((void *)&SecureServ.doprivchan, CFGBOOL, "DoPrivChan") <= 0) {
 		/* not configured, do scan */
 		SecureServ.doprivchan = 1;
 	} 
@@ -433,23 +433,23 @@ static int LoadConfig(void)
 		/* use Default */
 		SecureServ.timedif = 300;
 	}
-	if (GetConf((void *)&SecureServ.signoutaway, CFGINT, "DoAwaySignOut") <= 0) {
+	if (GetConf((void *)&SecureServ.signoutaway, CFGBOOL, "DoAwaySignOut") <= 0) {
 		/* yes */
 		SecureServ.signoutaway = 1;
 	}
-	if (GetConf((void *)&SecureServ.report, CFGINT, "DoReport") <= 0) {
+	if (GetConf((void *)&SecureServ.report, CFGBOOL, "DoReport") <= 0) {
 		/* yes */
 		SecureServ.report = 1;
 	}
-	if (GetConf((void *)&SecureServ.joinhelpchan, CFGINT, "DoJoinHelpChan") <= 0) {
+	if (GetConf((void *)&SecureServ.joinhelpchan, CFGBOOL, "DoJoinHelpChan") <= 0) {
 		/* yes */
 		SecureServ.joinhelpchan = 1;
 	}
-	if (GetConf((void *)&SecureServ.verbose, CFGINT, "Verbose") <= 0){
+	if (GetConf((void *)&SecureServ.verbose, CFGBOOL, "Verbose") <= 0){
 		/* yes */
 		SecureServ.verbose = 1;
 	}
-	if (GetConf((void *)&SecureServ.monchancycle, CFGINT, "MonChanCycle") <= 0){
+	if (GetConf((void *)&SecureServ.monchancycle, CFGBOOL, "MonChanCycle") <= 0){
 		/* yes */
 		SecureServ.monchancycle = 1;
 	}
@@ -465,11 +465,11 @@ static int LoadConfig(void)
 		/* 5 in 10 seconds */
 		SecureServ.nfcount = 5;
 	}
-	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
+	if (GetConf((void *)&SecureServ.autoupgrade, CFGBOOL, "AutoUpdate") <= 0) {
 		/* disable autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
 	}
-	if (GetConf((void *)&SecureServ.treatchanmsgaspm, CFGINT, "ChanMsgAsPM") <= 0) {
+	if (GetConf((void *)&SecureServ.treatchanmsgaspm, CFGBOOL, "ChanMsgAsPM") <= 0) {
 		/* disable is the default */
 		SecureServ.treatchanmsgaspm = 0;
 	}
@@ -489,23 +489,23 @@ static int LoadConfig(void)
 		strlcpy(SecureServ.updatepw, tmp, MAXNICK);
 		free(tmp);
 	}
-	if (GetConf((void *)&SecureServ.dofizzer, CFGINT, "FizzerCheck") <= 0) {
+	if (GetConf((void *)&SecureServ.dofizzer, CFGBOOL, "FizzerCheck") <= 0) {
 		/* scan for fizzer is the default */
 		SecureServ.dofizzer = 1;
 	}
-	if (GetConf((void *)&SecureServ.breakorcont, CFGINT, "MultiCheck") <= 0) {
+	if (GetConf((void *)&SecureServ.breakorcont, CFGBOOL, "MultiCheck") <= 0) {
 		/* break is the default is the default */
 		SecureServ.breakorcont = 1;
 	}
-	if (GetConf((void *)&SecureServ.DoOnJoin, CFGINT, "DoOnJoin") <= 0) {
+	if (GetConf((void *)&SecureServ.DoOnJoin, CFGBOOL, "DoOnJoin") <= 0) {
 		/* yes is the default is the default */
 		SecureServ.DoOnJoin = 1;
 	}
-	if (GetConf((void *)&SecureServ.BotEcho, CFGINT, "BotEcho") <= 0) {
+	if (GetConf((void *)&SecureServ.BotEcho, CFGBOOL, "BotEcho") <= 0) {
 		/* yes is the default is the default */
 		SecureServ.BotEcho = 0;
 	}	
-	if (GetConf((void *)&SecureServ.doakill, CFGINT, "DoAkill") <= 0) {
+	if (GetConf((void *)&SecureServ.doakill, CFGBOOL, "DoAkill") <= 0) {
 		/* we akill is the default */
 		SecureServ.doakill = 1;
 	}
@@ -513,7 +513,7 @@ static int LoadConfig(void)
 		/* 1 hour is the default */
 		SecureServ.akilltime = 3600;
 	}
-	if (GetConf((void *)&SecureServ.dosvsjoin, CFGINT, "DoSvsJoin") <= 0) {
+	if (GetConf((void *)&SecureServ.dosvsjoin, CFGBOOL, "DoSvsJoin") <= 0) {
 		/* scan for fizzer is the default */
 		SecureServ.dosvsjoin = 1;
 	}

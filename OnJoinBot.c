@@ -522,14 +522,6 @@ static int MonChan(User *u, char *requestchan)
 		mn = list_next(monchans, mn);
 	}
 
-	/* append it to the list */
-	buf = malloc(CHANLEN);
-	strlcpy(buf, requestchan, CHANLEN);
-	rnn = lnode_create(buf);
-	list_append(monchans, rnn);
-
-
-
 	c = findchan(requestchan);
 
 	if (!c) {
@@ -552,8 +544,6 @@ static int MonChan(User *u, char *requestchan)
 		return -1;
 	}
 
-
-
 	if (findbot(SecureServ.monbot) == NULL) {
 		/* the monbot isn't online. Initilze it */
 		rnn = list_first(nicks);
@@ -575,7 +565,13 @@ static int MonChan(User *u, char *requestchan)
 	}
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
-	
+
+	/* append it to the list */
+	buf = malloc(CHANLEN);
+	strlcpy(buf, requestchan, CHANLEN);
+	rnn = lnode_create(buf);
+	list_append(monchans, rnn);
+
 	/* join the monitor bot to the new channel */
 	join_bot_to_chan (SecureServ.monbot, c->name, 0);
 	/* restore segvinmodules */

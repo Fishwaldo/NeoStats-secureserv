@@ -1,6 +1,7 @@
 SecureServ Module for NeoStats Changelog.
 ==============================================================================
-1.3 - Fish (F) and Mark (M) - 12 Feb, 2004
+1.3 - Fish (F) and Mark (M) - 27 Aug, 2004
+ - Fix bug 176 - monchans and excludes (M)
  - Ported to core command processor (M)
  - SET interface for nick/user/host/realname added (M)
  - Fix for bug 115, monchan bots now reinit if killed (M)

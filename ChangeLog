@@ -12,6 +12,7 @@ SecureServ Module for NeoStats Changelog.
  - Add a KILL action for viri. Useful to keep the akill list manageable by not 
    adding bots that do not rejoin after kill (e.g. WebCamSpam) (M)
  - use Match rather than fnmatch to avoid case sensitivity problems with modules (F)
+ - Fix issue for new compilers (F)
 
 1.2 - Fish (F) and Mark (M) - 12 Feb, 2004
  - Fix up a monbot channel cycle crash (M)

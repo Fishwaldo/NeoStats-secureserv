@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.13 2003/06/03 14:22:57 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.14 2003/07/17 13:29:41 fishwaldo Exp $
 */
 
 
@@ -179,6 +179,7 @@ int Chan_Exempt(Chans *c);
 void JoinNewChan();
 void OnJoinBotMsg(User *, char **, int );
 int CheckChan(User *u, char *requestchan);
+int ss_kick_chan(char **argv, int ac);
 
 /* FloodCheck.c */
 void ss_init_chan_hash();

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.28 2003/06/25 14:15:39 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.29 2003/07/17 13:29:41 fishwaldo Exp $
 */
 
 
@@ -1143,6 +1143,7 @@ EventFnList my_event_list[] = {
 	{ "JOINCHAN", 	ss_join_chan},
 	{ "DELCHAN",	ss_del_chan},
 	{ "NICK_CHANGE", CheckNick},
+	{ "KICK",	ss_kick_chan},
 	{ NULL, 	NULL}
 };
 
@@ -1466,10 +1467,14 @@ int check_version_reply(char *origin, char **av, int ac) {
 	char **av1;
 	int ac1 = 0;
 	
-	/* if its not a ctcp message, forget it */
-	if (av[1][0] != '\1') 
+	/* if its not a ctcp message, it is probably a notice for the ONJOIN bots */
+	if (av[1][0] != '\1') {
+		if (!strcasecmp(SecureServ.lastnick, av[0])) {
+			/* it is! */
+			OnJoinBotMsg(finduser(origin), av, ac);
+		}
 		return 0;
-	
+	}
 	if (!strcasecmp(av[1], "\1version")) {
 		buf = joinbuf(av, ac, 2);
 		/* send a Module_Event, so StatServ can pick up the version info !!! */

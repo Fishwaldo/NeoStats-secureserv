@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.18 2003/07/03 15:57:36 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.19 2003/07/17 13:29:41 fishwaldo Exp $
 */
 
 
@@ -66,14 +66,13 @@ void JoinNewChan() {
 	User *u;
 
 	/* first, if the lastchan and last nick are not empty, it means one of our bots is in a chan, sign them off */
-	if (strlen(SecureServ.lastchan) > 1) {
-		if (finduser(SecureServ.lastnick)) {
+	if (finduser(SecureServ.lastnick)) {
+		if (strlen(SecureServ.lastchan) > 1) {
 			spart_cmd(SecureServ.lastnick, SecureServ.lastchan);
-			del_bot(SecureServ.lastnick, "Finished Scanning");
-		} else {
-			strncpy(SecureServ.lastchan, "\0", CHANLEN);
-			strncpy(SecureServ.lastnick, "\0", MAXNICK);
 		}
+		del_bot(SecureServ.lastnick, "Finished Scanning");
+		strncpy(SecureServ.lastchan, "\0", CHANLEN);
+		strncpy(SecureServ.lastnick, "\0", MAXNICK);
 	}
 	/* restore segvinmodules */
 	strcpy(segvinmodule, "SecureServ");
@@ -283,3 +282,12 @@ void OnJoinBotMsg(User *u, char **argv, int ac) {
 	} while ((node = list_next(viri, node)) != NULL);
 	free(buf);
 }				
+
+int ss_kick_chan(char **argv, int ac) {
+	/* check its one of our nicks */
+	if (!strcasecmp(SecureServ.lastnick, argv[1]) && (!strcasecmp(SecureServ.lastchan, argv[0]))) {
+		nlog(LOG_DEBUG1, LOG_MOD, "Our Bot %s was kicked from %s", argv[1], argv[0]);
+		strncpy(SecureServ.lastchan, "\0", MAXNICK);
+	}
+}		
+		

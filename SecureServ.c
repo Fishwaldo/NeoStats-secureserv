@@ -1745,6 +1745,7 @@ static int CheckNick(char **av, int ac) {
 			}
 			if (rc > -1) {					
 				gotpositive(u, viridetails, DET_NICK);
+				nlog(LOG_NOTICE, LOG_MOD, "Got positive nick %s for %s against %s", u->nick, viridetails->name, viridetails->recvmsg);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1839,6 +1840,7 @@ static int ScanNick(char **av, int ac) {
 			}
 			if (rc > -1) {					
 				gotpositive(u, viridetails, DET_NICK);
+				nlog(LOG_NOTICE, LOG_MOD, "Got positive nick %s for %s against %s", u->nick, viridetails->name, viridetails->recvmsg);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1854,6 +1856,7 @@ static int ScanNick(char **av, int ac) {
 			}
 			if (rc > -1) {					
 				gotpositive(u, viridetails, DET_IDENT);
+				nlog(LOG_NOTICE, LOG_MOD, "Got positive ident %s for %s against %s", u->username, viridetails->name, viridetails->recvmsg);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1869,6 +1872,7 @@ static int ScanNick(char **av, int ac) {
 			}
 			if (rc > -1) {					
 				gotpositive(u, viridetails, DET_REALNAME);
+				nlog(LOG_NOTICE, LOG_MOD, "Got positive realname %s for %s against %s", u->realname, viridetails->name, viridetails->recvmsg);
 				if (SecureServ.breakorcont == 0)
 					continue;
 				else 
@@ -1933,6 +1937,7 @@ int check_version_reply(char *origin, char **av, int ac) {
 				}
 				if (rc > -1) {					
 					gotpositive(finduser(origin), viridetails, DET_CTCP);
+					nlog(LOG_NOTICE, LOG_MOD, "Got positive CTCP %s for %s against %s", buf, viridetails->name, viridetails->recvmsg);
 					if (SecureServ.breakorcont == 0)
 						continue;
 					else 
@@ -1979,7 +1984,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					if (!IsChanMember(findchan(SecureServ.HelpChan), u)) {
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					}
-					nlog(LOG_NORMAL, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
+					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
 					snprintf(chan, CHANLEN, "@%s", SecureServ.HelpChan);
 					if(ve->iscustom) 
 						prefmsg(chan, s_SecureServ, "%s is infected with %s.", u->nick, ve->name);
@@ -1994,7 +1999,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					else
 						globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
-					nlog(LOG_NORMAL, LOG_MOD, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
+					nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->nick, u->username, u->hostname, ve->name);
 					break;
 				}
 			}
@@ -2006,7 +2011,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s ", ve->name);
 				else
 					sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=%s for more info)", ve->name, ve->name);
-				nlog(LOG_NORMAL, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
+				nlog(LOG_NOTICE, LOG_MOD, "Akilling %s!%s@%s for Virus %s", u->nick, u->username, u->hostname, ve->name);
 				break;
 			}
 		case ACT_WARN:
@@ -2022,11 +2027,11 @@ void gotpositive(User *u, virientry *ve, int type) {
 				else
 					prefmsg(chan, s_SecureServ, "%s is infected with %s. More information at http://secure.irc-chat.net/info.php?viri=%s", u->nick, ve->name, ve->name);
 			}
-			nlog(LOG_NORMAL, LOG_MOD, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
+			nlog(LOG_NOTICE, LOG_MOD, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken ", u->nick, ve->name);
 			break;
 		case ACT_NOTHING:
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
-			nlog(LOG_NORMAL, LOG_MOD, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
+			nlog(LOG_NOTICE, LOG_MOD, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);
 			break;
 	}
 	/* send an update to secure.irc-chat.net */

@@ -1187,10 +1187,10 @@ void do_list(User *u) {
 int Online(char **av, int ac) {
 
 	SET_SEGV_LOCATION();
-	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name) == -1 ) {
+	if (init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name) == -1 ) {
 		/* Nick was in use!!!! */
 		s_SecureServ = strcat(s_SecureServ, "_");
-		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name);
+		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", services_bot_modes, __module_info.module_name);
 	}
 	LoadMonChans();
 	Helpers_init();

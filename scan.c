@@ -432,6 +432,7 @@ int ScanMsg(User *u, char* buf, int chanmsg)
 	int doscan;
 
 	SET_SEGV_LOCATION();
+printf("msg %s buf, %d\n", buf, chanmsg);
 	node = list_first(viri);
 	if (node) {
 		do {

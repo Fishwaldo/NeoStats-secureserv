@@ -74,7 +74,7 @@ static bot_cmd ss_commands[]=
 	{"BOTS",	do_bots,		1,	100,			ts_help_bots,		ts_help_bots_oneline},
 	{"MONCHAN",	do_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan,	ts_help_monchan_oneline},
 	{"RELOAD",	do_reload,		0,	NS_ULEVEL_OPER, ts_help_reload,		ts_help_reload_oneline},
-	{"VERSION",	do_viriversion,	0,	NS_ULEVEL_OPER,	NULL, 				NULL},
+	{"VERSION",	do_viriversion,		0,	0,		NULL, 			NULL},
 	{NULL,		NULL,			0, 	0,				NULL, 				NULL}
 };
 
@@ -712,6 +712,7 @@ static int event_private(char **av, int ac)
 	User *u;
 
 	SET_SEGV_LOCATION();
+printf("private\n");
 	u = finduser(av[0]); 
 	if (!u) { 
 		nlog(LOG_WARNING, LOG_MOD, "Unable to find user %s (ts)", av[0]); 

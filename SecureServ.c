@@ -63,7 +63,7 @@ static char ss_buf[SS_BUF_SIZE];
 ModuleInfo __module_info = {
 	"SecureServ",
 	"A Trojan Scanning Bot",
-	"0.9.5",
+	"1.0",
 	__DATE__,
 	__TIME__
 };

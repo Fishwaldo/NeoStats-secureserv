@@ -173,7 +173,7 @@ int ss_join_chan(char **av, int ac) {
 	 */		
 	ci->ajpp++;	
 
-	if (ci->ajpp > SecureServ.JoinThreshold) {
+	if ((ci->ajpp > SecureServ.JoinThreshold) && (ci->locked > 0)) {
 		nlog(LOG_WARNING, LOG_MOD, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);
 		chanalert(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			
 		globops(s_SecureServ, "Warning, Possible Flood on %s. Closing Channel. (AJPP: %d/%d Sec, SampleTime %d)", ci->c->name, ci->ajpp, (time(NULL) - ci->sampletime), SecureServ.sampletime);			

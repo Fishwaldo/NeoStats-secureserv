@@ -12,6 +12,7 @@ SecureServ Module for NeoStats Changelog.
  - Added missing NULL checks for finduser results to avoid referencing NULL pointers (M)
  - Renamed output module to secureserv to fix load/unload issues (M)
  - Don't do onjoin checks for channels monitored via a monbot (F)
+ - Don't lock a channel when its already locked (BugID: 45) (F)
 
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

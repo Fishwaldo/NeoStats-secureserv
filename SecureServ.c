@@ -1851,7 +1851,7 @@ static int ScanNick(char **av, int ac) {
 		return -1;
 
 	if (time(NULL) - u->TS > SecureServ.timedif) {
-		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning", av[0]);
+		nlog(LOG_DEBUG1, LOG_MOD, "Netsplit Nick %s, Not Scanning %d > %d", av[0], time(NULL) - u->TS, SecureServ.timedif);
 		return -1;
 	}
 	

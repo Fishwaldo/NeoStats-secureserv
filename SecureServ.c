@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.19 2003/05/28 12:55:42 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.20 2003/05/28 13:56:47 fishwaldo Exp $
 */
 
 
@@ -660,6 +660,7 @@ void do_set(User *u, char **av, int ac) {
 		prefmsg(u->nick, s_SecureServ, "Do OnJoin Checking: %s", SecureServ.DoOnJoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Action: %s", SecureServ.doakill ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Akill Time: %d", SecureServ.akilltime);
+		prefmsg(u->nick, s_SecureServ, "NickFlood Count is %d in 10 seconds", SecureServ.nfcount);
 		prefmsg(u->nick, s_SecureServ, "Join Action: %s", SecureServ.dosvsjoin ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Verbose Reporting: %s", SecureServ.verbose ? "Enabled" : "Disabled");
 		prefmsg(u->nick, s_SecureServ, "Cycle Time: %d", SecureServ.stayinchantime);
@@ -1462,30 +1463,31 @@ void gotpositive(User *u, virientry *ve, int type) {
 	ve->nofound++;
 	SecureServ.actioncounts[type]++;
 	switch (ve->action) {
-		case ACT_AKILL:
-			if (SecureServ.doakill > 0) {
-				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
-				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
-				sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "SecureServ: %s", ve->name);
-				break;
-			}
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {
 				if (SecureServ.helpcount > 0) {		
 					chanalert(s_SecureServ, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);
+					globops(s_SecureServ, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 					break;
 				} else {
 					prefmsg(u->nick, s_SecureServ, SecureServ.nohelp);
 					chanalert(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
-					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in)", u->nick, ve->name);
+					globops(s_SecureServ, "Akilling %s for Virus %s (No Helpers Logged in) (http://secure.irc-chat.net/info.php?viri=%s)", u->nick, ve->name, ve->name);
 					sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ(SVSJOIN): %s", ve->name);
 					break;
 				}
 			}
+		case ACT_AKILL:
+			if (SecureServ.doakill > 0) {
+				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
+				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
+				sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "Infected with: %s (See http://secure.irc-chat.net/info.php?viri=% for more info)", ve->name, ve->name);
+				break;
+			}
 		case ACT_WARN:
 			chanalert(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
-			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken", u->nick, ve->name);
+			globops(s_SecureServ, "Warning, %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=% for more info)", u->nick, ve->name, ve->name);
 			break;
 		case ACT_NOTHING:
 			if (SecureServ.verbose) chanalert(s_SecureServ, "SecureServ warned %s about %s Bot/Trojan/Virus", u->nick, ve->name);

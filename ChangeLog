@@ -9,3 +9,4 @@ TrojanServ Module for NeoStats Changelog.
  - Fixed a problem with restoring some string settings
  - Updated a bit the Channel Flood Checking. Now also checks the TS of the server to determine if its a flood.
  - NickFlood Checking is now Enabled
+ - Changed the order of gotpositive to svsjoin/akill/warn/nothing

@@ -11,14 +11,14 @@
   Scanner, but aimed for IRC networks. Using Several different methods,
   including, but not limited to Version checks, Behavior analysis, and general
   pattern matching, it aims to detect Trojans and Virus&#39;s as well as
-  FloodBots that connect to your IRC network. </para>
+  FloodBots that connect to your IRC network.</para>
 
   <para>SecureServ&#39;s &#34;brains&#34; are based on a &#34;Definition
   file&#34; or Dat file, that contain information on how to detect the
   trojans. This means to update SecureServ&#39;s detection for new
   Trojans/Bots only requires that you download a new dat file (which can be
   automated). There are some pre-conditions to obtaining new Dat files, and
-  these can be found in the Installation chapter. </para>
+  these can be found in the Installation chapter.</para>
 
   <para>SecureServ can detect Trojan/Virus&#39;s or &#34;Security Risks&#34;
   to your Network a number of ways, including:</para>
@@ -78,9 +78,9 @@
 
   <para>SecureServ is written and maintained by Justin Hammond. It requires
   the NeoStats software. More information about SecureServ, or NeoStats, can
-  be found at <link linkend="???">http://www.neostats.net/</link> </para>
+  be found at <link linkend="???">http://www.neostats.net/</link></para>
 
-  <para>SecureServ is Copyright, 2003 by Justin Hammond. </para>
+  <para>SecureServ is Copyright, 2003 by Justin Hammond.</para>
 
   <sect1>
     <title>Prerequisites and Installation.</title>
@@ -113,7 +113,7 @@
     definition files. If these Definition files fall into the hands of the
     TrojanWritters or Virus Writers, its possible they might be able to
     re-write their bots to avoid detection. Please see the website for more
-    information. </para>
+    information.</para>
 
     <sect2>
       <title>Compiling and Installation</title>
@@ -210,7 +210,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       post them on our Support boards, at http//www.neostats.net/boards/</para>
 
       <para>Once Installation is complete, you can either configure NeoStats
-      to load SecureServ when it starts, or load SecureServ via IRC. </para>
+      to load SecureServ when it starts, or load SecureServ via IRC.</para>
 
       <para>To Configure NeoStats to automatically load SecureServ when it
       boots, add the following line to your &#34;neostats.cfg&#34; file in the
@@ -261,8 +261,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       or Channels that should be excluded from monitoring by SecureServ. This
       exclusion list would allow a administrator to say, allow users on that
       are matched against trojans, when the administrator has verified that
-      the trojan does not in fact exist on the users host. Additionally,
-      </para>
+      the trojan does not in fact exist on the users host. Additionally,</para>
 
       <caution>
         <para>Exclusions should be setup for your Services Server, so that
@@ -336,7 +335,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       configure SecureServ to update Dat files automatically for you.
       SecureServ can be configured to check for updates on a Daily Basis. You
       can, disable this automatic update if you wish, but this is covered in
-      the &#34;Settings&#34; Section. </para>
+      the &#34;Settings&#34; Section.</para>
 
       <para>Once you have recieved your username and password, Issue the
       following command to SecureServ:</para>
@@ -363,7 +362,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>If the update failed for any reason, you will either not recieve
       any message about DatFile being downloaded and installed, or will
-      recieve a message detailing the problem. </para>
+      recieve a message detailing the problem.</para>
     </sect2>
 
     <sect2>
@@ -383,7 +382,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
           <para>Greeting Messages are sent to uses when they sign on your
           Network. They are just to inform the user that a CTCP VERSION check
-          is being conducted. </para>
+          is being conducted.</para>
         </listitem>
 
         <listitem>
@@ -394,7 +393,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
           could provide email addresses, contact information, should the user
           wish to contact you. In addition to the AKILL message, the user is
           also given a URL they can view with details about their
-          &#34;infection&#34; and how to fix it. </para>
+          &#34;infection&#34; and how to fix it.</para>
         </listitem>
 
         <listitem>
@@ -423,7 +422,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <note>
         <para>If you don&#39;t customize any of these messages, a Default
-        system message is used automatically. </para>
+        system message is used automatically.</para>
       </note>
     </sect2>
   </sect1>
@@ -457,6 +456,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       </listitem>
 
       <listitem>
+        <para>DOONJOIN</para>
+      </listitem>
+
+      <listitem>
         <para>MULTICHECK</para>
       </listitem>
 
@@ -470,6 +473,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <listitem>
         <para>DOJOIN</para>
+      </listitem>
+
+      <listitem>
+        <para>NFCOUNT</para>
       </listitem>
 
       <listitem>
@@ -503,7 +510,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
     <screen>/msg SecureServ set list</screen>
 
     <para>The following Sections describes the different options, their
-    params, and the effect on SecureServ in detail. </para>
+    params, and the effect on SecureServ in detail.</para>
 
     <sect2>
       <title>SPLILTTIME Setting</title>
@@ -555,11 +562,25 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>SecureServ can Detect the Fizzer Worm on your IRC network. If you
       are not affected by Fizzer, its advisable to turn this option off, as it
-      affects performance. </para>
+      affects performance.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set CHECKFIZZER &#60;ON/OFF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>DOONJOIN Setting</title>
+
+      <para>This setting decides if SecureServ should perform OnJoin Virus
+      Checking. When enabled, every CYCLETIME Seconds, SecureServ will create
+      a psydo user and join a random channel. When this setting is off,
+      SecureServ will not check random channels for OnJoin Virus&#39;s.
+      </para>
+
+      <para>To Change this Setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set DOONJOIN &#60;ON/OFF&#62;</screen>
     </sect2>
 
     <sect2>
@@ -569,11 +590,11 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       Trojan/VIrus etc, it takes action straight away, and discontinues
       checking for any other matches. This option tells SecureServ, that even
       if it does find a Match, to continue checking, so that the user is
-      warned of all matches, and not just the first one found. </para>
+      warned of all matches, and not just the first one found.</para>
 
       <warning>
         <para>Enabling MULTICHECK on a large network is not advised due to
-        performance reasons. </para>
+        performance reasons.</para>
       </warning>
 
       <para>To Change the setting, issue the following Command:</para>
@@ -587,7 +608,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>If you do not wish SecureServ to ever AKILL a user for a positive
       match, turn this option off. It will then just issue a warning to all
       operators about the Client, and Operators are free to do as they see
-      fit. </para>
+      fit.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -611,11 +632,26 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>IF SecureServ detects a user is infected with a virus, it can
       optionally join that user to a Antivirus channel. If you do not operate
       such a channel on your network, then disable this option. If its is
-      disabled, then the user will be AKILLED instead. </para>
+      disabled, then the user will be AKILLED instead.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
       <screen>/msg SecureServ set DOJOIN &#60;ON/OFF&#62; </screen>
+    </sect2>
+
+    <sect2>
+      <title>NFCOUNT Setting</title>
+
+      <para>SecureServ monitors the number of nick changes a user makes in a
+      10 second period. If the user exceeds a threshold, it considers the user
+      to be performing a &#34;nickflood&#34; and will akill the user from the
+      network. This Setting Control how many nick changes in a 10 second
+      period the user performs. The default is 5, which should be suitable for
+      most users. </para>
+
+      <para>To Change this Setting, issue the following Command:</para>
+
+      <screen>/msg SecureServ set NFCOUNT &#60;number&#62;</screen>
     </sect2>
 
     <sect2>
@@ -642,8 +678,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       option changes the interval that SecureServ will Cycle the random users
       and channels. On a Large network, you should aim for a smaller value, so
       it covers more of your channels quicker, but on a smaller network, this
-      may become annoying for your users, so a higher value is recomended.
-      </para>
+      may become annoying for your users, so a higher value is recomended.</para>
 
       <para>To Change the setting, issue the following Command:</para>
 
@@ -672,7 +707,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       messurement is known as &#34;Average Joins Per Period&#34; or AJPP for
       short. if this AJPP value is exceeded, SecureServ assumes that the
       Channel is under a floodbot attack, and will &#34;close&#34; the
-      channel. </para>
+      channel.</para>
 
       <para>This setting controls the AJPP threshhold. Only experienced users
       should need to modify this setting.</para>
@@ -742,7 +777,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>The List command shows a brief list of all the Defintions that
       SecureServ currently has loaded. These are direct from the Dat file that
       is downloaded from the <link linkend="???">http://secure.irc-chat.net</link>
-      website. </para>
+      website.</para>
 
       <para>The format of the command is as follows:</para>
 
@@ -763,7 +798,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>More detail about each &#34;Virus&#34; can be found at the <link
       linkend="???">http://secure.irc-chat.net/</link> site by searching for
-      the Virus Name. </para>
+      the Virus Name.</para>
     </sect2>
 
     <sect2>
@@ -772,7 +807,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <para>If you suspect that a user in a Channel is infected with a OnJoin
       VIrus, you can force SecureServ to check the channel on your behalf. If
       SecureServ finds any infection in the channel, it will take the normal
-      action associated with that virus. </para>
+      action associated with that virus.</para>
 
       <para>The format of the command is as follows:</para>
 
@@ -784,14 +819,14 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <title>cycle Command</title>
 
       <para>This command forces SecureServ to part the existing channel it is
-      checking and join the next random Channel. </para>
+      checking and join the next random Channel.</para>
 
       <para>The format of the command is as follows:</para>
 
       <screen>/msg SecureServ cycle</screen>
 
       <para>The next channel is choosen at random, but is guarnteed not to be
-      the previous channel it checked. </para>
+      the previous channel it checked.</para>
     </sect2>
 
     <sect2>
@@ -799,7 +834,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>This command gives the Administrator statistics on the how
       SecureServ is performing, how many checks it has conducted, and
-      currently logged in &#34;helper&#34; users. </para>
+      currently logged in &#34;helper&#34; users.</para>
 
       <para>The format of the command is as follows:</para>
 
@@ -838,7 +873,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>That command forces SecureServ to check the Dat File version at
       <link linkend="???">http://secure.irc-chat.net/</link> and download the
-      latest version if required. </para>
+      latest version if required.</para>
 
       <warning>
         <para>Repeated use of this command in a short period of time will
@@ -862,7 +897,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       <title>logout Command</title>
 
       <para>This command is not implemented in this release. Future Versions
-      will have this option. </para>
+      will have this option.</para>
     </sect2>
   </sect1>
 
@@ -889,10 +924,10 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <itemizedlist>
         <listitem>
-          <para>the output from /whois &#60;infected user&#62; </para>
+          <para>the output from /whois &#60;infected user&#62;</para>
 
           <para>If there are multiple Infected users, please provide multiple
-          /whois outputs. This will aid us in determining a pattern. </para>
+          /whois outputs. This will aid us in determining a pattern.</para>
         </listitem>
 
         <listitem>
@@ -915,14 +950,14 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
           <para>So that we may contact you directly on your network if we
           require additional information or wish to the the &#34;Virus&#34; in
-          the wild. </para>
+          the wild.</para>
         </listitem>
       </itemizedlist>
 
       <para>Before adding new items to the Definitions, we do as much research
       as possible, and also share this information with other &#34;IRC
       Security&#34; professionals or teams in order to determine the most
-      effective way to detect this &#34;infection&#34; </para>
+      effective way to detect this &#34;infection&#34;</para>
 
       <para>Additionally, we will add &#34;warning&#34; messages to users that
       are running old copies of IRC software that are vulnerable to security
@@ -930,7 +965,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       IRC) and advise the user to upgrade their IRC client. If you are a
       client Author of a script or IRC client that has had Security Issues in
       the past, and wish us to add this &#34;warning&#34; to the Defintions,
-      please contact us directly. </para>
+      please contact us directly.</para>
     </sect2>
 
     <sect2>
@@ -938,7 +973,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
 
       <para>While we have taken care to make sure that you can control what
       happens when a &#34;Virus&#34; is detected, there isn&#39;t much control
-      left to the Administrator to control what is Detected. </para>
+      left to the Administrator to control what is Detected.</para>
 
       <para>We are currently working on extensions to the
       http://secure.irc-chat.net/ website that will allow you to control what
@@ -949,7 +984,7 @@ ld -shared -o SecureServ.so  SecureServ.o SecureServ_help.o http.o OnJoinBot.o F
       will allow you to grab the latest version of the Dat files from the
       website, and customize them. Installation of the &#34;Customized&#34;
       version will require a restart, and you will not be able to use the
-      &#34;Automatic Update&#34; features. </para>
+      &#34;Automatic Update&#34; features.</para>
     </sect2>
   </sect1>
 </article>

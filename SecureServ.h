@@ -164,6 +164,10 @@ int ScanRealname(Client *u);
 int ScanPrivmsg(Client *u, char* buf);
 int ScanChanMsg(Client *u, char* buf);
 int ScanCTCPVersion(Client *u, char* buf);
+int ScanAwayMsg(Client* u, char* buf);
+int ScanQuitMsg(Client* u, char* buf); 
+int ScanTopic(Client* u, char* buf);
+
 int ss_cmd_list(CmdParams *cmdparams);
 int ss_cmd_reload(CmdParams *cmdparams);
 void InitScanner(void);

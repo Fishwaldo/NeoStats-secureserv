@@ -401,6 +401,21 @@ int ScanChannelName(Client* u, Channel *c)
 	return Scan(DET_CHAN, u, c->name);
 }
 
+int ScanAwayMsg(Client* u, char* buf) 
+{
+	return Scan(DET_AWAYMSG, u, buf);
+}
+
+int ScanQuitMsg(Client* u, char* buf) 
+{
+	return Scan(DET_QUITMSG, u, buf);
+}
+
+int ScanTopic(Client* u, char* buf) 
+{
+	return Scan(DET_TOPIC, u, buf);
+}
+
 #ifndef WIN32
 static void report_positive (Client *u, virientry *ve)
 {

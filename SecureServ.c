@@ -239,14 +239,14 @@ int ss_event_away(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	HelpersAway(cmdparams);
-	/* TODO: scan away messages for spam */
+	ScanAwayMsg(cmdparams->source, cmdparams->source->user->awaymsg);
 	return NS_SUCCESS;
 }
 
 int ss_event_topic(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	/* TODO: scan topic for spam */
+	ScanTopic(cmdparams->source, cmdparams->channel->topic);
 	return NS_SUCCESS;
 }
 
@@ -305,7 +305,7 @@ static int ss_event_quit(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	HelpersSignoff(cmdparams);
-	/* TODO: scan quit messages for spam */
+	ScanQuitMsg(cmdparams->source, cmdparams->param); 
 	return NS_SUCCESS;
 }
 

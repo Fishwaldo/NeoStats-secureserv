@@ -1171,10 +1171,9 @@ int Online(char **av, int ac) {
 		s_SecureServ = strcat(s_SecureServ, "_");
 		init_bot(s_SecureServ,"ts",me.name,"Trojan Scanning Bot", "+S", __module_info.module_name);
 	}
-	LoadTSConf();
 	LoadMonChans();
 	Helpers_init();
-	chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
+	if (SecureServ.verbose) chanalert(s_SecureServ, "%d Trojans Patterns loaded", list_count(viri));
 	srand(hash_count(ch));
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", __module_info.module_name, SecureServ.stayinchantime);
@@ -1218,7 +1217,6 @@ void LoadTSConf() {
 	char datapath[MAXHOST];
 	SET_SEGV_LOCATION();
 
-	
 	if(GetConf((void *)&SecureServ.FloodProt, CFGINT, "DoFloodProt") <= 0) {
 		/* not configured, then enable */
 		SecureServ.FloodProt = 1;
@@ -1278,6 +1276,7 @@ void LoadTSConf() {
 	if (GetConf((void *)&tmp, CFGSTR, "UpdateUname") <= 0) {
 		/* disable autoupgrade if its set */
 		SecureServ.autoupgrade = 0;
+		SecureServ.updateuname[0] = 0;
 	} else {
 		strncpy(SecureServ.updateuname, tmp, MAXNICK);
 		free(tmp);
@@ -1285,6 +1284,7 @@ void LoadTSConf() {
 	if (GetConf((void *)&tmp, CFGSTR, "UpdatePassword") <= 0) {
 		/* disable autoupgrade if its set */
 		SecureServ.autoupgrade = 0;
+		SecureServ.updatepw[0] = 0;
 	} else {
 		strncpy(SecureServ.updatepw, tmp, MAXNICK);
 		free(tmp);
@@ -2094,36 +2094,19 @@ int __ModInit(int modnum, int apiversion) {
 	/* init the nickflood hash */
 	nickflood = hash_create(-1, 0, 0);
 	
-	/* set some defaults */
 	SecureServ.inited = 0;			
-	SecureServ.timedif = 300;	
-	SecureServ.doscan = 1;
-	snprintf(SecureServ.signonscanmsg, BUFSIZE, "Your IRC client is being checked for Trojans. Please dis-regard VERSION messages from %s", s_SecureServ);
-	strncpy(SecureServ.akillinfo, "You have been Akilled from this network. Please get a virus scanner and check your PC", BUFSIZE);
-	strncpy(SecureServ.nohelp, "No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info", BUFSIZE);
-	strncpy(SecureServ.HelpChan, "#nohack", CHANLEN);
-	SecureServ.monbot[0] = '\0';
-	SecureServ.breakorcont = 1;
-	SecureServ.doakill = 1;
-	SecureServ.dosvsjoin = 1;
 	SecureServ.helpcount = 0;
-	SecureServ.akilltime = 3600;
-	SecureServ.sampletime = 5;
-	SecureServ.JoinThreshold = 5;
-	SecureServ.autoupgrade = 0;	
 	SecureServ.doUpdate = 0;
-	SecureServ.dofizzer = 1;
 	SecureServ.MaxAJPP = 0;
-	SecureServ.nfcount = 5;
 	SecureServ.updateurl[0] = 0;
-	SecureServ.updateuname[0] = 0;
-	SecureServ.updatepw[0] = 0;
 	for (i = 0; i > MAX_PATTERN_TYPES; i++) {
 		SecureServ.trigcounts[i] = 0;
 		SecureServ.actioncounts[i] = 0;
 	}
 	SecureServ.MaxAJPPChan[0] = 0;
 	SecureServ.modnum = modnum;
+
+	LoadTSConf();
 	return 1;
 }
 

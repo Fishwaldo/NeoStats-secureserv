@@ -447,7 +447,7 @@ static int LoadConfig(void)
 		/* 5 in 10 seconds */
 		SecureServ.nfcount = 5;
 	}
-	if (GetConf((void *)&SecureServ.autoupgrade, CFGBOOL, "AutoUpdate") <= 0) {
+	if (GetConf((void *)&SecureServ.autoupgrade, CFGINT, "AutoUpdate") <= 0) {
 		/* disable autoupgrade is the default */
 		SecureServ.autoupgrade = 0;
 	}
@@ -949,7 +949,7 @@ static int check_version_reply(User* u, char **av, int ac)
 	AddStringToList(&av1, buf, &ac1);	
  	ModuleEvent(EVENT_CLIENTVERSION, av1, ac1);
  	free(av1);
- 	/* reset segvinmodule */
+ 	/* reset segv_inmodule */
 	SET_SEGV_INMODULE("SecureServ");
 	
 	if (SecureServ.verbose) {

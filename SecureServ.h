@@ -192,7 +192,7 @@ int ss_kick_chan(char **argv, int ac);
 int ListMonChan(User *u);
 int StopMon(User *u, char *chan);
 int LoadMonChans();
-
+int MonChanCount(void);
 
 /* FloodCheck.c */
 void ss_init_chan_hash();

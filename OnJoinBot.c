@@ -491,3 +491,8 @@ int SaveMonChans() {
 	}
 	return 1;
 }
+
+int MonChanCount(void)
+{
+	return (list_count(monchans));
+}

@@ -938,6 +938,13 @@ void do_set(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help set for more info", s_SecureServ);
 			return;
 		}			
+		/* Do not allow overwrite of the monbot if one is already 
+		 * assigned and we have monchans. 
+		 */
+		if(SecureServ.monbot[0] != 0 && MonChanCount() > 1) {
+			prefmsg(u->nick, s_SecureServ, "Monitor bot already set to %s and is monitoring channels.", SecureServ.monbot);
+			return;
+		}
 		rnn = list_first(nicks);
 		while (rnn != NULL) {
 			nickname = lnode_get(rnn);

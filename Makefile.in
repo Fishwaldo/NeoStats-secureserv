@@ -11,9 +11,9 @@ INCLUDES=-I@DIRINST@/include/ -I.
 SOURCES= SecureServ.c SecureServ_help.c http.c OnJoinBot.c FloodCheck.c
 OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
 TARGET= SecureServ.so 
-DOCS=README.SecureServ SecureServ.settings
+DOCS=README.SecureServ SecureServ.settings README.SecureServ.html
 DATA=viri.dat
-DISTFILES = $(SOURCES) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h
+DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h
 distdir = @PACKAGE@-@VERSION@
 
 

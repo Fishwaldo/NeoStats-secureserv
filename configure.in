@@ -98,3 +98,6 @@ echo "(*----------------------------------------------------------*)"
 echo "(|This Module was written by:                               |)"
 echo "(|	fish (fish@dynam.ac)                                |)"
 echo "(*----------------------------------------------------------*)"
+read -p "Press Enter Key to Read the Release Notes"
+clear
+more RelNotes.txt

@@ -6,6 +6,7 @@
 /OnJoinBot.c -text
 /README.SecureServ -text
 /README.SecureServ.html -text
+/RelNotes.txt -text
 /SecureServ.c -text
 /SecureServ.h -text
 /SecureServ.settings -text

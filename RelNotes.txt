@@ -1,0 +1,19 @@
+SecureServ 0.9 Release Notes - 24/5/2003
+========================================
+THIS IS BETA SOFTWARE. YOU ARE WARNED.
+
+TODO List.
+- Not everything I had planned for SecureServ is implemented in this
+  release. This includes:
+  - Anti Virus Channel Support Functions
+  - NickFlood Detection Code
+
+- I'm still not comfortable with the FloodChecking Code on Channels.
+  Currently, it will only broadcast messages in the services channel about
+  floods, but wont actually take any action. (even though it says it does)
+
+- AutoUpdate support isn't actually fully implemented. You must still
+  /msg SecureServ update to update the Definitions file. 
+
+- Read the README file Please. It contains VERY important information. Read
+  it again if you have already read it. 

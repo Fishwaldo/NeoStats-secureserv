@@ -168,7 +168,7 @@ static Channel *GetNewChan ()
 			continue;
 		}
 		/* if the channel is exempt, restart */
-		if (ModIsChannelExcluded(c) == NS_TRUE) {
+		if (ModIsChannelExcluded(c) == NS_TRUE || ( SecureServ.exclusions == NS_TRUE && IsExcluded(c))) {
 			continue;
 		}
 		/* if we are already monitoring with a monbot, don't join */
@@ -528,7 +528,7 @@ static int MonChan(Client *u, char *requestchan)
 		return -1;
 	}			
 	/* dont allow excepted channels */
-	if (ModIsChannelExcluded(c) == NS_TRUE) {
+	if (ModIsChannelExcluded(c) == NS_TRUE || ( SecureServ.exclusions == NS_TRUE && IsExcluded(c))) {
 		if (u) irc_prefmsg (ss_bot, u, "Can not monitor a channel listed as a Exclude Channel");
 		return -1;
 	}

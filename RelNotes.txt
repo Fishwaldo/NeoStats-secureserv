@@ -1,21 +1,16 @@
-SecureServ 0.9.4 Release Notes - 20/8/2003
+SecureServ 1.0 Release Notes - 21/11/2003
 ========================================
-THIS IS BETA SOFTWARE. YOU ARE WARNED.
+- SecureServ now supports a Custom Virus definition file. Read the manual
+  for more details
 
-- Only BugFixes in this release, nothing new.
-
-- SecureServ at the moment does not prevent users that are joined to the
-  help channel from joining other channels. This will be fixed in the next
-  version. 
-
-- NickFlood Code has been implemented, but not enforced. You will get
-  messages in your services channel if SecureServ detects NickFloods, but it
-  wont actually do anything (yet)
+- SecureServ will now optionally invite users to the help channel if the
+  definitions say to do a SVSJOIN, but the IRCd does not support SVSJOIN
 
 - If you wish to take advantage of updated Definition files, you *MUST*
-  apply for a account at http://secure.irc-chat.net/ (currently 99
+  apply for a account at http://secure.irc-chat.net/ (currently 140+
   Signatures, and due to grow even bigger shortly after this release)
 
-- A LOT OF NEW OPTIONS ARE AVAILABLE IN THIS RELEASE. READ THE README FILE.
-  IF YOU ASK A QUESTION THATS ANSWERED IN THE README FILE ON THE BOARDS, YOU
-  WONT GET A ANSWER FROM ME!!!
+- A new option, /msg SecureServ set botecho on will now echo any messages
+  the onjoin bots, or monbot recieves to the services channel, regardless of
+  the verbose settting. 
+

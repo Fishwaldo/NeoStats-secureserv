@@ -331,7 +331,7 @@ static int Online(char **av, int ac)
 	
 	SET_SEGV_LOCATION();
 	ss_bot = init_mod_bot(s_SecureServ, SecureServ.user, SecureServ.host, SecureServ.realname,
-		services_bot_modes, BOT_FLAG_RESTRICT_OPERS|BOT_FLAG_DEAF, ss_commands, ss_settings, __module_info.module_name);
+		services_bot_modes, BOT_FLAG_DEAF, ss_commands, ss_settings, __module_info.module_name);
 	HelpersInit();
 	if (SecureServ.verbose) {
 		chanalert(s_SecureServ, "%d Trojans Patterns loaded", ViriCount());

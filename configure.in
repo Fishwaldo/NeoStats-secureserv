@@ -57,7 +57,7 @@ AC_TRY_RUN(
 int main(void) {
 	if (MAJOR >= 2) {
 		if (MINOR >= 5) {
-			if (REV >= 3) {
+			if (REV >= 5) {
 				exit(0);
 			}
 		}
@@ -70,7 +70,7 @@ int main(void) {
 if test "$ns_version_ok" = "yes"; then
 	AC_MSG_RESULT(Compatible Version);
 else
-	AC_MSG_ERROR(This Module requires NeoStats 2.5.3 or Higher)
+	AC_MSG_ERROR(This Module requires NeoStats 2.5.5 or Higher)
 fi
 
 dnl check if we are running with Debug....

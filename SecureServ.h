@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.h,v 1.20 2003/08/05 12:29:34 fishwaldo Exp $
+** $Id: SecureServ.h,v 1.21 2003/08/07 12:30:35 fishwaldo Exp $
 */
 
 
@@ -29,7 +29,7 @@
 #include <pcre.h>
 
 
-
+#define REQUIREDAPIVER 1
 
 typedef struct virientry {
 	char name[MAXHOST];

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.34 2003/08/05 12:10:07 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.35 2003/08/07 12:30:35 fishwaldo Exp $
 */
 
 
@@ -1810,10 +1810,16 @@ void gotpositive(User *u, virientry *ve, int type) {
 
 
 
-void _init() {
+int __ModInit(int modnum, int apiversion) {
 	int i;
+	
+	if (apiversion < REQUIREDAPIVER) {
+		nlog(LOG_CRITICAL, LOG_MOD, "Can't Load SecureServ. API Version MisMatch");
+		return -1;
+	}
 	s_SecureServ = "SecureServ";
 	strcpy(segvinmodule, "SecureServ");
+	
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
 	/* init the virus lists */
@@ -1855,8 +1861,7 @@ void _init() {
 		SecureServ.actioncounts[i] = 0;
 	}
 	strncpy(SecureServ.MaxAJPPChan, "", CHANLEN);
-
-
+	return 1;
 }
 
 /* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
@@ -1948,7 +1953,7 @@ void datdownload(HTTP_Response *response) {
 }
 	
 		
-void _fini() {
+void __ModFini() {
 
 };
 

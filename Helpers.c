@@ -180,15 +180,7 @@ int Helpers_Login(User *u, char **av, int ac) {
 			prefmsg(u->nick, s_SecureServ, "Login Successful");
 			chanalert(s_SecureServ, "%s Successfully Logged in", u->nick);
 			if ((SecureServ.joinhelpchan == 1) && (IsChanMember(findchan(SecureServ.HelpChan), finduser(s_SecureServ)) != 1)) {
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
-#ifndef MODE_CHANADMIN
-#define MODE_CHANADMIN MODE_CHANOP
-#endif
-			        sjoin_cmd(s_SecureServ, SecureServ.HelpChan, MODE_CHANADMIN);
-#else
-		                sjoin_cmd(s_SecureServ, SecureServ.HelpChan);
-		                schmode_cmd(s_SecureServ, SecureServ.HelpChan, "+o", s_SecureServ);
-#endif
+				join_bot_to_chan (s_SecureServ, SecureServ.HelpChan, CMODE_CHANADMIN);
 			}
 			if (IsChanMember(findchan(SecureServ.HelpChan), u) != 1) {
 #if defined(GOTSVSJOIN)

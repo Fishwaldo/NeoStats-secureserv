@@ -7,6 +7,7 @@ SecureServ Module for NeoStats Changelog.
  - Use more appropriate defines for buffer sizes since MAXHOST differs between IRCds (M)
  - Fix for bug 96 (multiple monbots) (M)
  - Fixed bug with helper kill messages (virus name and helper name were reversed) (M)
+ - Replace channel join calls with more portable join_bot_to_chan function (M)
 
 1.0 - Fish (F) and Mark (M) - 22 Aug, 2003
  - Fixed a problem with users signing off while NeoStats was still booting. (F)

@@ -188,11 +188,7 @@ restartnicks:
 		nlog(LOG_WARNING, LOG_MOD, "init_bot reported nick was in use. How? Dunno");
 		return;
 	}
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
-	sjoin_cmd(nickname->nick, c->name, 0);
-#else
-	sjoin_cmd(nickname->nick, c->name);
-#endif
+	join_bot_to_chan (nickname->nick, c->name, 0);
 
 	if (SecureServ.verbose) chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
 	
@@ -261,12 +257,7 @@ restartnicksondemand:
 
 	/* ok, init the new bot. */
 	init_bot(nickname->nick, nickname->user, nickname->host, nickname->rname, onjoinbot_modes, "SecureServ");
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
-	sjoin_cmd(nickname->nick, c->name, 0);
-#else
-	sjoin_cmd(nickname->nick, c->name);
-#endif
-
+	join_bot_to_chan (nickname->nick, c->name, 0);
 	chanalert(me.allbots ? nickname->nick : s_SecureServ, "Scanning %s with %s for OnJoin Viruses by request of %s", c->name, nickname->nick, u->nick);
 	prefmsg(u->nick, s_SecureServ, "Scanning %s with %s", c->name, nickname->nick);
 	return 1;
@@ -340,11 +331,7 @@ int ss_kick_chan(char **argv, int ac) {
 		while (mn != NULL) {
 			if (!strcasecmp(argv[0], lnode_get(mn))) {
 				/* rejoin the monitor bot to the channel */
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
-				sjoin_cmd(SecureServ.monbot, argv[0], 0);
-#else
-				sjoin_cmd(SecureServ.monbot, argv[0]);
-#endif
+				join_bot_to_chan (SecureServ.monbot, argv[0], 0);
 				/* restore segvinmodules */
 				SET_SEGV_INMODULE("SecureServ");
 				if (SecureServ.verbose) chanalert(s_SecureServ, "%s was kicked out of Monitored Chanel %s by %s. Rejoining", argv[1], argv[0], argv[2]);
@@ -410,11 +397,7 @@ int MonChan(User *u, char *requestchan) {
 	SET_SEGV_INMODULE("SecureServ");
 	
 	/* join the monitor bot to the new channel */
-#if defined(ULTIMATE3) || defined(BAHAMUT) || defined(QUANTUM) || defined(LIQUID)
-	sjoin_cmd(SecureServ.monbot, c->name, 0);
-#else
-	sjoin_cmd(SecureServ.monbot, c->name);
-#endif
+	join_bot_to_chan (SecureServ.monbot, c->name, 0);
 	/* restore segvinmodules */
 	SET_SEGV_INMODULE("SecureServ");
 

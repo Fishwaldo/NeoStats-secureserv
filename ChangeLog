@@ -21,6 +21,7 @@ SecureServ Module for NeoStats Changelog.
  - Added RELOAD command to allow reloading of viri.dat and customviri.dat without restart (M)
  - Fixed problem with pcre rebuilding tables when not necessary (M)
  - Added BOTECHO option so onjoin bots can echo all PMs without the other info that verbose on reports (M)
+ - Ported to new optimised buffer safe string functions (M)
  
 0.9.4 - Fish - 20 Aug, 2003
  - configure now checks for crypt.h (BugID: 37)

@@ -265,7 +265,7 @@ int ss_cmd_reload(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
-   	command_report(ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
+   	CommandReport(ss_bot, "Reloading virus definition files at request of %s", cmdparams->source->name);
 	load_dat();
 	return NS_SUCCESS;
 }
@@ -464,7 +464,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 					} else {
 						irc_globops (ss_bot, "SVSJoining %s for Virus %s (http://secure.irc-chat.net/info.php?viri=%s)", u->name, ve->name, ve->name);
 					}
-					if (!IsChannelMember(find_channel(SecureServ.HelpChan), u)) {
+					if (!IsChannelMember(FindChannel(SecureServ.HelpChan), u)) {
 						irc_svsjoin (ss_bot, u, SecureServ.HelpChan);
 					}
 					nlog (LOG_NOTICE, "SVSJoining %s to %s for Virus %s", u->name, SecureServ.HelpChan, ve->name);

@@ -265,7 +265,7 @@ int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason)
 	DBAStoreConfigStr ("UpdatePassword", cmdparams->av[2], MAXNICK);
 	strlcpy(SecureServ.updateuname, cmdparams->av[1], MAXNICK);
 	strlcpy(SecureServ.updatepw, cmdparams->av[2], MAXNICK);
-	command_report(ss_bot, "%s changed the Update Username and Password", cmdparams->source);
+	CommandReport(ss_bot, "%s changed the Update Username and Password", cmdparams->source);
 	irc_prefmsg (ss_bot, cmdparams->source, "Update Username and Password has been updated to %s and %s", SecureServ.updateuname, SecureServ.updatepw);
 	return NS_SUCCESS;
 }
@@ -277,15 +277,15 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 	}
 	if (SecureServ.autoupgrade == 1) {
 		if ((SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
-			add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
+			AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
 		} else {
 			irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate, as you have not set a username and password");
 			SecureServ.autoupgrade = 0;
-			del_timer ("AutoUpdate");
+			DelTimer ("AutoUpdate");
 			DBAStoreConfigInt ("AutoUpdate", &SecureServ.autoupgrade);
 		}
 	} else {
-		del_timer ("AutoUpdate");
+		DelTimer ("AutoUpdate");
 	}
 	return NS_SUCCESS;
 }

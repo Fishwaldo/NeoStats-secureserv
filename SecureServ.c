@@ -156,13 +156,13 @@ static int ss_cmd_set_treatchanmsgaspm(CmdParams *cmdparams, SET_REASON reason)
 		return NS_SUCCESS;
 	} else if (!ircstrcasecmp(cmdparams->av[1], "IGOTLOTSOFCPU")) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel Messages are now treated as PM Messages. You did read the help didn't you?");
-		command_report(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
+		CommandReport(ss_bot, "%s has configured %s to treat Channels messages as PM messages", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 1;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
 	} else if ((!ircstrcasecmp(cmdparams->av[1], "OFF"))) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Channel message checking is now disabled");
-		command_report(ss_bot, "%s has disabled channel message checking", cmdparams->source);
+		CommandReport(ss_bot, "%s has disabled channel message checking", cmdparams->source);
 		SecureServ.treatchanmsgaspm = 0;
 		DBAStoreConfigInt ("ChanMsgAsPM", &SecureServ.treatchanmsgaspm);
 		return NS_SUCCESS;
@@ -176,7 +176,7 @@ static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reaso
 	if (reason == SET_LOAD) {
 		return NS_SUCCESS;
 	}
-	set_timer_interval ("MonBotCycle", SecureServ.monchancycletime);
+	SetTimerInterval ("MonBotCycle", SecureServ.monchancycletime);
 	return NS_SUCCESS;
 }
 static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
@@ -184,7 +184,7 @@ static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 	if (reason == SET_LOAD) {
 		return NS_SUCCESS;
 	}
-	set_timer_interval ("JoinNewChan", SecureServ.stayinchantime);
+	SetTimerInterval ("JoinNewChan", SecureServ.stayinchantime);
 	return NS_SUCCESS;
 }
 
@@ -444,12 +444,12 @@ int ModSynch (void)
 	}
 	srand(hash_count(GetChannelHash()));
 	/* kick of the autojoin timer */
-	add_timer (TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime);
-	add_timer (TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime);
+	AddTimer (TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime);
+	AddTimer (TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime);
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	LoadMonChans();
 	if (SecureServ.autoupgrade == 1) {
-		add_timer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
+		AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", 7200);
 	}
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
 	GetChannelList (ScanChannel, NULL);

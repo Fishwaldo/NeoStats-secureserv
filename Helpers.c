@@ -110,7 +110,7 @@ static int HelperLogout (CmdParams *cmdparams)
 		ClearUserModValue (cmdparams->source);
 		if (SecureServ.helpcount > 0)
 			SecureServ.helpcount--;
-		if ((SecureServ.helpcount == 0) && (IsChannelMember(find_channel(SecureServ.HelpChan), ss_bot->u) == 1)) {
+		if ((SecureServ.helpcount == 0) && (IsChannelMember(FindChannel(SecureServ.HelpChan), ss_bot->u) == 1)) {
 			irc_part( ss_bot, SecureServ.HelpChan, NULL );
 		}
 		return NS_SUCCESS;
@@ -153,7 +153,7 @@ int ss_cmd_login(CmdParams *cmdparams)
 		if (!ircstrcasecmp(helper->pass, cmdparams->av[1])) {
 			Channel* c;
 
-			c = find_channel(SecureServ.HelpChan);
+			c = FindChannel(SecureServ.HelpChan);
 			helper->u = cmdparams->source;
 			ud = ns_malloc (sizeof(UserDetail));
 			ud->type = USER_HELPER;
@@ -208,7 +208,7 @@ int ss_cmd_assist(CmdParams *cmdparams)
 		return NS_SUCCESS;
 	}
 	/* if we get here, they are ok, so check the target user*/
-	tu = find_user(cmdparams->av[1]);
+	tu = FindUser(cmdparams->av[1]);
 	if (!tu) /* User not found */
 		return NS_SUCCESS;
 	td = GetUserModValue (tu);

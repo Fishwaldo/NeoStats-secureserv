@@ -333,6 +333,10 @@ static int Online(char **av, int ac)
 	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, "SecureServ Update Server");
 	SecureServ.isonline = 1;
 	LoadMonChans();
+	if (SecureServ.doautoupgrade == 1) {
+		add_mod_timer("DownLoadDat", "DownLoadNewDat", __module_info.module_name, 3600);
+	}
+
 
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
 	hash_scan_begin(&hs, ch);

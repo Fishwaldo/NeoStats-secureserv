@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.16 2003/05/25 15:01:44 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.17 2003/05/26 11:30:11 fishwaldo Exp $
 */
 
 
@@ -1341,7 +1341,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 			if (SecureServ.doakill > 0) {
 				prefmsg(u->nick, s_SecureServ, SecureServ.akillinfo);
 				chanalert(s_SecureServ, "Akilling %s for Virus %s", u->nick, ve->name);
-				sakill_cmd(u->hostname, u->username, s_SecureServ, SecureServ.akilltime, "SecureServ: %s", ve->name);
+				sakill_cmd(u->hostname, "*", s_SecureServ, SecureServ.akilltime, "SecureServ: %s", ve->name);
 				break;
 			}
 		case ACT_SVSJOIN:

@@ -57,6 +57,7 @@ int InitExempts(void)
 {
 	/* init the exemptions list */
 	exempt = list_create(MAX_EXEMPTS);
+	return 1;
 }
 
 void save_exempts() 

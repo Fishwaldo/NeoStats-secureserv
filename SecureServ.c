@@ -39,6 +39,7 @@ static int ss_cmd_viriversion (CmdParams *cmdparams);
 static int ss_cmd_set_treatchanmsgaspm (CmdParams *cmdparams, SET_REASON reason);
 static int ss_cmd_set_monchancycletime_cb (CmdParams *cmdparams, SET_REASON reason);
 static int ss_cmd_set_cycletime_cb (CmdParams *cmdparams, SET_REASON reason);
+static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason );
 
 #ifdef WIN32
 void *(*old_malloc)(size_t);
@@ -117,6 +118,7 @@ static bot_setting ss_settings[]=
 	{"AUTOUPDATE",	&SecureServ.autoupgrade,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdate, ss_cmd_set_autoupdate_cb, (void *)0 },
 	{"AUTOUPDATETIME",	&SecureServ.autoupgradetime,SET_TYPE_INT,	3600,	172800,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdatetime, ss_cmd_set_autoupdatetime_cb, (void *)7200 },
 	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
+	{"EXCLUSIONS",	&SecureServ.exclusions,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_exclusions, ss_set_exclusions_cb, (void *)0 },
 	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
 };
 
@@ -186,6 +188,15 @@ static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 	if( reason == SET_CHANGE )
 	{
 		SetTimerInterval ("JoinNewChan", SecureServ.stayinchantime);
+	}
+	return NS_SUCCESS;
+}
+
+static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason )
+{
+	if( reason == SET_LOAD || reason == SET_CHANGE )
+	{
+		SetAllEventFlags( EVENT_FLAG_USE_EXCLUDE, SecureServ.exclusions );
 	}
 	return NS_SUCCESS;
 }

@@ -124,6 +124,7 @@ struct SecureServ {
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
 	int treatchanmsgaspm;
+	int exclusions;
 } SecureServ;
 
 /* SecureServ.c */

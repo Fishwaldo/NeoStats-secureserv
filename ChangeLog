@@ -2,6 +2,8 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a2-dev - Mark (M)
+ - Add option to use NeoStats global excludes with SecureServ. Based on an 
+   idea contributed by DeadNotBuried. (M)
  - Fix bug with shutdown/unload connected to onjoin bots. (M)
  - Update settings table to a2 compatible format. (M)
  - Split SET UPDATEINFO into SET UPDATEUSER and SET UPDATEPASS. (M)

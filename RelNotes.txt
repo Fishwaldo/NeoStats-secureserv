@@ -1,4 +1,4 @@
-SecureServ 0.9 Release Notes - 24/5/2003
+SecureServ 0.9.1 Release Notes - 30/5/2003
 ========================================
 THIS IS BETA SOFTWARE. YOU ARE WARNED.
 
@@ -6,17 +6,25 @@ TODO List.
 - Not everything I had planned for SecureServ is implemented in this
   release. This includes:
   - Anti Virus Channel Support Functions
-  - NickFlood Detection Code
 
-- I'm still not comfortable with the FloodChecking Code on Channels.
-  Currently, it will only broadcast messages in the services channel about
-  floods, but wont actually take any action. (even though it says it does)
+- NickFlood Code has been implemented, but not enforced. You will get
+  messages in your services channel if SecureServ detects NickFloods, but it
+  wont actually do anything (yet)
 
-- AutoUpdate support isn't actually fully implemented. You must still
-  /msg SecureServ update to update the Definitions file. 
+- FloodDetection on Channels should be more Accurate now (But it still
+  doesn't actually take action)
+
+- Those people that had problems with libpcre in the 0.9 version should be
+  able to compile and use this version with no problems.
 
 - If you wish to take advantage of updated Definition files, you *MUST*
-  apply for a account at http://secure.irc-chat.net/
+  apply for a account at http://secure.irc-chat.net/ (currently 80
+  Signatures)
+
+- If you have a http://secure.irc-chat.net account and have entered your
+  username and password into SecureServ, AutoUpdate now functions. It
+  automatically downloads new dat files every 24 hours. 
 
 - Read the README file Please. It contains VERY important information. Read
-  it again if you have already read it. 
+  it again if you have already read it, there are new options you need to be
+  aware of. 

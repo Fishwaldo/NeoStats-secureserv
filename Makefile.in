@@ -13,7 +13,7 @@ OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
 TARGET= SecureServ.so 
 DOCS=README.SecureServ SecureServ.settings README.SecureServ.html html.css 
 DATA=viri.dat
-DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h RelNotes.txt
+DISTFILES = $(SOURCES) $(DATA) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h RelNotes.txt pcre/*.c pcre/*.h pcre/*.in pcre/README pcre/COPYING
 distdir = @PACKAGE@-@VERSION@
 
 
@@ -43,6 +43,7 @@ dist:
 	@echo -n "Creating Directories"
 	@-rm -rf $(distdir)
 	@mkdir $(distdir)
+	@mkdir $(distdir)/pcre
 	@echo "Done"
 	@echo -n "Coping Core Distribution Files"
 	@for file in $(DISTFILES); do \

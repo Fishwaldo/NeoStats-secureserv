@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.22 2003/05/30 13:26:31 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.23 2003/05/30 14:04:09 fishwaldo Exp $
 */
 
 
@@ -1065,7 +1065,8 @@ void load_dat() {
 			viridet = malloc(sizeof(virientry));
 			rc = pcre_exec(re, NULL, buf, strlen(buf), 0, 0, ovector, 24);
 			if (rc <= 0) {
-				nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space!");
+				nlog(LOG_WARNING, LOG_MOD, "PCRE_EXEC didn't have enough space! %d", rc);
+				nlog(LOG_WARNING, LOG_MOD, "Load Was: %s", buf);
 				free(viridet);
 				continue;
 			} else if (rc != 8) {

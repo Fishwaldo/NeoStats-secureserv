@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: OnJoinBot.c,v 1.4 2003/04/23 13:54:13 fishwaldo Exp $
+** $Id: OnJoinBot.c,v 1.5 2003/05/02 14:37:49 fishwaldo Exp $
 */
 
 
@@ -139,3 +139,27 @@ restartnicks:
 	
 	
 }
+
+
+void OnJoinBotMsg(User *u, char **argv, int ac) {
+	char *buf;
+	lnode_t *node;
+	virientry *viridetails;
+	
+	buf = joinbuf(argv, ac, 1);
+	node = list_first(viri);
+	while ((node = list_next(viri, node)) != NULL) {
+		viridetails = lnode_get(node);
+		if ((viridetails->dettype == DET_MSG) || (viridetails->dettype > 1)) {
+			nlog(LOG_DEBUG1, LOG_MOD, "SecureServ: Checking Message %s (%s) against %s", buf, u->nick, viridetails->recvmsg);
+			if (fnmatch(viridetails->recvmsg, buf, 0) == 0) {
+				gotpositive(u, viridetails, DET_MSG);
+				if (SecureServ.breakorcont == 0)
+					continue;
+				else 
+					break;
+			}
+	
+		}
+	}
+}				

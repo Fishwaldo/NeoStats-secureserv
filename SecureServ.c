@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.6 2003/04/23 13:54:13 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.7 2003/05/02 14:37:49 fishwaldo Exp $
 */
 
 
@@ -43,8 +43,9 @@ void LoadTSConf();
 int check_version_reply(char *origin, char **av, int ac);
 void gotpositive(User *u, virientry *ve, int type);
 void do_list(User *u);
-void http_response(HTTP_Response response);
-
+void datver(HTTP_Response *response);
+void datdownload(HTTP_Response *response);
+void load_dat();
 Module_Info my_info[] = { {
 	"SecureServ",
 	"A Trojan Scanning Bot",
@@ -76,12 +77,19 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	User *u;
 
 	strcpy(segv_location, "TS:Bot_Message");
-	
 	u = finduser(origin); 
 	if (!u) { 
 		nlog(LOG_WARNING, LOG_CORE, "Unable to find user %s (ts)", origin); 
 		return -1; 
 	} 
+	/* first, figure out what bot its too */
+	if (strcasecmp(argv[0], s_SecureServ)) {
+		OnJoinBotMsg(u, argv, argc);
+		return 1;
+	}
+
+
+
 	if (!strcasecmp(argv[1], "help")) {
 		if (argc == 2) {
 			privmsg_list(u->nick, s_SecureServ, ts_help);
@@ -100,6 +108,8 @@ int __Bot_Message(char *origin, char **argv, int argc)
 	}
 	return 1;
 }
+
+
 
 
 void do_list(User *u) {
@@ -158,7 +168,7 @@ int Online(char **av, int ac) {
 	/* kick of the autojoin timer */
 	add_mod_timer("JoinNewChan", "RandomJoinChannel", my_info[0].module_name, SecureServ.stayinchantime);
 
-	http_request("http://202.181.4.129/viri.dat", 2, HFLAG_NONE, http_response);
+	http_request(DATFILEVER, 2, HFLAG_NONE, datver);
 
 	return 1;
 };
@@ -168,11 +178,8 @@ void LoadTSConf() {
 	lnode_t *node;
 	exemptinfo *exempts = NULL;
 	randomnicks *rnicks;
-	virientry *viridet;
-	char buf[512];
 	char **data;
 	int i;
-	FILE *fp;
 	char *tmp;
 	char datapath[MAXHOST];
 	strcpy(segv_location, "TS:loadTSConf");
@@ -195,77 +202,107 @@ void LoadTSConf() {
 		/* 60 seconds */
 		SecureServ.stayinchantime = 60;
 	}
+	if (GetConf((void *)SecureServ.autoupgrade, CFGINT, "AutoUpgrade") <= 0) {
+		/* autoupgrade is the default */
+		SecureServ.autoupgrade = 0;
+	}
 	
 	
-	GetDir("g/SecureServ:/Exempt", &data);
-	/* try */
-	for (i = 0; data[i] != NULL; i++) {
-		exempts = malloc(sizeof(exemptinfo));
-		strncpy(exempts->host, data[i], MAXHOST);
-
-		snprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
-		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
-			free(exempts);
-			continue;
-		} else {
-			strncpy(exempts->who, tmp, MAXNICK);
-			free(tmp);
+	if (GetDir("Exempt", &data) > 0) {
+		/* try */
+		for (i = 0; data[i] != NULL; i++) {
+			exempts = malloc(sizeof(exemptinfo));
+			strncpy(exempts->host, data[i], MAXHOST);
+	
+			snprintf(datapath, MAXHOST, "Exempt/%s/Who", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+				free(exempts);
+				continue;
+			} else {
+				strncpy(exempts->who, tmp, MAXNICK);
+				free(tmp);
+			}
+			snprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+				free(exempts);
+				continue;
+			} else {
+				strncpy(exempts->reason, tmp, MAXHOST);
+				free(tmp);
+			}
+			snprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
+			if (GetConf((void *)&exempts->server, CFGBOOL, datapath) <= 0) {
+				free(exempts);
+				continue;
+			}			
+			nlog(LOG_DEBUG2, LOG_MOD, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
+			node = lnode_create(exempts);
+			list_prepend(exempt, node);			
 		}
-		snprintf(datapath, MAXHOST, "Exempt/%s/Reason", data[i]);
-		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
-			free(exempts);
-			continue;
-		} else {
-			strncpy(exempts->reason, tmp, MAXHOST);
-			free(tmp);
-		}
-		snprintf(datapath, MAXHOST, "Exempt/%s/Server", data[i]);
-		if (GetConf((void *)&exempts->server, CFGBOOL, datapath) <= 0) {
-			free(exempts);
-			continue;
-		}			
-		nlog(LOG_DEBUG2, LOG_MOD, "Adding %s (%d) Set by %s for %s to Exempt List", exempts->host, exempts->server, exempts->who, exempts->reason);
-		node = lnode_create(exempts);
-		list_prepend(exempt, node);			
 	}
-
-	/* get Random Nicknames */
-	GetDir("g/SecureServ:/RandomNicks", &data);
-	/* try */
-	for (i = 0; data[i] != NULL; i++) {
-		rnicks = malloc(sizeof(randomnicks));
-		strncpy(rnicks->nick, data[i], MAXNICK);
-
-		snprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
-		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
-			free(rnicks);
-			continue;
-		} else {
-			strncpy(rnicks->user, tmp, MAXUSER);
-			free(tmp);
-		}
-		snprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
-		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
-			free(rnicks);
-			continue;
-		} else {
-			strncpy(rnicks->host, tmp, MAXHOST);
-			free(tmp);
-		}
-		snprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
-		if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
-			free(exempts);
-			continue;
-		} else {
-			strncpy(rnicks->rname, tmp, MAXHOST);
-			free(tmp);
-		}			
-		nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
-		node = lnode_create(rnicks);
-		list_prepend(nicks, node);			
-	}
-
 	free(data);
+	/* get Random Nicknames */
+	if (GetDir("RandomNicks", &data) > 0) {
+		/* try */
+		for (i = 0; data[i] != NULL; i++) {
+			rnicks = malloc(sizeof(randomnicks));
+			strncpy(rnicks->nick, data[i], MAXNICK);
+	
+			snprintf(datapath, MAXHOST, "RandomNicks/%s/User", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+				free(rnicks);
+				continue;
+			} else {
+				strncpy(rnicks->user, tmp, MAXUSER);
+				free(tmp);
+			}
+			snprintf(datapath, MAXHOST, "RandomNicks/%s/Host", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+				free(rnicks);
+				continue;
+			} else {
+				strncpy(rnicks->host, tmp, MAXHOST);
+				free(tmp);
+			}
+			snprintf(datapath, MAXHOST, "RandomNicks/%s/RealName", data[i]);
+			if (GetConf((void *)&tmp, CFGSTR, datapath) <= 0) {
+				free(exempts);
+				continue;
+			} else {
+				strncpy(rnicks->rname, tmp, MAXHOST);
+				free(tmp);
+			}			
+			nlog(LOG_DEBUG2, LOG_MOD, "Adding Random Nick %s!%s@%s with RealName %s", rnicks->nick, rnicks->user, rnicks->host, rnicks->rname);
+			node = lnode_create(rnicks);
+			list_prepend(nicks, node);			
+		}
+	}
+	free(data);
+	load_dat();
+	SecureServ.inited = 1;
+
+}
+
+void load_dat() {
+	FILE *fp;
+	char buf[512];
+	virientry *viridet;
+	lnode_t *node;
+
+
+	/* if the list isn't empty, make it empty */
+	if (!list_isempty(viri)) {
+		node = list_first(viri);
+		while ((node = list_next(viri, node)) != NULL) {
+			viridet = lnode_get(node);
+			list_delete(viri, node);
+			lnode_destroy(node);
+			free(viridet);
+		}
+	}
+	
+	
+	
 	fp = fopen("data/viri.dat", "r");
 	if (!fp) {
 		nlog(LOG_WARNING, LOG_MOD, "TS: Error, No viri.dat file found. %s is disabled", s_SecureServ);
@@ -291,7 +328,6 @@ void LoadTSConf() {
 			nlog(LOG_DEBUG1, LOG_MOD, "loaded %s (Detection %d, with %s, send %s and do %d", viridet->name, viridet->dettype, viridet->recvmsg, viridet->sendmsg, viridet->action);
 		}
 	}
-	SecureServ.inited = 1;
 
 	
 }
@@ -456,16 +492,80 @@ void _init() {
 
 	SecureServ.sampletime = 5;
 	SecureServ.JoinThreshold = 5;
+	SecureServ.autoupgrade = 0;	
+	SecureServ.doUpdate = 0;
+
+
+}
+
+/* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
+** whats local, and if website is higher, either prompts for a upgrade, or does a automatic one :)
+**
+** NOTE: we can't call http_request from this function as its NOT recursive 
+*/
+
+void datver(HTTP_Response *response) {
+	int myversion;
+	/* check there was no error */
+	if ((response->iError > 0) && (!strcasecmp(response->szHCode, "200"))) {
+		myversion = atoi(response->pData);
+		nlog(LOG_DEBUG1, LOG_MOD, "LocalDat Version %d, WebSite %d", SecureServ.viriversion, myversion);
+		if (myversion > SecureServ.viriversion) {
+			if (SecureServ.autoupgrade > 0) {
+				SecureServ.doUpdate = 1;
+				add_mod_timer("DownLoadDat", "DownLoadNewDat", my_info[0].module_name, 1);
+			 } else
+				chanalert(s_SecureServ, "A new DatFile Version %d is available. You should /msg %s update", myversion, s_SecureServ);
+		}
+	} else {
+		nlog(LOG_DEBUG1, LOG_MOD, "Virus Definition check Failed. %s", response->pError);
+		return;
+	}
+}
+void DownLoadDat() {
+	/* dont keep trying to download !*/
+	if (SecureServ.doUpdate == 1) {
+		del_mod_timer("DownLoadNewDat");
+		SecureServ.doUpdate = 2;
+		http_request(DATFILE, 2, HFLAG_NONE, datdownload);
+	} 
+	return;
+}
+
+
+/* @brief this downloads a dat file and loads the new version into memory if required 
+*/
+
+void datdownload(HTTP_Response *response) {
+	char tmpname[255];
+	int i;
 	
-
-
+	/* if this is a automatic download, KILL the timer */
+	if (SecureServ.doUpdate == 2) {
+		/* clear this flag */
+		SecureServ.doUpdate = 0;
+	}
+	/* make a temp file and write the contents to it */
+	snprintf(tmpname, 255, "viriXXXXXX");
+	i = mkstemp(tmpname);
+	write(i, response->pData, response->lSize);
+	close(i);
+	/* rename the file to the datfile */
+	rename(tmpname, "data/viri.dat");
+	/* reload the dat file */
+	load_dat();
+	nlog(LOG_NOTICE, LOG_MOD, "Successfully Downloaded DatFile Version %d", SecureServ.viriversion);
+	chanalert(s_SecureServ, "DatFile Version %d has been downloaded and installed", SecureServ.viriversion);
 }
-
-void http_response(HTTP_Response response) {
+	
+		
+#if 0
 printf("gotresponse\n");
-
+printf("hcode: %s %d\n", response->szHCode, response->iError);
+printf("data: %s\n", response->pData);
 }
 
+#endif
 
 void _fini() {
 

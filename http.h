@@ -38,12 +38,20 @@
 #include <memory.h>
 #include <errno.h>
 
+
+/* this is the DATFILE location */
+#define DATFILE "http://202.181.4.129/viridat.php"
+/* this is the DATFILE Version Location */
+#define DATFILEVER "http://202.181.4.129/datver.php"
+/* this is the HostName */
+#define HTTPHOST "www.neostats.net"
+
+
 /* Compile time options.
  * Allow you to disable library functionality you don't need. - Jean II
  */
 #define HF_FIND_HEADER		/* find_header() function */
 #undef HF_DO_FILE		/* do_file() function & functionality */
-#define HTTPHOST "www.neostats.net"
 
 #define BUFLEN 8192
 #define GETLEN 8192
@@ -85,7 +93,7 @@ typedef enum
                     
 char *find_header_end( char *buf, int bytes );
 char *parse_url( char *url, char *scheme, char *host, int *port );
-int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags,void (*callback)(HTTP_Response response) );
+int http_request( char *in_URL, HTTP_Method in_Method, unsigned long in_Flags,void (*callback)(HTTP_Response *response) );
 #ifdef HF_DO_FILE
 int do_file(char *in_URL);
 #endif /* HF_DO_FILE */

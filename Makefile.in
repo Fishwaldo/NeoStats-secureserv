@@ -13,6 +13,8 @@ OBJECTS= SecureServ.o SecureServ_help.o http.o OnJoinBot.o FloodCheck.o
 TARGET= SecureServ.so                 
 DOCS=README.SecureServ
 DATA=
+DISTFILES = $(SOURCES) $(DOCS) modconfig.h.in configure install-sh ChangeLog Makefile.in http.h SecureServ.h
+distdir = @PACKAGE@-@VERSION@
 
 
 all:	 module
@@ -29,6 +31,22 @@ clean:
 install: module
 	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+dist:	
+	@echo -n "Creating Directories"
+	@-rm -rf $(distdir)
+	@mkdir $(distdir)
+	@echo "Done"
+	@echo -n "Coping Core Distribution Files"
+	@for file in $(DISTFILES); do \
+		echo -n "."; \
+		cp -pr $$file $(distdir)/$$file; \
+	done
+	@echo "Done"
+	@tar -czf $(distdir).tar.gz $(distdir)/*
+	@rm -rf $(distdir)
+	@echo "Tar file $(distdir).tar.gz created, Freshmeat Time"
+
+
 
 $(OBJECTS): Makefile
 

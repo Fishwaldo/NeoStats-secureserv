@@ -218,6 +218,10 @@ void MonBotCycle()
 				mcnode = list_first(monchans);
 			}
 		}
+		if (mcnode == NULL) {
+			/* No MonChans so abort */
+			return;
+		}
 		/* check the channel is active, if not, just bail out */
 		if (!findchan(lnode_get(mcnode))) {
 			return;

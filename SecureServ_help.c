@@ -57,6 +57,7 @@ const char *ts_help_oper[] = {
 	"    BOTS       Manage random Bot list",
 	"    MONCHAN    Set channel monitor bot",
 	"    HELPERS    Manage helper list",
+	"    RELOAD     Reload virus defintions",
 	NULL
 };
 
@@ -289,3 +290,12 @@ const char *ts_help_set[] = {
 	"    \2HELPCHAN <channel>\2     - Changes the Channel that Virus infected users are joined to if there are helpers logged in",
 	NULL
 };
+
+const char *ts_help_reload[] = {
+	"Syntax: \2RELOAD\2",
+	"",
+	"Force SecureServ to reload the virus definition files.",
+	"Used after manual updates to viri.dat or customviri.dat.",
+	NULL
+};
+

@@ -242,4 +242,5 @@ extern const char *ts_help_monchan[];
 extern const char *ts_help_assist[];
 extern const char *ts_help_helper[];
 extern const char *ts_help_helpers[];
+extern const char *ts_help_reload[];
 #endif /* TS_H */

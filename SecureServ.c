@@ -47,6 +47,7 @@ void gotpositive(User *u, virientry *ve, int type);
 void do_set(User *u, char **av, int ac);
 void do_list(User *u);
 void do_status(User *u);
+void do_reload(User *u);
 void datver(HTTP_Response *response);
 void datdownload(HTTP_Response *response);
 static void load_dat();
@@ -163,7 +164,9 @@ int __Bot_Message(char *origin, char **argv, int argc)
 				privmsg_list(u->nick, s_SecureServ, ts_help_bots);
 			} else if ((!strcasecmp(argv[2], "MONCHAN")) && (UserLevel(u) > 40)) {
 				privmsg_list(u->nick, s_SecureServ, ts_help_monchan);
-			} else {
+			} else if ((!strcasecmp(argv[2], "RELOAD")) && (UserLevel(u) > 40)) {
+				privmsg_list(u->nick, s_SecureServ, ts_help_reload);
+			} else {				
 				prefmsg(u->nick, s_SecureServ, "Invalid Syntax. /msg %s help for more info", s_SecureServ);
 			}
 		} else {
@@ -530,6 +533,15 @@ int __Bot_Message(char *origin, char **argv, int argc)
 		http_request(ss_buf, 2, HFLAG_NONE, datdownload);
 		prefmsg(u->nick, s_SecureServ, "Requesting New Dat File. Please Monitor the Services Channel for Success/Failure");
 		chanalert(s_SecureServ, "%s requested an update to the Dat file", u->nick);
+	} else if (!strcasecmp(argv[1], "reload")) {
+		if (UserLevel(u) < 40) {
+			prefmsg(u->nick, s_SecureServ, "Permission Denied");
+			chanalert(s_SecureServ, "%s tried to reload, but Permission was denied", u->nick);
+			return -1;
+		}			
+		do_reload(u);
+		return 1;
+	
 	} else {
 		prefmsg(u->nick, s_SecureServ, "Syntax Error. /msg %s help", s_SecureServ);
 	}
@@ -2253,3 +2265,10 @@ int AutoUpdate()
 	}
 	return 0;
 }	
+
+void do_reload(User *u) 
+{
+	prefmsg(u->nick, s_SecureServ, "Reloading virus definition files");
+    chanalert(s_SecureServ, "Reloading virus definition files at request of %s", u->nick);
+	load_dat();
+}

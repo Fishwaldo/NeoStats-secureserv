@@ -2042,7 +2042,7 @@ void gotpositive(User *u, virientry *ve, int type) {
 #if defined(GOTSVSJOIN)
 						ssvsjoin_cmd(u->nick, SecureServ.HelpChan);
 #else 
-						sinvite(s_SecureServ, u->nick, SecureServ.HelpChan);
+						sinvite_cmd(s_SecureServ, u->nick, SecureServ.HelpChan);
 #endif
 					}
 					nlog(LOG_NOTICE, LOG_MOD, "SVSJoining %s Nick to avchan for Virus %s", u->nick, ve->name);

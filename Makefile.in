@@ -32,7 +32,7 @@ install: module
 	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
 # Note after 1.0 release, change these
 	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
-	if ! test -f $(DIRECTORY)../data/customviri.dat ; then $(INSTALL) -m 644 customviri.dat $(DIRECTORY)../data/ ; fi 
+#	if ! test -f $(DIRECTORY)../data/customviri.dat ; then $(INSTALL) -m 644 customviri.dat $(DIRECTORY)../data/ ; fi 
 # to this
 #	if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
 	 @cd $(DIRECTORY)..; \

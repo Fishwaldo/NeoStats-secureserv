@@ -11,11 +11,28 @@ dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL 
 
-echo "If the following check can't find libpcre, see
-http://www.neostats.net/boards/viewtopic.php?t=463"
-AC_CHECK_LIB(pcre, pcre_compile,
-[CFLAGS="$CFLAGS `pcre-config --cflags`" LDFLAGS="$LDFLAGS `pcre-config --libs`"],
-[AC_MSG_ERROR(This program required libpcre.)])
+PCRE_MAJOR=4
+PCRE_MINOR=3
+PCRE_DATE=21-May-2003
+PCRE_VERSION=${PCRE_MAJOR}.${PCRE_MINOR}
+
+dnl Default values for miscellaneous macros
+
+AC_DEFINE(POSIX_MALLOC_THRESHOLD,10)
+
+dnl Checks for programs.
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS(limits.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+
+AC_CHECK_FUNCS(bcopy memmove strerror)
 
 
 
@@ -78,7 +95,20 @@ AC_SUBST(CFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-AC_OUTPUT(Makefile)
+AC_SUBST(HAVE_MEMMOVE)
+AC_SUBST(HAVE_STRERROR)
+AC_SUBST(LINK_SIZE)
+AC_SUBST(MATCH_LIMIT)
+AC_SUBST(NEWLINE)
+AC_SUBST(PCRE_MAJOR)
+AC_SUBST(PCRE_MINOR)
+AC_SUBST(PCRE_DATE)
+AC_SUBST(PCRE_VERSION)
+AC_SUBST(PCRE_LIB_VERSION)
+AC_SUBST(PCRE_POSIXLIB_VERSION)
+AC_SUBST(POSIX_MALLOC_THRESHOLD)
+AC_SUBST(UTF8)
+AC_OUTPUT(Makefile pcre/Makefile pcre/pcre.h:pcre/pcre.in)
 echo "(*----------------------------------------------------------*)"
 echo "(| Important Instructions                                   |)"
 echo "(*----------------------------------------------------------*)"

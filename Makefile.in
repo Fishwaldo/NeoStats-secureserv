@@ -1,6 +1,6 @@
 #Neostats Module Makefile!
 CC=@CC@
-CFLAGS=@CFLAGS@
+CFLAGS=@CFLAGS@ -Ipcre
 LDFLAGS= @LDFLAGS@
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -22,10 +22,14 @@ all:	 module
 .c.o:	
 	 $(CC) -c $(CFLAGS) $(INCLUDES) $<
 
-module:	 $(OBJECTS)
-	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS)
+libpcre.a:
+	 (cd pcre; $(MAKE) $@)
+
+module:	 libpcre.a $(OBJECTS)
+	 $(LD) -shared -o $(TARGET) $(OBJECTS) $(LDFLAGS) pcre/libpcre.a
 
 clean:
+	 (cd pcre; $(MAKE) $@)
 	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
 
 install: module

@@ -18,7 +18,7 @@
 **  USA
 **
 ** NeoStats CVS Identification
-** $Id: SecureServ.c,v 1.21 2003/05/28 14:08:09 fishwaldo Exp $
+** $Id: SecureServ.c,v 1.22 2003/05/30 13:26:31 fishwaldo Exp $
 */
 
 

@@ -179,11 +179,6 @@ void load_dat(void);
 /* Helpers.c */
 int InitHelpers(void);
 void FiniHelpers(void);
-int ss_cmd_login(CmdParams *cmdparams);
-int ss_cmd_logout(CmdParams *cmdparams);
-int ss_cmd_assist(CmdParams *cmdparams);
-int ss_cmd_helpers(CmdParams *cmdparams);
-int ss_cmd_chpass(CmdParams *cmdparams);
 int HelpersSignoff(CmdParams *cmdparams);
 int HelpersAway(CmdParams *cmdparams);
 void HelpersStatus (CmdParams *cmdparams);

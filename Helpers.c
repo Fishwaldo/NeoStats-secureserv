@@ -30,6 +30,12 @@ typedef struct Helper{
 	Client *u;
 }Helper;
 
+int ss_cmd_login(CmdParams *cmdparams);
+int ss_cmd_logout(CmdParams *cmdparams);
+int ss_cmd_assist(CmdParams *cmdparams);
+int ss_cmd_helpers(CmdParams *cmdparams);
+int ss_cmd_chpass(CmdParams *cmdparams);
+
 static hash_t *helperhash;
 
 static bot_cmd helper_commands[]=
@@ -52,7 +58,7 @@ static bot_setting helper_settings[]=
 
 void HelpersStatus (CmdParams *cmdparams)
 {
-	irc_prefmsg (ss_bot, cmdparams->source, "AV Channel Helpers Logged in: %d", SecureServ.helpcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Helpers logged in: %d", SecureServ.helpcount);
 }
 
 int LoadHelper (void *data, int size)
@@ -254,7 +260,7 @@ static int ss_cmd_helpers_add(CmdParams *cmdparams)
 		return NS_ERR_NEED_MORE_PARAMS;
 	}
 	if (hash_lookup(helperhash, cmdparams->av[1])) {
-		irc_prefmsg (ss_bot, cmdparams->source, "A Helper with login %s already exists", cmdparams->av[1]);
+		irc_prefmsg (ss_bot, cmdparams->source, "Helper login %s already exists", cmdparams->av[1]);
 		return NS_SUCCESS;
 	}
 	helper = ns_malloc (sizeof(Helper));
@@ -266,7 +272,7 @@ static int ss_cmd_helpers_add(CmdParams *cmdparams)
 
 	/* ok, now save the helper */
 	DBAStore ("helpers", helper->nick, (void *)helper, sizeof (Helper));
-	irc_prefmsg (ss_bot, cmdparams->source, "Successfully added Helper %s with Password %s to Helpers List", helper->nick, helper->pass);
+	irc_prefmsg (ss_bot, cmdparams->source, "Helper %s added with password %s", helper->nick, helper->pass);
 	return NS_SUCCESS;
 }
 
@@ -284,9 +290,9 @@ static int ss_cmd_helpers_del(CmdParams *cmdparams)
 		ns_free (hnode_get(node));
 		hnode_destroy(node);
 		DBADelete ("helpers", cmdparams->av[1]);
-		irc_prefmsg (ss_bot, cmdparams->source, "Deleted %s from Helpers List", cmdparams->av[1]);
+		irc_prefmsg (ss_bot, cmdparams->source, "Helper %s deleted", cmdparams->av[1]);
 	} else {
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, Could not find %s in helpers list. /msg %s helpers list", cmdparams->av[1], ss_bot->name);
+		irc_prefmsg (ss_bot, cmdparams->source, "Error, helper %s not found. /msg %s helpers list", cmdparams->av[1], ss_bot->name);
 	}
 	return NS_SUCCESS;
 }
@@ -298,13 +304,13 @@ static int ss_cmd_helpers_list(CmdParams *cmdparams)
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	irc_prefmsg (ss_bot, cmdparams->source, "Helpers List (%d):", (int)hash_count(helperhash));
+	irc_prefmsg (ss_bot, cmdparams->source, "Helpers list (%d):", (int)hash_count(helperhash));
 	hash_scan_begin(&hlps, helperhash);
 	while ((node = hash_scan_next(&hlps)) != NULL) {
 		helper = hnode_get(node);
 		irc_prefmsg (ss_bot, cmdparams->source, "%s (%s)", helper->nick, helper->u ? helper->u->name : "Not Logged In");
 	}
-	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");	
+	irc_prefmsg (ss_bot, cmdparams->source, "End of list.");	
 	return NS_SUCCESS;
 }
 

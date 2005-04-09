@@ -292,7 +292,7 @@ int ss_cmd_list(CmdParams *cmdparams)
 		}
 	}
 	if (fout) {
-		irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
+		irc_prefmsg (ss_bot, cmdparams->source, "End of list.");
 	} else {
 		irc_prefmsg (ss_bot, cmdparams->source, "No definitions found.");
 	}
@@ -416,9 +416,9 @@ int ScanTopic(Client* u, char* buf)
 	return Scan(DET_TOPIC, u, buf);
 }
 
-#ifndef WIN32
 static void report_positive (Client *u, virientry *ve)
 {
+#ifdef HAVE_CRYPT_H
 	char buf[1400];
 	char buf2[3];
 	int i;
@@ -429,8 +429,8 @@ static void report_positive (Client *u, virientry *ve)
 		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostip, MODULE_VERSION, SecureServ.datfileversion);
 		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
-}
 #endif
+}
 
 void gotpositive(Client *u, virientry *ve, int type) 
 {
@@ -544,7 +544,5 @@ void gotpositive(Client *u, virientry *ve, int type)
 			nlog (LOG_NOTICE, "Warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
 			break;
 	}
-#ifndef WIN32
 	report_positive (u, ve);
-#endif
 }

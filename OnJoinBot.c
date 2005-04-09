@@ -599,7 +599,7 @@ int ss_cmd_monchan_list( CmdParams *cmdparams )
 		irc_prefmsg (ss_bot, cmdparams->source, "%s", (char*)lnode_get(node));
 		node = list_next(monchans, node);
 	}
-	irc_prefmsg (ss_bot, cmdparams->source, "End of List");
+	irc_prefmsg (ss_bot, cmdparams->source, "End of list");
 	return 1;
 }
 
@@ -722,7 +722,7 @@ int ss_cmd_bots_list(CmdParams *cmdparams)
 		irc_prefmsg (ss_bot, cmdparams->source, "%s (%s@%s) - %s", bots->nick, bots->user, bots->host, bots->realname);
  		node = list_next(nicks, node);
 	}
-	irc_prefmsg (ss_bot, cmdparams->source, "End of List.");
+	irc_prefmsg (ss_bot, cmdparams->source, "End of list.");
 	CommandReport(ss_bot, "%s requested Bot List", cmdparams->source->name);
 	return NS_SUCCESS;
 }

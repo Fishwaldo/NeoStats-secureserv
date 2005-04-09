@@ -19,7 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\dev\include;..\dev\lib\adns;..\dev\lib\curl;..\dev\lib\pcre"
+				AdditionalIncludeDirectories="..\dev\include;..\dev\lib\curl;..\dev\lib\pcre"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;secureserv_EXPORTS"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -72,7 +72,7 @@
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\dev\include;..\dev\lib\adns;..\dev\lib\curl;..\dev\lib\pcre"
+				AdditionalIncludeDirectories="..\dev\include;..\dev\lib\curl;..\dev\lib\pcre"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;secureserv_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"

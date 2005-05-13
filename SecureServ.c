@@ -29,15 +29,17 @@
 #include "neostats.h"
 #include "SecureServ.h"
 
-static int ss_event_signon (CmdParams *cmdparams);
-static int ss_event_versionreply (CmdParams *cmdparams);
-static int ss_cmd_status (CmdParams *cmdparams);
-static int ss_event_nick (CmdParams *cmdparams);
-static int ss_event_quit (CmdParams *cmdparams);
-static int ss_cmd_viriversion (CmdParams *cmdparams);
+static int ss_event_signon( CmdParams *cmdparams );
+static int ss_event_versionreply( CmdParams *cmdparams );
+static int ss_event_nick( CmdParams *cmdparams );
+static int ss_event_quit( CmdParams *cmdparams );
+static int ss_cmd_status( CmdParams *cmdparams );
+static int ss_cmd_viriversion( CmdParams *cmdparams );
 
-static int ss_cmd_set_monchancycletime_cb (CmdParams *cmdparams, SET_REASON reason);
-static int ss_cmd_set_cycletime_cb (CmdParams *cmdparams, SET_REASON reason);
+static int ss_cmd_set_doonjoin_cb( CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_monchancycle_cb( CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_monchancycletime_cb( CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_cycletime_cb( CmdParams *cmdparams, SET_REASON reason );
 static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason );
 
 #ifdef WIN32
@@ -108,11 +110,11 @@ static bot_setting ss_settings[]=
 #ifdef TREATCHANMSGASPM
 	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_BOOLEAN,0,0,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_treatchanmsgaspm, NULL, (void *)0 },
 #endif /* TREATCHANMSGASPM */ 
-	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_doonjoin, NULL, (void *)1 },
+	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_doonjoin, ss_cmd_set_doonjoin_cb, (void *)1 },
 	{"VERBOSE",		&SecureServ.verbose,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_verbose, NULL, (void *)1 },
 	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_botecho, NULL, (void *)0 },
 	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
-	{"MONCHANCYCLE",&SecureServ.monchancycle,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycle, NULL, (void *)1 },
+	{"MONCHANCYCLE",&SecureServ.monchancycle,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycle, ss_cmd_set_monchancycle_cb, (void *)1 },
 	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_INT,1,10000,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycletime, ss_cmd_set_monchancycletime_cb, (void *)1800 },
 	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	1000,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_cycletime, ss_cmd_set_cycletime_cb, (void *)60 },
 	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_monbot, ss_cmd_set_monbot, (void *)0 },
@@ -137,7 +139,36 @@ BotInfo ss_botinfo =
 	ss_settings,
 };
 
-static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
+static int ss_cmd_set_doonjoin_cb(CmdParams *cmdparams, SET_REASON reason)
+{
+	if( reason == SET_CHANGE )
+	{
+		if( SecureServ.DoOnJoin )
+		{
+			AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime );
+		}
+		else
+		{
+			DelTimer( "JoinNewChan" );
+		}
+	}
+}
+static int ss_cmd_set_monchancycle_cb(CmdParams *cmdparams, SET_REASON reason)
+{
+	if( reason == SET_CHANGE )
+	{
+		if( SecureServ.monchancycle )
+		{
+			AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime );
+		}
+		else
+		{
+			DelTimer( "MonBotCycle" );
+		}
+	}
+	return NS_SUCCESS;
+}
+static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -145,7 +176,7 @@ static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reaso
 	}
 	return NS_SUCCESS;
 }
-static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason) 
+static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -394,30 +425,29 @@ int ScanChannel (Channel *c, void *v)
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int ModSynch (void)
+int ModSynch( void )
 {
 	SET_SEGV_LOCATION();
-	ss_bot = AddBot (&ss_botinfo);
-	if (!ss_bot) {
+	ss_bot = AddBot( &ss_botinfo );
+	if( !ss_bot )
 		return NS_FAILURE;
-	}
 	InitHelpers();
-	if (SecureServ.verbose) {
-		irc_chanalert (ss_bot, "%d Trojans Patterns loaded", SecureServ.defcount);
-	}
-	srand(hash_count(GetChannelHash()));
+	if( SecureServ.verbose )
+		irc_chanalert( ss_bot, "%d definitions loaded", SecureServ.defcount );
+	srand( hash_count( GetChannelHash() ) );
 	/* kick of the autojoin timer */
-	AddTimer (TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime);
-	AddTimer (TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime);
-	dns_lookup("secure.irc-chat.net",  adns_r_a, GotHTTPAddress, NULL);
+	if( SecureServ.DoOnJoin )
+		AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime );
+	if( SecureServ.monchancycle )
+		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime );
+	dns_lookup( "secure.irc-chat.net",  adns_r_a, GotHTTPAddress, NULL );
 	LoadMonChans();
-	if (SecureServ.autoupgrade == 1) {
-		AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime);
-	}
+	if( SecureServ.autoupgrade )
+		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime );
 	/* here, we run though the channel lists, as when we were booting, we were not checking. */
-	GetChannelList (ScanChannel, NULL);
+	GetChannelList( ScanChannel, NULL );
 	return NS_SUCCESS;
-};
+}
 
 /** Fini module
  * This is required if you need to do cleanup of your module when it ends

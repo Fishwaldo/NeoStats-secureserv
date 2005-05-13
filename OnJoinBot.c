@@ -24,7 +24,7 @@
 #include "neostats.h"
 #include "SecureServ.h"
 
-#define MAX_NICKS	100
+#define MAX_NICKS 100
 #define DEFAULT_VERSION_RESPONSE "Visual IRC 2.0rc5 (English) - Fast. Powerful. Free. http://www.visualirc.net/beta.php"
 
 char lastchan[MAXCHANLEN];
@@ -252,10 +252,9 @@ int MonBotCycle()
 	lnode_t *mcnode;
 	Channel *c;
 	char *chan;
-	/* cycle one of hte monchans, if configured to */
-	if (SecureServ.monbot[0] == 0) {
+	/* cycle one monchan, if configured to */
+	if (SecureServ.monbot[0] == 0)
 		return NS_SUCCESS;
-	}
 	if (SecureServ.monchancycle > 0) {
 		mcnode = list_first(monchans);
 		while (mcnode != NULL) {

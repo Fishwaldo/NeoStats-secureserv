@@ -26,9 +26,6 @@
 #else
 #include "modconfig.h"
 #endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
                      
 #include "neostats.h"
 #include "SecureServ.h"

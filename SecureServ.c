@@ -21,12 +21,6 @@
 ** $Id$
 */
 
-#ifdef WIN32
-#include "modconfigwin32.h"
-#else
-#include "modconfig.h"
-#endif
-#include "neostats.h"
 #include "SecureServ.h"
 
 static int ss_event_signon( CmdParams *cmdparams );

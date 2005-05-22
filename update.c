@@ -21,13 +21,6 @@
 ** $Id$
 */
 
-#ifdef WIN32
-#include "modconfigwin32.h"
-#else
-#include "modconfig.h"
-#endif
-                     
-#include "neostats.h"
 #include "SecureServ.h"
 
 void datver(void *data, int status, char *ver, int versize);

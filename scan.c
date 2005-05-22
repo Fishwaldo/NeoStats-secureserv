@@ -21,18 +21,12 @@
 ** $Id$
 */
 
-#ifdef WIN32
-#include "modconfigwin32.h"
-#else
-#include "modconfig.h"
-#endif
-#include "neostats.h"
+#include "SecureServ.h"
 #ifdef HAVE_CRYPT_H
 #include <crypt.h>
 #endif
-#include "SecureServ.h"
 
-#define MAX_VIRI	-1
+#define MAX_VIRI -1
 
 typedef struct virustype {
 	int trigcount;

@@ -21,7 +21,6 @@
 ** $Id$
 */
 
-#include "neostats.h"
 #include "SecureServ.h"
 
 typedef struct Helper{

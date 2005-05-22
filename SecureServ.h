@@ -24,6 +24,9 @@
 #ifndef SECURESERV_H
 #define SECURESERV_H
 
+#include "neostats.h"
+#include MODULECONFIG
+
 #define VIRI_DAT_NAME		"data/viri.dat"
 #define CUSTOM_DAT_NAME		"data/customviri.dat"
 #define NUM_DAT_FILES	2

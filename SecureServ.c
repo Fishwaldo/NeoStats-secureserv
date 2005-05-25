@@ -74,16 +74,16 @@ ModuleInfo module_info = {
 
 static bot_cmd ss_commands[]=
 {
-	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list,		ts_help_list_oneline},
-	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan,	ts_help_checkchan_oneline},
-	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle,		ts_help_cycle_oneline},
-	{"UPDATE",	ss_cmd_update,		0,	NS_ULEVEL_ADMIN,ts_help_update,		ts_help_update_oneline},
-	{"STATUS",	ss_cmd_status,		0,	NS_ULEVEL_OPER, ts_help_status,		ts_help_status_oneline},
-	{"BOTS",	ss_cmd_bots,		1,	100,			ts_help_bots,		ts_help_bots_oneline},
-	{"MONCHAN",	ss_cmd_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan,	ts_help_monchan_oneline},
-	{"RELOAD",	ss_cmd_reload,		0,	NS_ULEVEL_OPER, ts_help_reload,		ts_help_reload_oneline},
-	{"VERSION",	ss_cmd_viriversion,	0,	0,		NULL, 			NULL},
-	{NULL,		NULL,				0, 	0,				NULL, 				NULL}
+	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list},
+	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan},
+	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle},
+	{"UPDATE",	ss_cmd_update,		0,	NS_ULEVEL_ADMIN,ts_help_update},
+	{"STATUS",	ss_cmd_status,		0,	NS_ULEVEL_OPER, ts_help_status},
+	{"BOTS",	ss_cmd_bots,		1,	100,			ts_help_bots},
+	{"MONCHAN",	ss_cmd_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan},
+	{"RELOAD",	ss_cmd_reload,		0,	NS_ULEVEL_OPER, ts_help_reload},
+	{"VERSION",	ss_cmd_viriversion,	0,	0,				NULL},
+	{NULL,		NULL,				0, 	0,				NULL}
 };
 
 static bot_setting ss_settings[]=
@@ -146,6 +146,7 @@ static int ss_cmd_set_doonjoin_cb(CmdParams *cmdparams, SET_REASON reason)
 			DelTimer( "JoinNewChan" );
 		}
 	}
+	return NS_SUCCESS;
 }
 static int ss_cmd_set_monchancycle_cb(CmdParams *cmdparams, SET_REASON reason)
 {

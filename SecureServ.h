@@ -45,7 +45,7 @@ typedef struct virientry {
 	pcre_extra *patternextra;
 	char sendmsg[BUFSIZE];
 	int action;
-	int nofound;
+	int numfound;
 	int iscustom;
 } virientry;
 
@@ -201,20 +201,6 @@ extern const char *ts_help_monchan[];
 extern const char *ts_help_assist[];
 extern const char *ts_help_helpers[];
 extern const char *ts_help_reload[];
-
-extern const char ts_help_login_oneline[];
-extern const char ts_help_logout_oneline[];
-extern const char ts_help_chpass_oneline[];
-extern const char ts_help_assist_oneline[];
-extern const char ts_help_checkchan_oneline[];
-extern const char ts_help_status_oneline[];
-extern const char ts_help_cycle_oneline[];
-extern const char ts_help_list_oneline[];
-extern const char ts_help_update_oneline[];
-extern const char ts_help_bots_oneline[];
-extern const char ts_help_monchan_oneline[];
-extern const char ts_help_helpers_oneline[];
-extern const char ts_help_reload_oneline[];
 
 extern const char *ts_help_set_version[];
 extern const char *ts_help_set_helpers[];

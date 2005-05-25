@@ -23,22 +23,8 @@
 
 #include "neostats.h"
 
-const char ts_help_login_oneline[] = "Login as a helper";
-const char ts_help_logout_oneline[] = "Logout as a helper";
-const char ts_help_chpass_oneline[] = "Change your Helper Password";
-const char ts_help_assist_oneline[] = "Release/Akill infected user";
-const char ts_help_checkchan_oneline[] = "Scan a Channel"; 
-const char ts_help_status_oneline[] = "Current Status of SecureServ";
-const char ts_help_set_oneline[] = "Configure SecureServ";
-const char ts_help_cycle_oneline[] = "Scan next channel";
-const char ts_help_list_oneline[] = "Current list of virus definitions";
-const char ts_help_update_oneline[] = "Download latest definitions";
-const char ts_help_bots_oneline[] = "Manage random Bot list";
-const char ts_help_monchan_oneline[] = "Set channel monitor bot";
-const char ts_help_helpers_oneline[] = "Manage helper list";
-const char ts_help_reload_oneline[] = "Reload virus defintions";
-
 const char *ts_help_login[] = {
+	"Login as a helper",
 	"Syntax: \2LOGIN <username> <password>\2",
 	"",
 	"This command allows Antivirus users to login to SecureServ",
@@ -56,6 +42,7 @@ const char *ts_help_login[] = {
 };
 
 const char *ts_help_logout[] = {
+	"Logout as a helper",
 	"Syntax: \2LOGOUT\2",
 	"",
 	"This command logs you out of SecureServ's Antivirus Helper",
@@ -64,6 +51,7 @@ const char *ts_help_logout[] = {
 	NULL
 };
 const char *ts_help_chpass[] = {
+	"Change your Helper Password",
 	"Syntax: \2CHPASS <newpassword>\2",
 	"",
 	"This command changes your Helper Password.",
@@ -72,6 +60,7 @@ const char *ts_help_chpass[] = {
 };
 
 const char *ts_help_checkchan[] = {
+	"Scan a Channel",
 	"Syntax: \2CHECKCHAN <channel>\2",
 	"",
 	"This option will scan a channel for Trojans. Use this if",
@@ -80,6 +69,7 @@ const char *ts_help_checkchan[] = {
 };
 
 const char *ts_help_cycle[] = {
+	"Scan next channel",
 	"Syntax: \2CYCLE\2",
 	"",
 	"This option will force SecureServ to part the current",
@@ -89,6 +79,7 @@ const char *ts_help_cycle[] = {
 };
 
 const char *ts_help_update[] = {
+	"Download latest definitions",
 	"Syntax: \2UPDATE\2",
 	"",
 	"This option will force SecureServ to check the definitions",
@@ -101,6 +92,7 @@ const char *ts_help_update[] = {
 };
 
 const char *ts_help_list[] = {
+	"Current list of virus definitions",
 	"Syntax: \2LIST\2",
 	"",
 	"View detailed information about what SecureServ's",
@@ -109,6 +101,7 @@ const char *ts_help_list[] = {
 };
 
 const char *ts_help_monchan[] = {
+	"Set channel monitor bot",
 	"Syntax: \2MONCHAN LIST\2",
 	"        \2MONCHAN ADD <channel>\2",
 	"        \2MONCHAN DEL <channel>\2",
@@ -132,6 +125,7 @@ const char *ts_help_monchan[] = {
 };
 
 const char *ts_help_bots[] = {
+	"Manage random Bot list",
 	"Syntax: \2BOTS LIST\2",
 	"        \2BOTS ADD <nick> <ident> <host> <info>\2",
 	"        \2BOTS DEL <index>\2",
@@ -154,6 +148,7 @@ const char *ts_help_bots[] = {
 };
 
 const char *ts_help_helpers[] = {
+	"Manage helper list",
 	"Syntax: \2HELPERS LIST\2",
 	"        \2HELPERS ADD <username> <password>\2",
 	"        \2HELPERS DEL <username>\2",
@@ -177,6 +172,7 @@ const char *ts_help_helpers[] = {
 
 
 const char *ts_help_status[] = {
+	"Current Status of SecureServ",
 	"Syntax: \2STATUS\2",
 	"",
 	"Provide you with the current status of SecureServ.",
@@ -184,6 +180,7 @@ const char *ts_help_status[] = {
 };
 
 const char *ts_help_assist[] = {
+	"Release/Akill infected user",
 	"Syntax: \2ASSIST RELEASE <target>\2",
 	"        \2ASSIST KILL <target>\2",
 	"",
@@ -199,6 +196,7 @@ const char *ts_help_assist[] = {
 };
 
 const char *ts_help_reload[] = {
+	"Reload virus defintions",
 	"Syntax: \2RELOAD\2",
 	"",
 	"Force SecureServ to reload the virus definition files.",

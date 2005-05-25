@@ -39,12 +39,12 @@ static hash_t *helperhash;
 
 static bot_cmd helper_commands[]=
 {
-	{"LOGIN",	ss_cmd_login,	2,	0,				ts_help_login,		ts_help_login_oneline},
- 	{"LOGOUT",	ss_cmd_logout,	0,	30,				ts_help_logout,		ts_help_logout_oneline},
-	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass,		ts_help_chpass_oneline},
-	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist,		ts_help_assist_oneline},
-	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_OPER, ts_help_helpers,	ts_help_helpers_oneline},
-	{NULL,		NULL,			0, 	0,				NULL, 				NULL}
+	{"LOGIN",	ss_cmd_login,	2,	0,				ts_help_login},
+ 	{"LOGOUT",	ss_cmd_logout,	0,	30,				ts_help_logout},
+	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass},
+	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist},
+	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_OPER, ts_help_helpers},
+	{NULL,		NULL,			0, 	0,				NULL}
 };
 
 static bot_setting helper_settings[]=

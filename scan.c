@@ -280,7 +280,7 @@ int ss_cmd_list(CmdParams *cmdparams)
 			while (node) {
 				ve = lnode_get(node);
 				count++;
-				irc_prefmsg (ss_bot, cmdparams->source, "%d) Virus: %s. Action: %s Hits: %d", count, ve->name, acttypes[ve->action], ve->nofound);
+				irc_prefmsg (ss_bot, cmdparams->source, "%d) Virus: %s. Action: %s Hits: %d", count, ve->name, acttypes[ve->action], ve->numfound);
 				node = list_next(viri[i], node);
 			};
 		}
@@ -455,7 +455,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 	/* Do not generate a URL for local custom definitions since it will not exist*/
 	if(!ve->iscustom)
 		irc_prefmsg (ss_bot, u, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
-	ve->nofound++;
+	ve->numfound++;
 	virustypes[type].actcount++;
 	switch (ve->action) {
 		case ACT_SVSJOIN:

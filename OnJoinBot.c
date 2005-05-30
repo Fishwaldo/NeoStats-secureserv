@@ -188,7 +188,7 @@ static BotInfo *GetNewBot(int resetflag)
 {
 	BotInfo *nickname = NULL;
 	lnode_t *rnn;
-	int randno, curno, i;
+	int randno, curno, i, stublen;
 
 	if(list_count(nicks) == 0) {
 		/* No bots available */
@@ -202,9 +202,19 @@ static BotInfo *GetNewBot(int resetflag)
 		rnn = list_first(nicks);
 		if(rnn != NULL) {
 			nickname = lnode_get(rnn);
+			/* make sure nick and altnick are the same */
+			strlcpy(nickname->altnick, nickname->nick, MAXNICK);
 			/* make sure no one is online with this nickname */
 			if (FindUser(nickname->nick) != NULL) {
 				dlog (DEBUG1, "%s is online, can't use that nick", nickname->nick);
+				/* Try to auto generate a altnick from bot nick */
+				strlcpy(nickname->altnick, nickname->nick, MAXNICK);
+				stublen = strlen( nickname->altnick );
+				for( i = 0 ; i < 5 ; i++ )
+				{
+					if( GenerateBotNick( nickname->altnick, stublen , 0, (i + 1)) == NS_SUCCESS )
+						return nickname;
+				}
 				return NULL;
 			}
 			dlog (DEBUG1, "RandomNick is %s", nickname->nick);
@@ -225,9 +235,19 @@ static BotInfo *GetNewBot(int resetflag)
 					dlog (DEBUG1, "%s was used last time. Retring", nickname->nick);
 					break;
 				}
+				/* make sure nick and altnick are the same */
+				strlcpy(nickname->altnick, nickname->nick, MAXNICK);
 				/* make sure no one is online with this nickname */
 				if (FindUser(nickname->nick) != NULL) {
 					dlog (DEBUG1, "%s is online, can't use that nick, retring", nickname->nick);
+					/* Try to auto generate a altnick from bot nick */
+					strlcpy(nickname->altnick, nickname->nick, MAXNICK);
+					stublen = strlen( nickname->altnick );
+					for( i = 0 ; i < 5 ; i++ )
+					{
+						if( GenerateBotNick( nickname->altnick, stublen , 0, (i + 1)) == NS_SUCCESS )
+							return nickname;
+					}
 					break;
 				}
 				dlog (DEBUG1, "RandomNick is %s", nickname->nick);
@@ -324,7 +344,10 @@ int JoinNewChan()
 	irc_cloakhost (ojbotptr);
 	irc_join (ojbotptr, c->name, 0);
 	if (SecureServ.verbose) {
-		irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
+		if (!ircstrcasecmp(nickname->nick, nickname->altnick))
+			irc_chanalert (ss_bot, "Scanning %s with %s for OnJoin Viruses", c->name, nickname->nick);
+		else
+			irc_chanalert (ss_bot, "Scanning %s with %s as %s for OnJoin Viruses", c->name, nickname->nick, nickname->altnick);
 	}
 	return NS_SUCCESS;
 }

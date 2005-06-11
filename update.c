@@ -154,38 +154,6 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 	}
 }
 	
-void GotHTTPAddress(void *data, adns_answer *a) 
-{
-	char *url;
-	int i, len, ri;
-
-	SET_SEGV_LOCATION();
-	adns_rr_info(a->type, 0, 0, &len, 0, 0);
-	for(i = 0; i < a->nrrs;  i++) {
-		ri = adns_rr_info(a->type, 0, 0, 0, a->rrs.bytes +i*len, &url);
-		if (!ri) {
-			/* ok, we got a valid answer, lets maybe kick of the update check.*/
-			SecureServ.sendtohost.sin_addr.s_addr = inet_addr(url);
-			SecureServ.sendtohost.sin_port = htons(2334);
-			SecureServ.sendtohost.sin_family = AF_INET;
-			SecureServ.sendtosock = socket(AF_INET, SOCK_DGRAM, 0);
-			strlcpy(SecureServ.updateurl, url, SS_BUF_SIZE);
-			nlog (LOG_NORMAL, "Got DNS for Update Server: %s", url);
-			if ((SecureServ.updateuname[0] != 0) && SecureServ.updatepw[0] != 0) {
-				AutoUpdate();
-			} else {
-				if (SecureServ.autoupgrade == 1) irc_chanalert (ss_bot, "No valid Username/Password configured for update checking. Aborting update check");
-			}
-		} else {
-			irc_chanalert (ss_bot, "DNS error Checking for updates: %s", adns_strerror(ri));
-		}
-		ns_free (url);
-	}
-	if (a->nrrs < 1) {
-		irc_chanalert (ss_bot, "DNS Error checking for updates");
-	}
-}
-
 int AutoUpdate(void) 
 {
 	SET_SEGV_LOCATION();

@@ -2,6 +2,7 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a3-dev - Mark (M)
+ - secure.irc-chat.net update reports now moved to core (F)
  - Fix up dns_lookup prototype (F)
  - we send IP address, not hostname, to secure.irc-chat.net to aid for DNSBL support (F)
  - Update to FetchRows handlers to take size parameter. (M)

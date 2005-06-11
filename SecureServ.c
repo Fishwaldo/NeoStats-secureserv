@@ -435,11 +435,14 @@ int ModSynch( void )
 		AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime );
 	if( SecureServ.monchancycle )
 		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime );
-	dns_lookup( "secure.irc-chat.net",  adns_r_a, GotHTTPAddress, NULL );
-	LoadMonChans();
-	if( SecureServ.autoupgrade )
+
+	if ((SecureServ.updateuname[0] != 0) && (SecureServ.updatepw[0] != 0)) {
+         	AutoUpdate();
 		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime );
-	/* here, we run though the channel lists, as when we were booting, we were not checking. */
+	} else if (SecureServ.autoupgrade == 1) {
+		irc_chanalert (ss_bot, "No valid Username/Password configured for SecureServ Dat File Update");
+	}
+	LoadMonChans();
 	GetChannelList( ScanChannel, NULL );
 	return NS_SUCCESS;
 }

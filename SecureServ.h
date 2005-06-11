@@ -137,7 +137,6 @@ int ss_cmd_update(CmdParams *cmdparams);
 int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdate_cb (CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdatetime_cb (CmdParams *cmdparams, SET_REASON reason);
-void GotHTTPAddress(void *data, adns_answer *a);
 int AutoUpdate(void);
 
 /* OnJoin.c */

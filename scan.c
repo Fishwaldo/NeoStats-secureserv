@@ -507,7 +507,6 @@ void gotpositive(User *u, virientry *ve, int type)
 	char buf2[3];
 	UserDetail *ud;
 	int i;
-	Client *c;
 
 	SET_SEGV_LOCATION();
 	if (!u) /* User not found */
@@ -628,11 +627,8 @@ void gotpositive(User *u, virientry *ve, int type)
 	}
 	/* send an update to secure.irc-chat.net */
 	if ((SecureServ.sendtosock > 0) && (SecureServ.report == 1)) {
-		c = FindUser(u->nick);
-		if (c) {
-			ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-			ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, c->hostip, __module_info.module_version, SecureServ.viriversion);
-			i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
-		}
+		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
+		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostname, __module_info.module_version, SecureServ.viriversion);
+		i = sendto(SecureServ.sendtosock, buf, strlen(buf), 0,  (struct sockaddr *) &SecureServ.sendtohost, sizeof(SecureServ.sendtohost));
 	}	
 }

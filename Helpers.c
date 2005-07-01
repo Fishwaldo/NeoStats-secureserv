@@ -136,7 +136,7 @@ int ss_cmd_chpass(CmdParams *cmdparams)
 		strlcpy(helper->pass, cmdparams->av[0], MAXNICK);
 		DBAStore ("helpers", helper->nick, (void *)helper, sizeof (Helper));
 		irc_prefmsg (ss_bot, cmdparams->source, "Successfully changed your password");
-		irc_chanalert (ss_bot, "%s changed their helper password", cmdparams->source);
+		irc_chanalert (ss_bot, "%s changed their helper password", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
 	irc_prefmsg (ss_bot, cmdparams->source, "You must be logged in to change your Helper Password");
@@ -178,11 +178,11 @@ int ss_cmd_login(CmdParams *cmdparams)
 			return NS_SUCCESS;
 		}
 		irc_prefmsg (ss_bot, cmdparams->source, "Login Failed");
-		irc_chanalert (ss_bot, "%s tried to login with %s, but got the pass wrong (%s)", cmdparams->source, cmdparams->av[0], cmdparams->av[1]);
+		irc_chanalert (ss_bot, "%s tried to login with %s, but got the pass wrong (%s)", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1]);
 		return NS_SUCCESS;
 	} 
 	irc_prefmsg (ss_bot, cmdparams->source, "Login Failed");
-	irc_chanalert (ss_bot, "%s tried to login with %s but that account does not exist", cmdparams->source, cmdparams->av[0]);
+	irc_chanalert (ss_bot, "%s tried to login with %s but that account does not exist", cmdparams->source->name, cmdparams->av[0]);
 	return NS_SUCCESS;
 }
 
@@ -220,7 +220,7 @@ int ss_cmd_assist(CmdParams *cmdparams)
 	td = GetUserModValue (tu);
 	if (!td || td->type != USER_INFECTED) {
 		irc_prefmsg (ss_bot, cmdparams->source, "Invalid User %s. Not Recorded as requiring assistance", tu->name);
-		irc_chanalert (ss_bot, "%s tried to use assist %s on %s, but the target is not requiring assistance", cmdparams->source, cmdparams->av[0], cmdparams->av[1]);
+		irc_chanalert (ss_bot, "%s tried to use assist %s on %s, but the target is not requiring assistance", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1]);
 		return NS_SUCCESS;
 	}
 	/* ok, so far so good, lets see what the helper wants to do with the target user */
@@ -229,20 +229,20 @@ int ss_cmd_assist(CmdParams *cmdparams)
 		td->data = NULL;
 		ns_free (td);
 		irc_prefmsg (ss_bot, cmdparams->source,  "Hold on %s is released", tu->name);
-		irc_chanalert (ss_bot, "%s released %s", cmdparams->source, tu->name);
+		irc_chanalert (ss_bot, "%s released %s", cmdparams->source->name, tu->name);
 		return NS_SUCCESS;
 	} else if (!ircstrcasecmp(cmdparams->av[0], "KILL")) {
 		ve = (virientry *)td->data;
 		irc_prefmsg (ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name);	
-		irc_chanalert (ss_bot, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source, tu->name, tu->user->username, tu->user->hostname, ve->name);
-		nlog (LOG_NORMAL, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source, tu->name, tu->user->username, tu->user->hostname, ve->name);
+		irc_chanalert (ss_bot, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name);
+		nlog (LOG_NORMAL, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name);
 		if(ve->iscustom) {
-			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill)", tu->name, ve->name, cmdparams->source);
-			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s. (HelperAssist by %s)", ve->name, cmdparams->source);
+			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill)", tu->name, ve->name, cmdparams->source->name);
+			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s. (HelperAssist by %s)", ve->name, cmdparams->source->name);
 		}
 		else {
-			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->name, ve->name, cmdparams->source, ve->name);
-			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, cmdparams->source);
+			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->name, ve->name, cmdparams->source->name, ve->name);
+			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, cmdparams->source->name);
 		}
 		return NS_SUCCESS;
 	}

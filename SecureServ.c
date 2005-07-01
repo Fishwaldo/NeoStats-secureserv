@@ -264,7 +264,7 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 		return NS_SUCCESS;
 	}
 	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
-		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source);
+		dlog (DEBUG1, "User %s is exempt from Message Checking", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
 	ScanChanMsg(cmdparams->source, cmdparams->param);

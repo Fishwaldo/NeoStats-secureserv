@@ -454,9 +454,9 @@ int ss_event_kickbot(CmdParams *cmdparams)
 				/* rejoin the monitor bot to the channel */
 				irc_join (monbotptr, cmdparams->channel->name, 0);
 				if (SecureServ.verbose) {
-					irc_chanalert (ss_bot, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
+					irc_chanalert (ss_bot, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source->name);
 				}
-				nlog (LOG_NOTICE, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source);
+				nlog (LOG_NOTICE, "%s was kicked out of monitored channel %s by %s. Rejoining", cmdparams->target->name, cmdparams->channel->name, cmdparams->source->name);
 				return NS_SUCCESS;
 			}
 			mn = list_next(monchans, mn);

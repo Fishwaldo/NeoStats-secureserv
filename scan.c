@@ -105,7 +105,7 @@ void ScanStatus (CmdParams *cmdparams)
 	int i;
 	
 	irc_prefmsg (ss_bot, cmdparams->source, "Virus Patterns: %d", SecureServ.defcount);
-	irc_prefmsg (ss_bot, cmdparams->source, "Type:             Scanned  Acted On Definitions", virustypes[DET_CTCP].trigcount);
+	irc_prefmsg (ss_bot, cmdparams->source, "Type:             Scanned  Acted On Definitions");
 	for( i = 0; i < DET_MAX; i++ )
 	{
 		irc_prefmsg (ss_bot, cmdparams->source, "%-15s %9d %9d   %9d", dettypes[i], virustypes[i].trigcount, virustypes[i].actcount, virustypes[i].defcount);
@@ -180,7 +180,7 @@ void load_dat(void)
 			else
 			{
 				/* we *HAVE* to have a viri.dat file. Otherwise, no go */
-				nlog (LOG_WARNING, "Error, No viri.dat file found.", ss_bot->name);
+				nlog (LOG_WARNING, "Error, No viri.dat file found.");
 			}
 			return;
 		} else {
@@ -415,7 +415,6 @@ static void report_positive (Client *u, virientry *ve)
 #ifdef HAVE_CRYPT_H
 	char buf[1400];
 	char buf2[3];
-	int i;
 
 	/* send an update to secure.irc-chat.net */
 	if (SecureServ.report == 1) {

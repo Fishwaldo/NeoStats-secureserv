@@ -266,7 +266,7 @@ static BotInfo *GetNewBot(int resetflag)
 	return NULL;
 }
 
-int MonBotCycle()
+int MonBotCycle( void *userptr )
 {
 	lnode_t *mcnode;
 	Channel *c;
@@ -296,7 +296,7 @@ int MonBotCycle()
 	return NS_SUCCESS;
 }
 
-int JoinNewChan() 
+int JoinNewChan (void *userptr) 
 {
 	Channel *c;
 	BotInfo *nickname = NULL;
@@ -853,7 +853,7 @@ int ss_cmd_monchan(CmdParams *cmdparams)
 int ss_cmd_cycle(CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	JoinNewChan();
+	JoinNewChan( NULL );
 	return NS_SUCCESS;
 }
 

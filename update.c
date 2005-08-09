@@ -154,7 +154,7 @@ void datdownload(void *unuseddata, int status, char *data, int datasize)
 	}
 }
 	
-int AutoUpdate(void) 
+int AutoUpdate(void *userptr) 
 {
 	SET_SEGV_LOCATION();
 	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
@@ -203,7 +203,7 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 		case SET_CHANGE:
 			if (SecureServ.autoupgrade == 1) 
 			{
-				AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime);
+				AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL);
 			} 
 			else 
 			{

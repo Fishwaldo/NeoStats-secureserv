@@ -137,10 +137,10 @@ int ss_cmd_update(CmdParams *cmdparams);
 int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdate_cb (CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdatetime_cb (CmdParams *cmdparams, SET_REASON reason);
-int AutoUpdate(void);
+int AutoUpdate(void *);
 
 /* OnJoin.c */
-int JoinNewChan(void);
+int JoinNewChan(void *);
 void OnJoinBotStatus (CmdParams *cmdparams);
 int ss_event_message (CmdParams *cmdparams);
 int ss_event_versionrequest (CmdParams *cmdparams);
@@ -157,7 +157,7 @@ int ss_event_kickbot(CmdParams *cmdparams);
 int ss_event_emptychan(CmdParams *cmdparams);
 int MonJoin(Channel *c);
 int CheckMonBotKill(CmdParams *cmdparams);
-int MonBotCycle(void);
+int MonBotCycle(void *);
 
 /* scan.c */
 void ScanStatus (CmdParams *cmdparams);

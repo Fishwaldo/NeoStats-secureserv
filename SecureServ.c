@@ -139,7 +139,7 @@ static int ss_cmd_set_doonjoin_cb(CmdParams *cmdparams, SET_REASON reason)
 	{
 		if( SecureServ.DoOnJoin )
 		{
-			AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime );
+			AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime, NULL );
 		}
 		else
 		{
@@ -154,7 +154,7 @@ static int ss_cmd_set_monchancycle_cb(CmdParams *cmdparams, SET_REASON reason)
 	{
 		if( SecureServ.monchancycle )
 		{
-			AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime );
+			AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime, NULL );
 		}
 		else
 		{
@@ -432,13 +432,13 @@ int ModSynch( void )
 	srand( hash_count( GetChannelHash() ) );
 	/* kick of the autojoin timer */
 	if( SecureServ.DoOnJoin )
-		AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime );
+		AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime, NULL );
 	if( SecureServ.monchancycle )
-		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime );
+		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime, NULL );
 
 	if ((SecureServ.updateuname[0] != 0) && (SecureServ.updatepw[0] != 0)) {
-         	AutoUpdate();
-		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime );
+         	AutoUpdate( NULL );
+		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL );
 	} else if (SecureServ.autoupgrade == 1) {
 		irc_chanalert (ss_bot, "No valid Username/Password configured for SecureServ Dat File Update");
 	}

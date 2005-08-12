@@ -372,7 +372,13 @@ int ScanIdent(Client *u)
 
 int ScanRealname(Client *u)
 {
-	return Scan(DET_REALNAME, u, u->info);
+	char *buf;
+	int i;
+	buf = strdup(u->info);
+	strip_mirc_codes(buf);
+	i = Scan(DET_REALNAME, u, buf);
+	free(buf);
+	return i;
 }
 
 int ScanCTCPVersion(Client *u, char* buf) 

@@ -377,16 +377,19 @@ int ScanRealname(Client *u)
 
 int ScanCTCPVersion(Client *u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_CTCP, u, buf);
 }
 
 int ScanPrivmsg(Client *u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_MSG, u, buf);
 }
 
 int ScanChanMsg(Client *u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_CHANMSG, u, buf);
 }
 
@@ -397,16 +400,19 @@ int ScanChannelName(Client* u, Channel *c)
 
 int ScanAwayMsg(Client* u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_AWAYMSG, u, buf);
 }
 
 int ScanQuitMsg(Client* u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_QUITMSG, u, buf);
 }
 
 int ScanTopic(Client* u, char* buf) 
 {
+	strip_mirc_codes(buf);
 	return Scan(DET_TOPIC, u, buf);
 }
 

@@ -289,7 +289,7 @@ static int ss_event_botkill(CmdParams *cmdparams)
 
 ModuleEvent module_events[] = {
 	{ EVENT_SIGNON, 		ss_event_signon},
-	{ EVENT_QUIT, 			ss_event_quit,		EVENT_FLAG_EXCLUDE_MODME},
+	{ EVENT_QUIT, 			ss_event_quit,		EVENT_FLAG_EXCLUDE_ME},
 	{ EVENT_KILL, 			ss_event_quit},
 	{ EVENT_JOIN, 			ss_event_joinchan,	EVENT_FLAG_EXCLUDE_MODME},
 	{ EVENT_DELCHAN,		ss_event_delchan},

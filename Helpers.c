@@ -44,7 +44,7 @@ static bot_cmd helper_commands[]=
 	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass},
 	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist},
 	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_OPER, ts_help_helpers},
-	{NULL,		NULL,			0, 	0,				NULL}
+	NS_CMD_END()
 };
 
 static bot_setting helper_settings[]=
@@ -52,7 +52,7 @@ static bot_setting helper_settings[]=
 	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_nohelpmsg, NULL, (void *)"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
 	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autosignout, NULL, (void *)1 },
 	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_joinhelpchan, NULL, (void *)1 },
-	{NULL,			NULL,					0,					0,	0, 			0,				NULL,	NULL, NULL },
+	NS_SETTING_END()
 };
 
 void HelpersStatus (CmdParams *cmdparams)

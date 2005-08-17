@@ -83,7 +83,7 @@ static bot_cmd ss_commands[]=
 	{"MONCHAN",	ss_cmd_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan},
 	{"RELOAD",	ss_cmd_reload,		0,	NS_ULEVEL_OPER, ts_help_reload},
 	{"VERSION",	ss_cmd_viriversion,	0,	0,				NULL},
-	{NULL,		NULL,				0, 	0,				NULL}
+	NS_CMD_END()
 };
 
 static bot_setting ss_settings[]=
@@ -118,7 +118,7 @@ static bot_setting ss_settings[]=
 	{"AUTOUPDATETIME",	&SecureServ.autoupgradetime,SET_TYPE_INT,	TS_ONE_HOUR,	172800,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdatetime, ss_cmd_set_autoupdatetime_cb, (void *)7200 },
 	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
 	{"EXCLUSIONS",	&SecureServ.exclusions,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_exclusions, ss_set_exclusions_cb, (void *)0 },
-	{NULL,			NULL,					0,					0,	0, 			0,				NULL,			NULL,	NULL, NULL },
+	NS_SETTING_END()
 };
 
 BotInfo ss_botinfo =
@@ -485,14 +485,12 @@ int ModFini( void )
 	return NS_SUCCESS;
 }
 
-int ModAuthUser (Client *u)
+int ModAuthUser( const Client *u )
 {
 	UserDetail *ud;
 
-	ud = (UserDetail *)GetUserModValue (u);
-	if (ud && ud->type == USER_HELPER) {
+	ud = ( UserDetail * )GetUserModValue( u );
+	if( ud && ud->type == USER_HELPER )
 		return 30;
-	}
 	return 0;
 }
-

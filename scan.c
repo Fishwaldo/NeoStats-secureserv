@@ -373,11 +373,17 @@ int ScanIdent(Client *u)
 int ScanRealname(Client *u)
 {
 	char *buf;
-	int i;
-	buf = strdup(u->info);
-	strip_mirc_codes(buf);
+	int len;
+	int i = 0;
+		
+	len = strlen( u->info );
+	if( len == 0 )
+		return 0;
+	buf = ns_malloc( len );
+	strlcpy( buf, u->info, len );
+	strip_mirc_codes( buf );
 	i = Scan(DET_REALNAME, u, buf);
-	free(buf);
+	ns_free(buf);
 	return i;
 }
 

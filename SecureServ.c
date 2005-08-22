@@ -430,7 +430,7 @@ int ScanMember( Channel *c, ChannelMember *m, void *v )
 
 int ScanChannel (Channel *c, void *v)
 {
-	GetChannelMembers (c, ScanMember, NULL);
+	ProcessChannelMembers( c, ScanMember, NULL );
 	return NS_FALSE;
 }
 
@@ -452,7 +452,7 @@ int ModSynch( void )
 	InitHelpers();
 	if( SecureServ.verbose )
 		irc_chanalert( ss_bot, "%d definitions loaded", SecureServ.defcount );
-	srand( hash_count( GetChannelHash() ) );
+	srand( NSGetChannelCount() );
 	/* kick of the autojoin timer */
 	if( SecureServ.DoOnJoin )
 		AddTimer( TIMER_TYPE_INTERVAL, JoinNewChan, "JoinNewChan", SecureServ.stayinchantime, NULL );
@@ -460,13 +460,13 @@ int ModSynch( void )
 		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime, NULL );
 
 	if ((SecureServ.updateuname[0] != 0) && (SecureServ.updatepw[0] != 0)) {
-         	AutoUpdate( NULL );
+		AutoUpdate( NULL );
 		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL );
 	} else if (SecureServ.autoupgrade == 1) {
 		irc_chanalert (ss_bot, "No valid Username/Password configured for SecureServ Dat File Update");
 	}
 	LoadMonChans();
-	GetChannelList( ScanChannel, NULL );
+	ProcessChannelList( ScanChannel, NULL );
 	return NS_SUCCESS;
 }
 

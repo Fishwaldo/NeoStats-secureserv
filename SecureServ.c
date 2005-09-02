@@ -304,7 +304,7 @@ ModuleEvent module_events[] = {
 	{ EVENT_CPRIVATE, 		ss_event_channelmessage},
 	{ EVENT_CNOTICE, 		ss_event_channelmessage},
 	{ EVENT_BOTKILL, 		ss_event_botkill},
-	{ EVENT_CTCPVERSIONRPL, ss_event_versionreply},	
+	{ EVENT_CTCPVERSIONRPLBC, ss_event_versionreply},	
 	{ EVENT_CTCPVERSIONREQ, ss_event_versionrequest},	
 	{ EVENT_NULL, 			NULL}
 };

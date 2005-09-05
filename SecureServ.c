@@ -128,7 +128,7 @@ BotInfo ss_botinfo =
 	"TS",
 	BOT_COMMON_HOST, 
 	"Trojan Scanning Bot",
-	BOT_FLAG_SERVICEBOT|BOT_FLAG_DEAF, 
+	BOT_FLAG_SERVICEBOT|BOT_FLAG_DEAF|BOT_FLAG_CTCPVERSIONMASTER, 
 	ss_commands, 
 	ss_settings,
 };

@@ -23,351 +23,518 @@
 
 #include "SecureServ.h"
 
-typedef struct Helper{
+/** Helper list struct */
+
+typedef struct Helper
+{
 	char nick[MAXNICK];
 	char pass[MAXNICK];
 	Client *u;
-}Helper;
+} Helper;
 
-int ss_cmd_login(CmdParams *cmdparams);
-int ss_cmd_logout(CmdParams *cmdparams);
-int ss_cmd_assist(CmdParams *cmdparams);
-int ss_cmd_helpers(CmdParams *cmdparams);
-int ss_cmd_chpass(CmdParams *cmdparams);
-
+/** hash for storing helper list */
 static hash_t *helperhash;
 
+/* Command prototypes */
+static int ss_cmd_login( CmdParams *cmdparams );
+static int ss_cmd_logout( CmdParams *cmdparams );
+static int ss_cmd_assist( CmdParams *cmdparams );
+static int ss_cmd_helpers( CmdParams *cmdparams );
+static int ss_cmd_chpass( CmdParams *cmdparams );
+
+/** helper command list */
 static bot_cmd helper_commands[]=
 {
 	{"LOGIN",	ss_cmd_login,	2,	0,				ts_help_login},
  	{"LOGOUT",	ss_cmd_logout,	0,	30,				ts_help_logout},
 	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass},
 	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist},
-	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_OPER, ts_help_helpers},
+	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_ADMIN,ts_help_helpers},
 	NS_CMD_END()
 };
 
+/** helper set list */
 static bot_setting helper_settings[]=
 {
-	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_nohelpmsg, NULL, (void *)"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
-	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autosignout, NULL, (void *)1 },
-	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_joinhelpchan, NULL, (void *)1 },
+	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_nohelpmsg, NULL,( void * )"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
+	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autosignout, NULL,( void * )1 },
+	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_joinhelpchan, NULL,( void * )1 },
 	NS_SETTING_END()
 };
 
-void HelpersStatus (CmdParams *cmdparams)
+/** @brief HelpersStatus
+ *
+ *  STATUS
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+void HelpersStatus( CmdParams *cmdparams )
 {
-	irc_prefmsg (ss_bot, cmdparams->source, "Helpers logged in: %d", SecureServ.helpcount);
+	if( SecureServ.helpers == 1 )
+		irc_prefmsg( ss_bot, cmdparams->source, "Helpers logged in: %d", SecureServ.helpcount );
 }
 
-int LoadHelper (void *data, int size)
+/** @brief LoadHelper
+ *
+ *  Table load handler
+ *  Database row handler to load helper data
+ *
+ *  @param data pointer to table row data
+ *  @param size of loaded data
+ *
+ *  @return NS_TRUE to abort load or NS_FALSE to continue loading
+ */
+
+static int LoadHelper( void *data, int size )
 {
 	Helper *helper;
 
-	helper = ns_malloc (sizeof(Helper));
-	os_memcpy (helper, data, sizeof(Helper));
+	helper = ns_malloc( sizeof( Helper ) );
+	os_memcpy( helper, data, sizeof( Helper ) );
 	helper->u = NULL;
-	hnode_create_insert (helperhash, helper, helper->nick);
+	hnode_create_insert( helperhash, helper, helper->nick );
 	return NS_FALSE;
 }
 
-int InitHelpers(void) 
+/** @brief InitHelpers
+ *
+ *  Init helper subsystem
+ *
+ *  @param none
+ *
+ *  @return NS_SUCCESS if succeeds, NS_FAILURE if not 
+ */
+
+int InitHelpers( void ) 
 {
 	SET_SEGV_LOCATION();
-	helperhash = hash_create(-1, 0, 0);
-	DBAFetchRows ("helpers", LoadHelper);
-	if (SecureServ.helpers == 1) {
-		add_bot_cmd_list (ss_bot, helper_commands);
+	helperhash = hash_create( -1, 0, 0 );
+	if( !helperhash )
+	{
+		nlog( LOG_CRITICAL, "Unable to create helperhash hash" );
+		return NS_FAILURE;
+	}
+	DBAFetchRows( "helpers", LoadHelper );
+	if( SecureServ.helpers == 1 )
+	{
+		add_bot_cmd_list( ss_bot, helper_commands );
+		add_bot_setting_list( ss_bot, helper_settings );
 	}
 	return NS_SUCCESS;
 }
 
-void FiniHelpers(void) 
+/** @brief FiniHelpers
+ *
+ *  Fini helper subsystem
+ *
+ *  @param none
+ *
+ *  @return none
+ */
+
+void FiniHelpers( void ) 
 {
 	hscan_t hlps;
 	hnode_t *node;
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	if (helperhash) {
-		hash_scan_begin(&hlps, helperhash);
-		while ((node = hash_scan_next(&hlps)) != NULL) {
-			helper = hnode_get(node);
-			ClearUserModValue (helper->u);
-			hash_delete (helperhash, node);
-			hnode_destroy (node);
-			ns_free (helper);
+	if( helperhash ) {
+		hash_scan_begin( &hlps, helperhash );
+		while( ( node = hash_scan_next( &hlps ) ) != NULL ) {
+			helper = hnode_get( node );
+			ClearUserModValue( helper->u );
+			hash_delete( helperhash, node );
+			hnode_destroy( node );
+			ns_free( helper );
 		}
-		hash_destroy(helperhash);
+		hash_destroy( helperhash );
 	}
 }
 
-static int HelperLogout (CmdParams *cmdparams)
+/** @brief HelperLogout
+ *
+ *  LOGOUT helper
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int HelperLogout( CmdParams *cmdparams )
 {
 	UserDetail *ud;
 	Helper *helper;
 	
 	SET_SEGV_LOCATION();
-	ud = (UserDetail *)GetUserModValue (cmdparams->source);
-	if (ud && ud->type == USER_HELPER) {
-		helper = (Helper *)ud->data;
+	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
+	if( ud && ud->type == USER_HELPER ) {
+		helper = ( Helper * )ud->data;
 		helper->u = NULL;
-		ns_free (ud);
-		ClearUserModValue (cmdparams->source);
-		if (SecureServ.helpcount > 0)
+		ns_free( ud );
+		ClearUserModValue( cmdparams->source );
+		if( SecureServ.helpcount > 0 )
 			SecureServ.helpcount--;
-		if ((SecureServ.helpcount == 0) && (IsChannelMember(FindChannel(SecureServ.HelpChan), ss_bot->u) == 1)) {
+		if( ( SecureServ.helpcount == 0 ) &&( IsChannelMember( FindChannel( SecureServ.HelpChan ), ss_bot->u ) == 1 ) )
 			irc_part( ss_bot, SecureServ.HelpChan, NULL );
-		}
 		return NS_SUCCESS;
 	}
 	return NS_FAILURE;
 }
 
-int ss_cmd_chpass(CmdParams *cmdparams) 
+/** @brief ss_cmd_chpass
+ *
+ *  CHPASS command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_chpass( CmdParams *cmdparams ) 
 {
 	UserDetail *ud;
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	ud = (UserDetail *)GetUserModValue (cmdparams->source);
-	if (ud && ud->type == USER_HELPER) {
-		helper = (Helper *)ud->data;
-		strlcpy(helper->pass, cmdparams->av[0], MAXNICK);
-		DBAStore ("helpers", helper->nick, (void *)helper, sizeof (Helper));
-		irc_prefmsg (ss_bot, cmdparams->source, "Successfully changed your password");
-		irc_chanalert (ss_bot, "%s changed their helper password", cmdparams->source->name);
+	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
+	if( ud && ud->type == USER_HELPER ) {
+		helper = ( Helper * )ud->data;
+		strlcpy( helper->pass, cmdparams->av[0], MAXNICK );
+		DBAStore( "helpers", helper->nick,( void * )helper, sizeof( Helper ) );
+		irc_prefmsg( ss_bot, cmdparams->source, "Successfully changed your password" );
+		irc_chanalert( ss_bot, "%s changed their helper password", cmdparams->source->name );
 		return NS_SUCCESS;
 	}
-	irc_prefmsg (ss_bot, cmdparams->source, "You must be logged in to change your Helper Password");
+	irc_prefmsg( ss_bot, cmdparams->source, "You must be logged in to change your Helper Password" );
 	return NS_SUCCESS;
 }
 
-int ss_cmd_login(CmdParams *cmdparams) 
+/** @brief ss_cmd_login
+ *
+ *  LOGIN command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_login( CmdParams *cmdparams ) 
 {
 	Helper *helper;
 	UserDetail *ud;
 
 	SET_SEGV_LOCATION();
-	ud = (UserDetail *)GetUserModValue (cmdparams->source);
-	if (ud && ud->type == USER_HELPER) {
-		irc_prefmsg (ss_bot, cmdparams->source, "You are already logged in");
+	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
+	if( ud && ud->type == USER_HELPER ) {
+		irc_prefmsg( ss_bot, cmdparams->source, "You are already logged in" );
 		return NS_SUCCESS;
 	}
-	helper = (Helper *)hnode_find (helperhash, cmdparams->av[0]);
-	if (helper) {
-		if (!ircstrcasecmp(helper->pass, cmdparams->av[1])) {
+	helper = ( Helper * )hnode_find( helperhash, cmdparams->av[0] );
+	if( helper ) {
+		if( !ircstrcasecmp( helper->pass, cmdparams->av[1] ) ) {
 			Channel* c;
 
-			c = FindChannel(SecureServ.HelpChan);
+			c = FindChannel( SecureServ.HelpChan );
 			helper->u = cmdparams->source;
-			ud = ns_malloc (sizeof(UserDetail));
+			ud = ns_malloc( sizeof( UserDetail ) );
 			ud->type = USER_HELPER;
-			ud->data = (void *) helper;
-			SetUserModValue (cmdparams->source, (void *)ud);
-			irc_prefmsg (ss_bot, cmdparams->source, "Login Successful");
-			irc_chanalert (ss_bot, "%s logged in as a helper", cmdparams->source->name);
-			if ((SecureServ.joinhelpchan == 1) && (IsChannelMember(c, ss_bot->u) != 1)) {
-				irc_join (ss_bot, SecureServ.HelpChan, "+a");//CUMODE_CHANADMIN);
+			ud->data = ( void * ) helper;
+			SetUserModValue( cmdparams->source,( void * )ud );
+			irc_prefmsg( ss_bot, cmdparams->source, "Login Successful" );
+			irc_chanalert( ss_bot, "%s logged in as a helper", cmdparams->source->name );
+			if( ( SecureServ.joinhelpchan == 1 ) &&( IsChannelMember( c, ss_bot->u ) != 1 ) ) {
+				irc_join( ss_bot, SecureServ.HelpChan, "+a" );//CUMODE_CHANADMIN );
 			}
-			if (IsChannelMember(c, cmdparams->source) != 1) {
-				irc_prefmsg (ss_bot, cmdparams->source, "Joining you to the Help Channel");
-				irc_svsjoin (ss_bot, cmdparams->source, SecureServ.HelpChan);
+			if( IsChannelMember( c, cmdparams->source ) != 1 ) {
+				irc_prefmsg( ss_bot, cmdparams->source, "Joining you to the Help Channel" );
+				irc_svsjoin( ss_bot, cmdparams->source, SecureServ.HelpChan );
 			}				                
 			SecureServ.helpcount++;
 			return NS_SUCCESS;
 		}
-		irc_prefmsg (ss_bot, cmdparams->source, "Login Failed");
-		irc_chanalert (ss_bot, "%s tried to login with %s, but got the pass wrong (%s)", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1]);
+		irc_prefmsg( ss_bot, cmdparams->source, "Login Failed" );
+		irc_chanalert( ss_bot, "%s tried to login with %s, but got the pass wrong( %s )", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	} 
-	irc_prefmsg (ss_bot, cmdparams->source, "Login Failed");
-	irc_chanalert (ss_bot, "%s tried to login with %s but that account does not exist", cmdparams->source->name, cmdparams->av[0]);
+	irc_prefmsg( ss_bot, cmdparams->source, "Login Failed" );
+	irc_chanalert( ss_bot, "%s tried to login with %s but that account does not exist", cmdparams->source->name, cmdparams->av[0] );
 	return NS_SUCCESS;
 }
 
-int ss_cmd_logout(CmdParams *cmdparams)
+/** @brief ss_cmd_logout
+ *
+ *  LOGOUT command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_logout( CmdParams *cmdparams )
 {
-	if (HelperLogout (cmdparams) == NS_SUCCESS)
+	if( HelperLogout( cmdparams ) == NS_SUCCESS )
 	{
-		irc_chanalert (ss_bot, "%s logged out from helper system", cmdparams->source->name);
-		irc_prefmsg (ss_bot, cmdparams->source, "You are now logged out");
+		irc_chanalert( ss_bot, "%s logged out from helper system", cmdparams->source->name );
+		irc_prefmsg( ss_bot, cmdparams->source, "You are now logged out" );
 	}
 	else
 	{
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, You do not appear to be logged in");
+		irc_prefmsg( ss_bot, cmdparams->source, "Error, You do not appear to be logged in" );
 	}
 	return NS_SUCCESS;
 }
 
-int ss_cmd_assist(CmdParams *cmdparams) 
+/** @brief ss_cmd_assist
+ *
+ *  ASSIST command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_assist( CmdParams *cmdparams ) 
 {
 	UserDetail *ud, *td;
 	Client *tu;
 	virientry *ve;
 
 	SET_SEGV_LOCATION();
-	ud = (UserDetail *)GetUserModValue (cmdparams->source);
-	if (!ud || ud->type != USER_HELPER) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Access Denied");
-		irc_chanalert (ss_bot, "%s tried to use assist %s on %s, but is not logged in", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1]);
+	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
+	if( !ud || ud->type != USER_HELPER ) {
+		irc_prefmsg( ss_bot, cmdparams->source, "Access Denied" );
+		irc_chanalert( ss_bot, "%s tried to use assist %s on %s, but is not logged in", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	}
 	/* if we get here, they are ok, so check the target user*/
-	tu = FindUser(cmdparams->av[1]);
-	if (!tu) /* User not found */
+	tu = FindUser( cmdparams->av[1] );
+	if( !tu ) /* User not found */
 		return NS_SUCCESS;
-	td = GetUserModValue (tu);
-	if (!td || td->type != USER_INFECTED) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Invalid User %s. Not Recorded as requiring assistance", tu->name);
-		irc_chanalert (ss_bot, "%s tried to use assist %s on %s, but the target is not requiring assistance", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1]);
+	td = GetUserModValue( tu );
+	if( !td || td->type != USER_INFECTED ) {
+		irc_prefmsg( ss_bot, cmdparams->source, "Invalid User %s. Not Recorded as requiring assistance", tu->name );
+		irc_chanalert( ss_bot, "%s tried to use assist %s on %s, but the target is not requiring assistance", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	}
 	/* ok, so far so good, lets see what the helper wants to do with the target user */
-	if (!ircstrcasecmp(cmdparams->av[0], "RELEASE")) {
-		ClearUserModValue (tu);
+	if( !ircstrcasecmp( cmdparams->av[0], "RELEASE" ) ) {
+		ClearUserModValue( tu );
 		td->data = NULL;
-		ns_free (td);
-		irc_prefmsg (ss_bot, cmdparams->source,  "Hold on %s is released", tu->name);
-		irc_chanalert (ss_bot, "%s released %s", cmdparams->source->name, tu->name);
+		ns_free( td );
+		irc_prefmsg( ss_bot, cmdparams->source,  "Hold on %s is released", tu->name );
+		irc_chanalert( ss_bot, "%s released %s", cmdparams->source->name, tu->name );
 		return NS_SUCCESS;
-	} else if (!ircstrcasecmp(cmdparams->av[0], "KILL")) {
-		ve = (virientry *)td->data;
-		irc_prefmsg (ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name);	
-		irc_chanalert (ss_bot, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name);
-		nlog (LOG_NORMAL, "%s used assist kill on %s!%s@%s (infected with %s)", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name);
-		if(ve->iscustom) {
-			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill)", tu->name, ve->name, cmdparams->source->name);
-			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s. (HelperAssist by %s)", ve->name, cmdparams->source->name);
+	} else if( !ircstrcasecmp( cmdparams->av[0], "KILL" ) ) {
+		ve = ( virientry * )td->data;
+		irc_prefmsg( ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name );	
+		irc_chanalert( ss_bot, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
+		nlog( LOG_NORMAL, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
+		if( ve->iscustom )
+		{
+			irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )", tu->name, ve->name, cmdparams->source->name );
+			irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s.( HelperAssist by %s )", ve->name, cmdparams->source->name );
 		}
-		else {
-			irc_globops (ss_bot, "Akilling %s for Virus %s (Helper %s performed Assist Kill) (http://secure.irc-chat.net/info.php?viri=%s)", tu->name, ve->name, cmdparams->source->name, ve->name);
-			irc_akill (ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s (HelperAssist by %s)", ve->name, cmdparams->source->name);
+		else
+		{
+			irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )( http://secure.irc-chat.net/info.php?viri=%s )", tu->name, ve->name, cmdparams->source->name, ve->name );
+			irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s( HelperAssist by %s )", ve->name, cmdparams->source->name );
 		}
 		return NS_SUCCESS;
 	}
 	return NS_ERR_SYNTAX_ERROR;
 }	
 
-static int ss_cmd_helpers_add(CmdParams *cmdparams) 
+/** @brief ss_cmd_helpers_add
+ *
+ *  HELPERS ADD command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_helpers_add( CmdParams *cmdparams ) 
 {
 	Helper *helper;
 	hnode_t *node;
 	
 	SET_SEGV_LOCATION();
-	if (cmdparams->ac < 3) {
+	if( cmdparams->ac < 3 )
 		return NS_ERR_NEED_MORE_PARAMS;
-	}
-	if (hash_lookup(helperhash, cmdparams->av[1])) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Helper login %s already exists", cmdparams->av[1]);
+	if( hash_lookup( helperhash, cmdparams->av[1] ) )
+	{
+		irc_prefmsg( ss_bot, cmdparams->source, "Helper login %s already exists", cmdparams->av[1] );
 		return NS_SUCCESS;
 	}
-	helper = ns_malloc (sizeof(Helper));
-	strlcpy(helper->nick, cmdparams->av[1], MAXNICK);
-	strlcpy(helper->pass, cmdparams->av[2], MAXNICK);
+	helper = ns_malloc( sizeof( Helper ) );
+	strlcpy( helper->nick, cmdparams->av[1], MAXNICK );
+	strlcpy( helper->pass, cmdparams->av[2], MAXNICK );
 	helper->u = NULL;
-	node = hnode_create(helper);
- 	hash_insert(helperhash, node, helper->nick);
+	node = hnode_create( helper );
+ 	hash_insert( helperhash, node, helper->nick );
 
 	/* ok, now save the helper */
-	DBAStore ("helpers", helper->nick, (void *)helper, sizeof (Helper));
-	irc_prefmsg (ss_bot, cmdparams->source, "Helper %s added with password %s", helper->nick, helper->pass);
+	DBAStore( "helpers", helper->nick,( void * )helper, sizeof( Helper ) );
+	irc_prefmsg( ss_bot, cmdparams->source, "Helper %s added with password %s", helper->nick, helper->pass );
 	return NS_SUCCESS;
 }
 
-static int ss_cmd_helpers_del(CmdParams *cmdparams) 
+/** @brief ss_cmd_helpers_del
+ *
+ *  HELPERS DEL command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_helpers_del( CmdParams *cmdparams ) 
 {
 	hnode_t *node;
 
 	SET_SEGV_LOCATION();
-	if (cmdparams->ac < 2) {
+	if( cmdparams->ac < 2 ) {
 		return NS_ERR_NEED_MORE_PARAMS;
 	}
-	node = hash_lookup(helperhash, cmdparams->av[1]);
-	if (node) {
-		hash_delete(helperhash, node);
-		ns_free (hnode_get(node));
-		hnode_destroy(node);
-		DBADelete ("helpers", cmdparams->av[1]);
-		irc_prefmsg (ss_bot, cmdparams->source, "Helper %s deleted", cmdparams->av[1]);
-	} else {
-		irc_prefmsg (ss_bot, cmdparams->source, "Error, helper %s not found. /msg %s helpers list", cmdparams->av[1], ss_bot->name);
+	node = hash_lookup( helperhash, cmdparams->av[1] );
+	if( node )
+	{
+		hash_delete( helperhash, node );
+		ns_free( hnode_get( node ) );
+		hnode_destroy( node );
+		DBADelete( "helpers", cmdparams->av[1] );
+		irc_prefmsg( ss_bot, cmdparams->source, "Helper %s deleted", cmdparams->av[1] );
+	}
+	else
+	{
+		irc_prefmsg( ss_bot, cmdparams->source, "Error, helper %s not found. /msg %s helpers list", cmdparams->av[1], ss_bot->name );
 	}
 	return NS_SUCCESS;
 }
 
-static int ss_cmd_helpers_list(CmdParams *cmdparams) 
+/** @brief ss_cmd_helpers_list
+ *
+ *  HELPERS LIST command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_helpers_list( CmdParams *cmdparams ) 
 {
 	hscan_t hlps;
 	hnode_t *node;
 	Helper *helper;
 
 	SET_SEGV_LOCATION();
-	irc_prefmsg (ss_bot, cmdparams->source, "Helpers list (%d):", (int)hash_count(helperhash));
-	hash_scan_begin(&hlps, helperhash);
-	while ((node = hash_scan_next(&hlps)) != NULL) {
-		helper = hnode_get(node);
-		irc_prefmsg (ss_bot, cmdparams->source, "%s (%s)", helper->nick, helper->u ? helper->u->name : "Not Logged In");
+	irc_prefmsg( ss_bot, cmdparams->source, "Helpers list( %d ):",( int )hash_count( helperhash ) );
+	hash_scan_begin( &hlps, helperhash );
+	while( ( node = hash_scan_next( &hlps ) ) != NULL )
+	{
+		helper = hnode_get( node );
+		irc_prefmsg( ss_bot, cmdparams->source, "%s( %s )", helper->nick, helper->u ? helper->u->name : "Not Logged In" );
 	}
-	irc_prefmsg (ss_bot, cmdparams->source, "End of list.");	
+	irc_prefmsg( ss_bot, cmdparams->source, "End of list." );	
 	return NS_SUCCESS;
 }
 
-int ss_cmd_helpers(CmdParams *cmdparams)
+/** @brief ss_cmd_helpers
+ *
+ *  HELPERS command handler
+ *
+ *  @param cmdparam struct
+ *    cmdparams->av[0] = subcommand( one of ADD, DEL, LIST )
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_helpers( CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
-	if (UserLevel(cmdparams->source) < NS_ULEVEL_ADMIN) {
-		return NS_ERR_NO_PERMISSION;
-	}			
-	if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
-		return ss_cmd_helpers_add(cmdparams);
-	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
-		return ss_cmd_helpers_del(cmdparams);
-	} else if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
-		return ss_cmd_helpers_list(cmdparams);
-	}
+	if( !ircstrcasecmp( cmdparams->av[0], "ADD" ) )
+		return ss_cmd_helpers_add( cmdparams );
+	if( !ircstrcasecmp( cmdparams->av[0], "DEL" ) )
+		return ss_cmd_helpers_del( cmdparams );
+	if( !ircstrcasecmp( cmdparams->av[0], "LIST" ) )
+		return ss_cmd_helpers_list( cmdparams );
 	return NS_ERR_SYNTAX_ERROR;
 }
 
-int HelpersSignoff(CmdParams *cmdparams) 
+/** @brief HelpersSignoff
+ *
+ *  SIGNOFF event handler
+ *  handle away
+ *
+ *  @params cmdparams pointer to commands param struct
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int HelpersSignoff( CmdParams *cmdparams ) 
 {
-	if (SecureServ.helpers != 1) {
+	if( SecureServ.helpers != 1 )
 		return NS_SUCCESS;
-	}
-	if (HelperLogout(cmdparams) == NS_SUCCESS)
+	if( HelperLogout( cmdparams ) == NS_SUCCESS )
 	{
-		irc_chanalert (ss_bot, "%s logged out for quit", cmdparams->source->name);
+		irc_chanalert( ss_bot, "%s logged out for quit", cmdparams->source->name );
 	}
 	return NS_SUCCESS;
 }
 
-int HelpersAway(CmdParams *cmdparams) 
+/** @brief HelpersAway
+ *
+ *  AWAY event handler
+ *  handle away
+ *
+ *  @params cmdparams pointer to commands param struct
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int HelpersAway( CmdParams *cmdparams ) 
 {
 	SET_SEGV_LOCATION();
-	if (SecureServ.helpers != 1) {
+	if( SecureServ.helpers != 1 )
 		return NS_SUCCESS;
-	}
-	if (SecureServ.signoutaway != 1) {
+	if( SecureServ.signoutaway != 1 )
 		return NS_SUCCESS;
-	}
-	if (HelperLogout(cmdparams) == NS_SUCCESS)
+	if( HelperLogout( cmdparams ) == NS_SUCCESS )
 	{
-		irc_chanalert (ss_bot, "%s logged out after set away", cmdparams->source->name);
-		irc_prefmsg (ss_bot, cmdparams->source, "You have been logged out of SecureServ");
+		irc_chanalert( ss_bot, "%s logged out after set away", cmdparams->source->name );
+		irc_prefmsg( ss_bot, cmdparams->source, "You have been logged out of SecureServ" );
 	}
 	return NS_SUCCESS;
 }
 
-int ss_cmd_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason) 
+/** @brief ss_cmd_set_helpers_cb
+ *
+ *  Set callback for set helpers
+ *  Enable or disable commands associated with helper system
+ *
+ *  @params cmdparams pointer to commands param struct
+ *  @params reason for SET
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int ss_cmd_set_helpers_cb( CmdParams *cmdparams, SET_REASON reason ) 
 {
 	if( reason == SET_CHANGE )
 	{
-		if (SecureServ.helpers == 1) {
-			add_bot_cmd_list (ss_bot, helper_commands);
-			add_bot_setting_list (ss_bot, helper_settings);
-		} else {
-			del_bot_cmd_list (ss_bot, helper_commands);
-			del_bot_setting_list (ss_bot, helper_settings);
+		if( SecureServ.helpers == 1 )
+		{
+			add_bot_cmd_list( ss_bot, helper_commands );
+			add_bot_setting_list( ss_bot, helper_settings );
+		}
+		else
+		{
+			del_bot_cmd_list( ss_bot, helper_commands );
+			del_bot_setting_list( ss_bot, helper_settings );
 		}
 	}
 	return NS_SUCCESS;

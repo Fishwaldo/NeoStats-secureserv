@@ -30,15 +30,15 @@ all:	module
 	$(CC) -MM $(INCLUDES) -c $< > $*.d
 
 module:	 $(OBJS)
-	 $(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(LD) -shared -o $(TARGET) $(OBJS) $(LDFLAGS)
 
 clean:
-	 /bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
+	/bin/rm -rf $(TARGET) *.o Makefile *.log modconfig.h
 
 install: module
-	 $(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
-	 $(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
-	 @if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
+	$(INSTALL) -m 644 $(TARGET) $(DIRECTORY)
+	$(INSTALL) -m 644 $(DOCS) $(DIRECTORY)../doc/
+	@if ! test -f $(DIRECTORY)../data/viri.dat ; then $(INSTALL) -m 644 viri.dat $(DIRECTORY)../data/ ; fi 
 	@echo "Installation complete."
 	@echo "See the README file for instructions on loading this module."
 

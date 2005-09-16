@@ -23,191 +23,258 @@
 
 #include "SecureServ.h"
 
-void datver(void *data, int status, char *ver, int versize);
-void datdownload(void *data, int status, char *ver, int versize);
-static int DownLoadDat(void);
+/* update state type */
+typedef enum UPDATE_STATE
+{
+	UPDATE_STATE_IDLE = 0,
+	UPDATE_STATE_VERSION,
+	UPDATE_STATE_DATA
+} UPDATE_STATE;
 
+/* update state flag */
+static UPDATE_STATE updatestate = UPDATE_STATE_IDLE;
+/* update temporary buffer */
 static char ss_buf[SS_BUF_SIZE];
 
-/* @brief This is the list of possible errors for dat file updates. 
-**
-*/
-char *downloaderror(int errcode) {
-	switch (errcode) {
+/** @brief downloaderror
+ *
+ *  list of possible errors for dat file updates
+ *
+ *  @param errcode ????
+ *
+ *  @return error string
+ */
+
+const char *downloaderror( int errcode )
+{
+	switch( errcode )
+	{
 		case -1:
-				return "Invalid username or password.";
-				break;
+			return "Invalid username or password.";
+			break;
 		case -2:
-				return "Account disabled. Please contact admin@lists.neostats.net";
-				break;
+			return "Account disabled. Please contact admin@lists.neostats.net";
+			break;
 		case -3:
-				return "Your copy of SecureServ is too old. Please upgrade";
-				break;
+			return "Your copy of SecureServ is too old. Please upgrade";
+			break;
 		default:
-				return "Unknown reason.";
-				break;
+			return "Unknown reason.";
+			break;
 	}
 }
 
-/* @brief this is the automatic dat file updater callback function. Checks whats on the website with 
-** whats local, and if website is higher, either prompts for an upgrade, or does an automatic one :)
-** It just compares version numbers of the dat file, and if they are different, starts a new download. 
-*/
+/** @brief datdownload
+ *
+ *  downloads a dat file and loads the new version into memory if required 
+ *
+ *  @param unuseddata ????
+ *  @param status ????
+ *  @param data ????
+ *  @param datasize ????
+ *
+ *  @return none
+ */
 
-void datver(void *data, int status, char *ver, int versize) 
-{
-	int myversion;
-	Client *u = (void *)data;
-	
-	SET_SEGV_LOCATION();
-	/* check there was no error */
-	if (status == NS_SUCCESS) {
-		myversion = atoi(ver);
-		if (myversion <= 0) {
-			nlog (LOG_WARNING, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
-			irc_chanalert (ss_bot, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
-			if (u) irc_prefmsg (ss_bot, u, "Permission Denied trying to check Dat file version: %s", downloaderror(myversion));
-			return;
-		}			
-		dlog (DEBUG1, "LocalDat Version %d, WebSite %d", SecureServ.datfileversion, myversion);
-		if (myversion > SecureServ.datfileversion) {
-			if (SecureServ.autoupgrade > 0 || u) {
-				SecureServ.doUpdate = 1;
-				DownLoadDat();
-				if (u) irc_prefmsg (ss_bot, u, "A new Dat file version %d is being downloaded. Please Monitor the Services Channel", myversion);
-			 } else
-				irc_chanalert (ss_bot, "A new Dat file version %d is available. You should /msg %s update", myversion, ss_bot->name);
-				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
-			 } else {
-			irc_chanalert (ss_bot, "SecureServ is operating with the most recent Dat file. No update required.");
-			if (u) irc_prefmsg (ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required.");
-			}
-		return;
-	} else {
-		nlog (LOG_WARNING, "Virus definition check failed. %s", ver);
-		irc_chanalert (ss_bot, "Virus definition check failed: %s", ver);
-		if (u) irc_prefmsg (ss_bot, u, "Virus definition check failed. %s", ver);
-		return;
-	}
-}
-static int DownLoadDat() 
-{
-	SET_SEGV_LOCATION();
-	/* dont keep trying to download !*/
-	if (SecureServ.doUpdate == 1) {
-#if 0
-bugid: 154
-		del_mod_timer("DownLoadNewDat");
-#endif
-		SecureServ.doUpdate = 2;
-		os_memset (ss_buf, 0, SS_BUF_SIZE);
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-		if (new_transfer("http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload) != NS_SUCCESS) {
-			nlog (LOG_WARNING, "Definition download failed.");
-			irc_chanalert (ss_bot, "Definition download failed. Check log files");
-			return -1;
-		}	
-
-	} 
-	return NS_SUCCESS;
-}
-
-/* @brief this downloads a dat file and loads the new version into memory if required 
-*/
-void datdownload(void *unuseddata, int status, char *data, int datasize) 
+static void datdownload( void *unuseddata, int status, char *data, int datasize ) 
 {
 	char tmpname[32];
 	char *tmp, *tmp1;
 	int i;
 	
 	SET_SEGV_LOCATION();
-	/* if this is an automatic download, KILL the timer */
-	if (SecureServ.doUpdate == 2) {
-		/* clear this flag */
-		SecureServ.doUpdate = 0;
+	/* if this is an automatic download, clear status */
+	if( updatestate == UPDATE_STATE_DATA )
+		updatestate = UPDATE_STATE_IDLE;
+	if( status != NS_SUCCESS )
+	{
+		dlog( DEBUG1, "Virus definition download failed. %s", data );
+		irc_chanalert( ss_bot, "Virus definition download failed. %s", data );
+		return;
 	}
-	if (status == NS_SUCCESS) {
-		/* check response code */
-		tmp = ns_malloc (datasize);
-		strlcpy(tmp, data, datasize);
-		tmp1 = tmp;
-		i = atoi(strtok(tmp, "\n"));
-		ns_free (tmp1);	
-		if (i <= 0) {
-			nlog (LOG_NORMAL, "Permission denied trying to download Dat file: %d", i);
-			irc_chanalert (ss_bot, "Permission denied trying to download Dat file: %d", i);
-			return;
+	/* check response code */
+	tmp = ns_malloc( datasize );
+	strlcpy( tmp, data, datasize );
+	tmp1 = tmp;
+	i = atoi( strtok( tmp, "\n" ) );
+	ns_free( tmp1 );	
+	if( i <= 0 ) {
+		nlog( LOG_NORMAL, "Permission denied trying to download Dat file: %d", i );
+		irc_chanalert( ss_bot, "Permission denied trying to download Dat file: %d", i );
+		return;
+	}	
+	/* make a temp file and write the contents to it */
+	strlcpy( tmpname, "viriXXXXXX", 32 );
+	os_write_temp_file( tmpname, data, datasize );
+	/* rename the file to the datfile */
+	os_rename( tmpname, VIRI_DAT_NAME );
+	/* reload the dat file */
+ 	load_dat();
+	nlog( LOG_NOTICE, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion );
+	irc_chanalert( ss_bot, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion );
+}
+	
+/** @brief DownLoadDat
+ *
+ *  
+ *
+ *  @param none
+ *
+ *  @return none
+ */
+
+static int DownLoadDat( void )
+{
+	SET_SEGV_LOCATION();
+	/* dont keep trying to download !*/
+	if( updatestate == UPDATE_STATE_VERSION )
+	{
+		updatestate = UPDATE_STATE_DATA;
+		os_memset( ss_buf, 0, SS_BUF_SIZE );
+		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+		if( new_transfer( "http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload ) != NS_SUCCESS )
+		{
+			nlog( LOG_WARNING, "Definition download failed." );
+			irc_chanalert( ss_bot, "Definition download failed. Check log files" );
 		}	
-		/* make a temp file and write the contents to it */
-		strlcpy(tmpname, "viriXXXXXX", 32);
-		os_write_temp_file( tmpname, data, datasize );
-		/* rename the file to the datfile */
-		os_rename(tmpname, VIRI_DAT_NAME);
-		/* reload the dat file */
- 		load_dat();
-		nlog (LOG_NOTICE, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
-		irc_chanalert (ss_bot, "Dat file version %d has been downloaded and installed", SecureServ.datfileversion);
+	} 
+}
+
+/** @brief datdownload
+ *
+ *  automatic dat file updater callback function. Checks whats on the website 
+ *  with whats local, and if website is higher, either prompts for an upgrade, 
+ *  or does an automatic one : ) It just compares version numbers of the dat 
+ *  file, and if they are different, starts a new download. 
+ *
+ *  @param data ????
+ *  @param status ????
+ *  @param ver ????
+ *  @param versize ????
+ *
+ *  @return none
+ */
+
+static void datver( void *data, int status, char *ver, int versize ) 
+{
+	int myversion;
+	Client *u =( void * )data;
+	
+	SET_SEGV_LOCATION();
+	/* check there was no error */
+	if( status == NS_SUCCESS ) {
+		myversion = atoi( ver );
+		if( myversion <= 0 ) {
+			nlog( LOG_WARNING, "Permission Denied trying to check Dat file version: %s", downloaderror( myversion ) );
+			irc_chanalert( ss_bot, "Permission Denied trying to check Dat file version: %s", downloaderror( myversion ) );
+			if( u ) irc_prefmsg( ss_bot, u, "Permission Denied trying to check Dat file version: %s", downloaderror( myversion ) );
+			return;
+		}			
+		dlog( DEBUG1, "LocalDat Version %d, WebSite %d", SecureServ.datfileversion, myversion );
+		if( myversion > SecureServ.datfileversion ) {
+			if( SecureServ.autoupgrade > 0 || u ) {
+				updatestate = UPDATE_STATE_VERSION;
+				DownLoadDat();
+				if( u ) irc_prefmsg( ss_bot, u, "A new Dat file version %d is being downloaded. Please Monitor the Services Channel", myversion );
+			 } else
+				irc_chanalert( ss_bot, "A new Dat file version %d is available. You should /msg %s update", myversion, ss_bot->name );
+				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
+			 } else {
+			irc_chanalert( ss_bot, "SecureServ is operating with the most recent Dat file. No update required." );
+			if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required." );
+			}
+		return;
 	} else {
-		dlog (DEBUG1, "Virus definition download failed. %s", data);
-		irc_chanalert (ss_bot, "Virus definition download failed. %s", data);
+		nlog( LOG_WARNING, "Virus definition check failed. %s", ver );
+		irc_chanalert( ss_bot, "Virus definition check failed: %s", ver );
+		if( u ) irc_prefmsg( ss_bot, u, "Virus definition check failed. %s", ver );
 		return;
 	}
 }
-	
-int AutoUpdate(void *userptr) 
+
+/** @brief AutoUpdate
+ *
+ *  UPDATE timer handler
+ *
+ *  @param ????
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int AutoUpdate( void *userptr )
 {
 	SET_SEGV_LOCATION();
-	if ((SecureServ.autoupgrade > 0) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
-		os_memset (ss_buf, 0, SS_BUF_SIZE);
-		ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-		if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver) != NS_SUCCESS) {
-			nlog (LOG_WARNING, "Definition version check failed.");
-			irc_chanalert (ss_bot, "Definition version check failed. Check log files");
+	if( ( SecureServ.autoupgrade > 0 ) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
+		os_memset( ss_buf, 0, SS_BUF_SIZE );
+		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+		if( new_transfer( "http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver ) != NS_SUCCESS ) {
+			nlog( LOG_WARNING, "Definition version check failed." );
+			irc_chanalert( ss_bot, "Definition version check failed. Check log files" );
 		}	
 	}
 	return NS_SUCCESS;
 }	
 
-int ss_cmd_update(CmdParams *cmdparams)
+/** @brief ss_cmd_update
+ *
+ *  UPDATE command handler
+ *
+ *  @param cmdparam struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+int ss_cmd_update( CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
-	os_memset (ss_buf, 0, SS_BUF_SIZE);
-	ircsnprintf(ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw);
-	if (new_transfer("http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", cmdparams->source, datver) != NS_SUCCESS) {
-		irc_prefmsg (ss_bot, cmdparams->source, "Definition Download Failed. Check Log Files");
-		nlog (LOG_WARNING, "Definition Download failed.");
-		irc_chanalert (ss_bot, "Definition Download failed. Check log files");
+	os_memset( ss_buf, 0, SS_BUF_SIZE );
+	ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+	if( new_transfer( "http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", cmdparams->source, datver ) != NS_SUCCESS ) {
+		irc_prefmsg( ss_bot, cmdparams->source, "Definition Download Failed. Check Log Files" );
+		nlog( LOG_WARNING, "Definition Download failed." );
+		irc_chanalert( ss_bot, "Definition Download failed. Check log files" );
 		return NS_FAILURE;
 	}	
-	irc_prefmsg (ss_bot, cmdparams->source, "Requesting New Dat File.");
-	irc_chanalert (ss_bot, "%s requested an update to the Dat file", cmdparams->source->name);
+	irc_prefmsg( ss_bot, cmdparams->source, "Requesting New Dat File." );
+	irc_chanalert( ss_bot, "%s requested an update to the Dat file", cmdparams->source->name );
 	return NS_SUCCESS;
 }
 
-int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason) 
+/** @brief ss_cmd_set_autoupdate_cb
+ *
+ *  Set callback for set autoupdate
+ *  validate autoupdate setting
+ *
+ *  @params cmdparams pointer to commands param struct
+ *  @params reason for SET
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int ss_cmd_set_autoupdate_cb( CmdParams *cmdparams, SET_REASON reason ) 
 {
 	switch( reason )
 	{
 		case SET_VALIDATE:
 			if( !SecureServ.updateuname[0] )
 			{
-				irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update user name");
+				irc_prefmsg( ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update user name" );
 				return NS_FAILURE;
 			}
 			if( !SecureServ.updatepw[0] )
 			{
-				irc_prefmsg (ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update password");
+				irc_prefmsg( ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update password" );
 				return NS_FAILURE;
 			}
 			break;
 		case SET_CHANGE:
-			if (SecureServ.autoupgrade == 1) 
+			if( SecureServ.autoupgrade == 1 ) 
 			{
-				AddTimer (TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL);
+				AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL );
 			} 
 			else 
 			{
-				DelTimer ("AutoUpdate");
+				DelTimer( "AutoUpdate" );
 			}
 			break;
 		default:
@@ -216,13 +283,23 @@ int ss_cmd_set_autoupdate_cb(CmdParams *cmdparams, SET_REASON reason)
 	return NS_SUCCESS;
 }
 
-int ss_cmd_set_autoupdatetime_cb(CmdParams *cmdparams, SET_REASON reason) 
+/** @brief ss_cmd_set_autoupdatetime_cb
+ *
+ *  Set callback for set autoupdatetime
+ *  Adjust timer interval
+ *
+ *  @params cmdparams pointer to commands param struct
+ *  @params reason for SET
+ *
+ *  @return NS_SUCCESS if suceeds else NS_FAILURE
+ */
+
+int ss_cmd_set_autoupdatetime_cb( CmdParams *cmdparams, SET_REASON reason ) 
 {
 	if( reason == SET_CHANGE )
 	{
-		if ((SecureServ.autoupgrade == 1) && (SecureServ.updateuname[0]) && (SecureServ.updatepw[0])) {
-			SetTimerInterval("AutoUpdate", SecureServ.autoupgradetime);
-		}
+		if( ( SecureServ.autoupgrade == 1 ) &&( SecureServ.updateuname[0] ) &&( SecureServ.updatepw[0] ) )
+			SetTimerInterval( "AutoUpdate", SecureServ.autoupgradetime );
 	}
 	return NS_SUCCESS;
 }

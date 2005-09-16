@@ -106,7 +106,6 @@ struct SecureServ {
 	int monchancycletime;
 	int autoupgrade;
 	int autoupgradetime;
-	int doUpdate;
 	int dofizzer;
 	int DoOnJoin;
 	int BotEcho;
@@ -123,7 +122,6 @@ struct SecureServ {
 	int signoutaway;
 	int report;
 	int joinhelpchan;
-	int modnum;
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
 	int treatchanmsgaspm;

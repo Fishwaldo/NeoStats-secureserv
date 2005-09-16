@@ -2,6 +2,7 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a3-dev - Mark (M)
+ - Use new core ctcp request/reply system. (M)
  - if Core version checking is disabled, but secureserv versionscan is
    enabled, then ctcp requests come from SecureServ (F)
  - secure.irc-chat.net update reports now moved to core (F)

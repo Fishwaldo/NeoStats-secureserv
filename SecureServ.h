@@ -91,7 +91,7 @@ typedef struct UserDetail {
 #define MAX_PATTERN_TYPES	20
 
 struct SecureServ {
-	int doscan;
+	int version;
 	int datfileversion;
 	char akillinfo[BUFSIZE];
 	char nohelp[BUFSIZE];

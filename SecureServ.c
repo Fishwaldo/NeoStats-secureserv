@@ -68,7 +68,7 @@ ModuleInfo module_info = {
 	MODULE_VERSION,
 	__DATE__,
 	__TIME__,
-	MODULE_FLAG_LOCAL_EXCLUDES,
+	MODULE_FLAG_CTCP_VERSION | MODULE_FLAG_LOCAL_EXCLUDES,
 	0,
 };
 
@@ -89,7 +89,7 @@ static bot_cmd ss_commands[]=
 static bot_setting ss_settings[]=
 {
 	{"HELPERS",		&SecureServ.helpers,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpers, ss_cmd_set_helpers_cb, (void *)1 },
-	{"VERSIONSCAN",		&SecureServ.doscan,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_version, NULL, (void *)1 },
+	{"VERSION",		&SecureServ.version,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_version, NULL, (void *)1 },
 	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpchan, NULL, (void *)"#nohack" },
 #ifdef HAVE_CRYPT_H
 	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_report, NULL, (void *)1 },
@@ -328,45 +328,26 @@ static int ss_event_nick(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static void ss_do_version(CmdParams *cmdparams)
-{
-	/* if NeoStats Version Check is disabled, but SecureServ Version check is enabled, send CTCP request */
-	if ((!me.versionscan) &&  (SecureServ.doscan)) {
-		irc_ctcp_version_req(ss_bot, cmdparams->source);
-	}
-}
-
 /* scan someone connecting */
 static int ss_event_signon(CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	if (SecureServ.doscan == 0)
-		return NS_SUCCESS;
 	if (IsNetSplit(cmdparams->source)) {
 		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
-	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE)
 		return NS_SUCCESS;
-	}
 	/* fizzer scan */
-	if (SecureServ.dofizzer && ScanFizzer(cmdparams->source)) {
+	if (SecureServ.dofizzer && ScanFizzer(cmdparams->source))
 		return NS_SUCCESS;
-	}
 	/* check the nickname, ident, realname */
-	if (ScanNick(cmdparams->source) && SecureServ.breakorcont != 0) {
-		ss_do_version(cmdparams);
+	if (ScanNick(cmdparams->source) && SecureServ.breakorcont != 0)
 		return NS_SUCCESS;
-	}
-	if (ScanIdent(cmdparams->source) && SecureServ.breakorcont != 0) {
-		ss_do_version(cmdparams);
+	if (ScanIdent(cmdparams->source) && SecureServ.breakorcont != 0)
 		return NS_SUCCESS;
-	}
-	if (ScanRealname(cmdparams->source) && SecureServ.breakorcont != 0) {
-		ss_do_version(cmdparams);
+	if (ScanRealname(cmdparams->source) && SecureServ.breakorcont != 0)
 		return NS_SUCCESS;
-	}
-	ss_do_version(cmdparams);
 	return NS_SUCCESS;
 }
 
@@ -376,21 +357,23 @@ static int ss_event_versionreply(CmdParams *cmdparams)
 	static int versioncount = 0;
 
 	SET_SEGV_LOCATION();
+	if( !SecureServ.version )
+		return NS_SUCCESS;
 	/* because neostats doesn't check this when the version request comes from the core */
-	if (IsNetSplit(cmdparams->source)) {
+	if( IsNetSplit( cmdparams->source ) )
+	{
 		dlog (DEBUG1, "Ignoring netsplit nick %s", cmdparams->source->name);
 		return NS_SUCCESS;
 	}
-	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE) {
+	if (ModIsUserExcluded(cmdparams->source) == NS_TRUE)
 		return NS_SUCCESS;
-	}
 	if (SecureServ.verbose) 
 		irc_chanalert(ss_bot, "Got Version Reply from %s: %s", cmdparams->source->name, cmdparams->param);
-
 	positive = ScanCTCPVersion(cmdparams->source, cmdparams->param);
 	versioncount++;
 	/* why do we only change the version reply every 23 entries? Why not? */
-	if ((positive == 0) && (versioncount > 23)) {
+	if ((positive == 0) && (versioncount > 23))
+	{
 		strlcpy(SecureServ.sampleversion, cmdparams->param, SS_BUF_SIZE);
 		versioncount = 0;
 	}

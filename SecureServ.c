@@ -306,7 +306,7 @@ ModuleEvent module_events[] = {
 	{ EVENT_BOTKILL, 		ss_event_botkill},
 	{ EVENT_CTCPVERSIONRPLBC, ss_event_versionreply},	
 	{ EVENT_CTCPVERSIONREQ, ss_event_versionrequest},	
-	{ EVENT_NULL, 			NULL}
+	NS_EVENT_END()
 };
 
 static int ss_event_quit(CmdParams *cmdparams) 

@@ -111,7 +111,7 @@ static int LoadHelper( void *data, int size )
 int InitHelpers( void ) 
 {
 	SET_SEGV_LOCATION();
-	helperhash = hash_create( -1, 0, 0 );
+	helperhash = hash_create( HASHCOUNT_T_MAX, 0, 0 );
 	if( !helperhash )
 	{
 		nlog( LOG_CRITICAL, "Unable to create helperhash hash" );

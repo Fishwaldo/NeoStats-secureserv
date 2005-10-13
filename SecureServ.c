@@ -23,18 +23,18 @@
 
 #include "SecureServ.h"
 
-static int ss_event_signon( CmdParams *cmdparams );
-static int ss_event_versionreply( CmdParams *cmdparams );
-static int ss_event_nick( CmdParams *cmdparams );
-static int ss_event_quit( CmdParams *cmdparams );
-static int ss_cmd_status( CmdParams *cmdparams );
-static int ss_cmd_viriversion( CmdParams *cmdparams );
+static int ss_event_signon( const CmdParams *cmdparams );
+static int ss_event_versionreply( const CmdParams *cmdparams );
+static int ss_event_nick( const CmdParams *cmdparams );
+static int ss_event_quit( const CmdParams *cmdparams );
+static int ss_cmd_status( const CmdParams *cmdparams );
+static int ss_cmd_viriversion( const CmdParams *cmdparams );
 
-static int ss_cmd_set_doonjoin_cb( CmdParams *cmdparams, SET_REASON reason );
-static int ss_cmd_set_monchancycle_cb( CmdParams *cmdparams, SET_REASON reason );
-static int ss_cmd_set_monchancycletime_cb( CmdParams *cmdparams, SET_REASON reason );
-static int ss_cmd_set_cycletime_cb( CmdParams *cmdparams, SET_REASON reason );
-static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_doonjoin_cb( const CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_monchancycle_cb( const CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_monchancycletime_cb( const CmdParams *cmdparams, SET_REASON reason );
+static int ss_cmd_set_cycletime_cb( const CmdParams *cmdparams, SET_REASON reason );
+static int ss_set_exclusions_cb( const CmdParams *cmdparams, SET_REASON reason );
 
 #ifdef WIN32
 void *(*old_malloc)(size_t);
@@ -133,7 +133,7 @@ BotInfo ss_botinfo =
 	ss_settings,
 };
 
-static int ss_cmd_set_doonjoin_cb(CmdParams *cmdparams, SET_REASON reason)
+static int ss_cmd_set_doonjoin_cb(const CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -148,7 +148,7 @@ static int ss_cmd_set_doonjoin_cb(CmdParams *cmdparams, SET_REASON reason)
 	}
 	return NS_SUCCESS;
 }
-static int ss_cmd_set_monchancycle_cb(CmdParams *cmdparams, SET_REASON reason)
+static int ss_cmd_set_monchancycle_cb(const CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -163,7 +163,7 @@ static int ss_cmd_set_monchancycle_cb(CmdParams *cmdparams, SET_REASON reason)
 	}
 	return NS_SUCCESS;
 }
-static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reason)
+static int ss_cmd_set_monchancycletime_cb(const CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -171,7 +171,7 @@ static int ss_cmd_set_monchancycletime_cb(CmdParams *cmdparams, SET_REASON reaso
 	}
 	return NS_SUCCESS;
 }
-static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
+static int ss_cmd_set_cycletime_cb(const CmdParams *cmdparams, SET_REASON reason)
 {
 	if( reason == SET_CHANGE )
 	{
@@ -180,7 +180,7 @@ static int ss_cmd_set_cycletime_cb(CmdParams *cmdparams, SET_REASON reason)
 	return NS_SUCCESS;
 }
 
-static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason )
+static int ss_set_exclusions_cb( const CmdParams *cmdparams, SET_REASON reason )
 {
 	if( reason == SET_LOAD || reason == SET_CHANGE )
 	{
@@ -189,13 +189,13 @@ static int ss_set_exclusions_cb( CmdParams *cmdparams, SET_REASON reason )
 	return NS_SUCCESS;
 }
 
-static int ss_cmd_viriversion(CmdParams *cmdparams)
+static int ss_cmd_viriversion(const CmdParams *cmdparams)
 {
 	irc_prefmsg (ss_bot, cmdparams->source, "%d", SecureServ.datfileversion);
 	return NS_SUCCESS;
 }
 
-static int ss_cmd_status(CmdParams *cmdparams)
+static int ss_cmd_status(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "SecureServ Status:");
@@ -207,7 +207,7 @@ static int ss_cmd_status(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_newchan( CmdParams *cmdparams )
+int ss_event_newchan( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	SetChannelModValue(cmdparams->channel, (void *) 0 );
@@ -216,7 +216,7 @@ int ss_event_newchan( CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
-int ss_event_joinchan(CmdParams *cmdparams)
+int ss_event_joinchan(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* is channel exempt? */
@@ -234,14 +234,14 @@ int ss_event_joinchan(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_delchan(CmdParams *cmdparams) 
+int ss_event_delchan(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	ClearChannelModValue (cmdparams->channel);
 	return NS_SUCCESS;
 }
 
-int ss_event_away(CmdParams *cmdparams)
+int ss_event_away(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	HelpersAway(cmdparams);
@@ -249,14 +249,14 @@ int ss_event_away(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_topic(CmdParams *cmdparams)
+int ss_event_topic(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	ScanTopic(cmdparams->source, cmdparams->channel->topic);
 	return NS_SUCCESS;
 }
 
-static int ss_event_channelmessage (CmdParams *cmdparams) 
+static int ss_event_channelmessage (const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	/* first, if its the services channel, just ignore it */
@@ -276,7 +276,7 @@ static int ss_event_channelmessage (CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static int ss_event_botkill(CmdParams *cmdparams) 
+static int ss_event_botkill(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	/* Check the mon bot first */
@@ -309,7 +309,7 @@ ModuleEvent module_events[] = {
 	NS_EVENT_END()
 };
 
-static int ss_event_quit(CmdParams *cmdparams) 
+static int ss_event_quit(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	HelpersSignoff(cmdparams);
@@ -318,7 +318,7 @@ static int ss_event_quit(CmdParams *cmdparams)
 }
 
 /* scan nickname changes */
-static int ss_event_nick(CmdParams *cmdparams) 
+static int ss_event_nick(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	if (ModIsUserExcluded(cmdparams->source) == NS_FALSE) {
@@ -329,7 +329,7 @@ static int ss_event_nick(CmdParams *cmdparams)
 }
 
 /* scan someone connecting */
-static int ss_event_signon(CmdParams *cmdparams) 
+static int ss_event_signon(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	if (IsNetSplit(cmdparams->source)) {
@@ -351,7 +351,7 @@ static int ss_event_signon(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-static int ss_event_versionreply(CmdParams *cmdparams) 
+static int ss_event_versionreply(const CmdParams *cmdparams) 
 {
 	int positive = 0;
 	static int versioncount = 0;

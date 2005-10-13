@@ -131,7 +131,7 @@ char onjoinbot_modes[MODESIZE] = "+";
 static Bot *monbotptr;
 static Bot *ojbotptr;
 
-void OnJoinBotStatus (CmdParams *cmdparams)
+void OnJoinBotStatus (const CmdParams *cmdparams)
 {
 	if (lastchan[0]) 
 		irc_prefmsg (ss_bot, cmdparams->source, "Currently checking %s with %s", lastchan, lastnick);
@@ -409,14 +409,14 @@ static int CheckChan(Client *u, char *requestchan)
 }
 
 
-int ss_event_versionrequest (CmdParams *cmdparams)
+int ss_event_versionrequest (const CmdParams *cmdparams)
 {
 	nlog (LOG_NORMAL, "Received version request from %s to OnJoin Bot %s", cmdparams->source->name, cmdparams->bot->name);
 	irc_notice (cmdparams->bot, cmdparams->source, "\1VERSION %s\1", SecureServ.sampleversion);
 	return NS_SUCCESS;
 }
 
-int ss_event_message (CmdParams *cmdparams)
+int ss_event_message (const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* check if this user is exempt */
@@ -432,7 +432,7 @@ int ss_event_message (CmdParams *cmdparams)
 	return NS_SUCCESS;
 }				
 
-int ss_event_kickbot(CmdParams *cmdparams) 
+int ss_event_kickbot(const CmdParams *cmdparams) 
 {
 	lnode_t *mn;
 	
@@ -575,7 +575,7 @@ static int MonChan(Client *u, char *requestchan)
 	return 1;
 }
 
-int ss_cmd_monchan_add( CmdParams *cmdparams )
+int ss_cmd_monchan_add( const CmdParams *cmdparams )
 {
 	if (cmdparams->ac < 2) {
 		return NS_ERR_NEED_MORE_PARAMS;
@@ -586,7 +586,7 @@ int ss_cmd_monchan_add( CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
-int ss_cmd_monchan_del( CmdParams *cmdparams )
+int ss_cmd_monchan_del( const CmdParams *cmdparams )
 {
 	char *chan;
 	lnode_t *node;
@@ -609,7 +609,7 @@ int ss_cmd_monchan_del( CmdParams *cmdparams )
 	return NS_SUCCESS;
 }		
 
-int ss_cmd_monchan_list( CmdParams *cmdparams )
+int ss_cmd_monchan_list( const CmdParams *cmdparams )
 {
 	lnode_t *node;
 
@@ -731,7 +731,7 @@ void FiniOnJoinBots(void)
 	}
 }
 
-int ss_cmd_bots_list(CmdParams *cmdparams)
+int ss_cmd_bots_list(const CmdParams *cmdparams)
 {
 	lnode_t *node;
 	BotInfo *bots;
@@ -748,7 +748,7 @@ int ss_cmd_bots_list(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_cmd_bots_add(CmdParams *cmdparams)
+int ss_cmd_bots_add(const CmdParams *cmdparams)
 {
 	char *buf2;
 	BotInfo *bots;
@@ -774,7 +774,7 @@ int ss_cmd_bots_add(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_cmd_bots_del(CmdParams *cmdparams)
+int ss_cmd_bots_del(const CmdParams *cmdparams)
 {
 	lnode_t *node;
 	BotInfo *bots;
@@ -817,7 +817,7 @@ int ss_cmd_bots_del(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_cmd_bots(CmdParams *cmdparams)
+int ss_cmd_bots(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
@@ -830,14 +830,14 @@ int ss_cmd_bots(CmdParams *cmdparams)
 	return NS_ERR_SYNTAX_ERROR;
 }
 
-int ss_cmd_checkchan(CmdParams *cmdparams)
+int ss_cmd_checkchan(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	CheckChan(cmdparams->source, cmdparams->av[0]);
 	return NS_SUCCESS;
 }
 
-int ss_cmd_monchan(CmdParams *cmdparams)
+int ss_cmd_monchan(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
@@ -850,14 +850,14 @@ int ss_cmd_monchan(CmdParams *cmdparams)
 	return NS_ERR_SYNTAX_ERROR;
 }
 
-int ss_cmd_cycle(CmdParams *cmdparams)
+int ss_cmd_cycle(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	JoinNewChan( NULL );
 	return NS_SUCCESS;
 }
 
-int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
+int ss_cmd_set_monbot(const CmdParams *cmdparams, SET_REASON reason)
 {
 	/* this is ok, its just to shut up fussy compilers */
 	BotInfo *nickname = NULL;
@@ -917,7 +917,7 @@ int ss_cmd_set_monbot(CmdParams *cmdparams, SET_REASON reason)
 	return NS_SUCCESS;
 }
 
-int CheckMonBotKill(CmdParams *cmdparams)
+int CheckMonBotKill(const CmdParams *cmdparams)
 {
 	lnode_t *mcnode;
 	char *chan;
@@ -942,7 +942,7 @@ int CheckMonBotKill(CmdParams *cmdparams)
 	return 1;
 }
 
-int ss_event_emptychan(CmdParams *cmdparams)
+int ss_event_emptychan(const CmdParams *cmdparams)
 {
 	if (monbotptr && cmdparams->bot == monbotptr)
 	{

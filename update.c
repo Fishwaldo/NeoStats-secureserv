@@ -138,6 +138,7 @@ static int DownLoadDat( void )
 			irc_chanalert( ss_bot, "Definition download failed. Check log files" );
 		}	
 	} 
+	return 0;
 }
 
 /** @brief datdownload
@@ -224,7 +225,7 @@ int AutoUpdate( void *userptr )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-int ss_cmd_update( CmdParams *cmdparams )
+int ss_cmd_update( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	os_memset( ss_buf, 0, SS_BUF_SIZE );
@@ -251,7 +252,7 @@ int ss_cmd_update( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int ss_cmd_set_autoupdate_cb( CmdParams *cmdparams, SET_REASON reason ) 
+int ss_cmd_set_autoupdate_cb( const CmdParams *cmdparams, SET_REASON reason ) 
 {
 	switch( reason )
 	{
@@ -294,7 +295,7 @@ int ss_cmd_set_autoupdate_cb( CmdParams *cmdparams, SET_REASON reason )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int ss_cmd_set_autoupdatetime_cb( CmdParams *cmdparams, SET_REASON reason ) 
+int ss_cmd_set_autoupdatetime_cb( const CmdParams *cmdparams, SET_REASON reason ) 
 {
 	if( reason == SET_CHANGE )
 	{

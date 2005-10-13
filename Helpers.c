@@ -36,11 +36,11 @@ typedef struct Helper
 static hash_t *helperhash;
 
 /* Command prototypes */
-static int ss_cmd_login( CmdParams *cmdparams );
-static int ss_cmd_logout( CmdParams *cmdparams );
-static int ss_cmd_assist( CmdParams *cmdparams );
-static int ss_cmd_helpers( CmdParams *cmdparams );
-static int ss_cmd_chpass( CmdParams *cmdparams );
+static int ss_cmd_login( const CmdParams *cmdparams );
+static int ss_cmd_logout( const CmdParams *cmdparams );
+static int ss_cmd_assist( const CmdParams *cmdparams );
+static int ss_cmd_helpers( const CmdParams *cmdparams );
+static int ss_cmd_chpass( const CmdParams *cmdparams );
 
 /** helper command list */
 static bot_cmd helper_commands[]=
@@ -71,7 +71,7 @@ static bot_setting helper_settings[]=
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-void HelpersStatus( CmdParams *cmdparams )
+void HelpersStatus( const CmdParams *cmdparams )
 {
 	if( SecureServ.helpers == 1 )
 		irc_prefmsg( ss_bot, cmdparams->source, "Helpers logged in: %d", SecureServ.helpcount );
@@ -164,7 +164,7 @@ void FiniHelpers( void )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int HelperLogout( CmdParams *cmdparams )
+static int HelperLogout( const CmdParams *cmdparams )
 {
 	UserDetail *ud;
 	Helper *helper;
@@ -194,7 +194,7 @@ static int HelperLogout( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_chpass( CmdParams *cmdparams ) 
+static int ss_cmd_chpass( const CmdParams *cmdparams ) 
 {
 	UserDetail *ud;
 	Helper *helper;
@@ -222,7 +222,7 @@ static int ss_cmd_chpass( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_login( CmdParams *cmdparams ) 
+static int ss_cmd_login( const CmdParams *cmdparams ) 
 {
 	Helper *helper;
 	UserDetail *ud;
@@ -274,7 +274,7 @@ static int ss_cmd_login( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_logout( CmdParams *cmdparams )
+static int ss_cmd_logout( const CmdParams *cmdparams )
 {
 	if( HelperLogout( cmdparams ) == NS_SUCCESS )
 	{
@@ -297,7 +297,7 @@ static int ss_cmd_logout( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_assist( CmdParams *cmdparams ) 
+static int ss_cmd_assist( const CmdParams *cmdparams ) 
 {
 	UserDetail *ud, *td;
 	Client *tu;
@@ -357,7 +357,7 @@ static int ss_cmd_assist( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_helpers_add( CmdParams *cmdparams ) 
+static int ss_cmd_helpers_add( const CmdParams *cmdparams ) 
 {
 	Helper *helper;
 	hnode_t *node;
@@ -392,7 +392,7 @@ static int ss_cmd_helpers_add( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_helpers_del( CmdParams *cmdparams ) 
+static int ss_cmd_helpers_del( const CmdParams *cmdparams ) 
 {
 	hnode_t *node;
 
@@ -425,7 +425,7 @@ static int ss_cmd_helpers_del( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_helpers_list( CmdParams *cmdparams ) 
+static int ss_cmd_helpers_list( const CmdParams *cmdparams ) 
 {
 	hscan_t hlps;
 	hnode_t *node;
@@ -453,7 +453,7 @@ static int ss_cmd_helpers_list( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_helpers( CmdParams *cmdparams )
+static int ss_cmd_helpers( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	if( !ircstrcasecmp( cmdparams->av[0], "ADD" ) )
@@ -475,7 +475,7 @@ static int ss_cmd_helpers( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int HelpersSignoff( CmdParams *cmdparams ) 
+int HelpersSignoff( const CmdParams *cmdparams ) 
 {
 	if( SecureServ.helpers != 1 )
 		return NS_SUCCESS;
@@ -496,7 +496,7 @@ int HelpersSignoff( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int HelpersAway( CmdParams *cmdparams ) 
+int HelpersAway( const CmdParams *cmdparams ) 
 {
 	SET_SEGV_LOCATION();
 	if( SecureServ.helpers != 1 )
@@ -522,7 +522,7 @@ int HelpersAway( CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int ss_cmd_set_helpers_cb( CmdParams *cmdparams, SET_REASON reason ) 
+int ss_cmd_set_helpers_cb( const CmdParams *cmdparams, SET_REASON reason ) 
 {
 	if( reason == SET_CHANGE )
 	{

@@ -100,7 +100,7 @@ void InitScanner(void)
 	load_dat();
 }
 
-void ScanStatus (CmdParams *cmdparams)
+void ScanStatus (const CmdParams *cmdparams)
 {
 	int i;
 	
@@ -253,7 +253,7 @@ void load_dat(void)
 	}	
 }
 
-int ss_cmd_reload(CmdParams *cmdparams)
+int ss_cmd_reload(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	irc_prefmsg (ss_bot, cmdparams->source, "Reloading virus definition files");
@@ -262,7 +262,7 @@ int ss_cmd_reload(CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_cmd_list(CmdParams *cmdparams) 
+int ss_cmd_list(const CmdParams *cmdparams) 
 {
 	lnode_t *node;
 	virientry *ve;

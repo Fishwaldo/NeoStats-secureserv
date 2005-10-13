@@ -131,34 +131,34 @@ struct SecureServ {
 /* SecureServ.c */
 
 /* update.c */
-int ss_cmd_update(CmdParams *cmdparams);
-int ss_cmd_set_updateinfo(CmdParams *cmdparams, SET_REASON reason);
-int ss_cmd_set_autoupdate_cb (CmdParams *cmdparams, SET_REASON reason);
-int ss_cmd_set_autoupdatetime_cb (CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_update(const CmdParams *cmdparams);
+int ss_cmd_set_updateinfo(const CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_set_autoupdate_cb (const CmdParams *cmdparams, SET_REASON reason);
+int ss_cmd_set_autoupdatetime_cb (const CmdParams *cmdparams, SET_REASON reason);
 int AutoUpdate(void *);
 
 /* OnJoin.c */
 int JoinNewChan(void *);
-void OnJoinBotStatus (CmdParams *cmdparams);
-int ss_event_message (CmdParams *cmdparams);
-int ss_event_versionrequest (CmdParams *cmdparams);
+void OnJoinBotStatus (const CmdParams *cmdparams);
+int ss_event_message (const CmdParams *cmdparams);
+int ss_event_versionrequest (const CmdParams *cmdparams);
 int LoadMonChans();
 int ViriCount(void);
 int InitOnJoinBots(void);
 void FiniOnJoinBots(void);
-int ss_cmd_bots(CmdParams *cmdparams);
-int ss_cmd_checkchan(CmdParams *cmdparams);
-int ss_cmd_monchan(CmdParams *cmdparams);
-int ss_cmd_cycle(CmdParams *cmdparams);
-int ss_cmd_set_monbot (CmdParams *cmdparams, SET_REASON reason);
-int ss_event_kickbot(CmdParams *cmdparams);
-int ss_event_emptychan(CmdParams *cmdparams);
+int ss_cmd_bots(const CmdParams *cmdparams);
+int ss_cmd_checkchan(const CmdParams *cmdparams);
+int ss_cmd_monchan(const CmdParams *cmdparams);
+int ss_cmd_cycle(const CmdParams *cmdparams);
+int ss_cmd_set_monbot (const CmdParams *cmdparams, SET_REASON reason);
+int ss_event_kickbot(const CmdParams *cmdparams);
+int ss_event_emptychan(const CmdParams *cmdparams);
 int MonJoin(Channel *c);
-int CheckMonBotKill(CmdParams *cmdparams);
+int CheckMonBotKill(const CmdParams *cmdparams);
 int MonBotCycle(void *);
 
 /* scan.c */
-void ScanStatus (CmdParams *cmdparams);
+void ScanStatus (const CmdParams *cmdparams);
 int ScanFizzer(Client *u);
 int ScanChannelName(Client* u, Channel *c);
 int ScanNick(Client *u);
@@ -171,18 +171,18 @@ int ScanAwayMsg(Client* u, char* buf);
 int ScanQuitMsg(Client* u, char* buf); 
 int ScanTopic(Client* u, char* buf);
 
-int ss_cmd_list(CmdParams *cmdparams);
-int ss_cmd_reload(CmdParams *cmdparams);
+int ss_cmd_list(const CmdParams *cmdparams);
+int ss_cmd_reload(const CmdParams *cmdparams);
 void InitScanner(void);
 void load_dat(void);
 
 /* Helpers.c */
 int InitHelpers(void);
 void FiniHelpers(void);
-int HelpersSignoff(CmdParams *cmdparams);
-int HelpersAway(CmdParams *cmdparams);
-void HelpersStatus (CmdParams *cmdparams);
-int ss_cmd_set_helpers_cb(CmdParams *cmdparams, SET_REASON reason);
+int HelpersSignoff(const CmdParams *cmdparams);
+int HelpersAway(const CmdParams *cmdparams);
+void HelpersStatus (const CmdParams *cmdparams);
+int ss_cmd_set_helpers_cb(const CmdParams *cmdparams, SET_REASON reason);
 
 /* SecureServ_help.c */
 extern const char *ts_help_checkchan[];

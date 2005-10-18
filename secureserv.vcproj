@@ -162,31 +162,13 @@
 			RelativePath=".\ChangeLog">
 		</File>
 		<File
-			RelativePath=".\configure.in">
-		</File>
-		<File
-			RelativePath=".\html.css">
-		</File>
-		<File
-			RelativePath=".\Makefile.in">
-		</File>
-		<File
-			RelativePath=".\modconfig.h.in">
+			RelativePath=".\License">
 		</File>
 		<File
 			RelativePath=".\README.SecureServ">
 		</File>
 		<File
-			RelativePath=".\README.SecureServ.html">
-		</File>
-		<File
 			RelativePath=".\Relnotes">
-		</File>
-		<File
-			RelativePath=".\SecureServ.xml">
-		</File>
-		<File
-			RelativePath=".\viri.dat">
 		</File>
 	</Files>
 	<Globals>

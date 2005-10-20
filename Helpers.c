@@ -56,7 +56,7 @@ static bot_cmd helper_commands[]=
 /** helper set list */
 static bot_setting helper_settings[]=
 {
-	{"NOHELPMSG",	&SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_nohelpmsg, NULL,( void * )"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
+	{"NOHELPMSG",	SecureServ.nohelp,		SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_nohelpmsg, NULL,( void * )"No Helpers are online at the moment, so you have been Akilled from this network. Please visit http://www.nohack.org for Trojan/Virus Info" },
 	{"AUTOSIGNOUT",	&SecureServ.signoutaway,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autosignout, NULL,( void * )1 },
 	{"JOINHELPCHAN",&SecureServ.joinhelpchan,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_joinhelpchan, NULL,( void * )1 },
 	NS_SETTING_END()

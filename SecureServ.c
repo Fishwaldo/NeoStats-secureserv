@@ -92,7 +92,7 @@ static bot_setting ss_settings[]=
 {
 	{"HELPERS",		&SecureServ.helpers,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpers, ss_cmd_set_helpers_cb, (void *)1 },
 	{"VERSION",		&SecureServ.version,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_version, NULL, (void *)1 },
-	{"HELPCHAN",	&SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpchan, NULL, (void *)"#nohack" },
+	{"HELPCHAN",	SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpchan, NULL, (void *)"#nohack" },
 #ifdef HAVE_CRYPT_H
 	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_report, NULL, (void *)1 },
 #endif /* HAVE_CRYPT_H */
@@ -101,7 +101,7 @@ static bot_setting ss_settings[]=
 	{"MULTICHECK",	&SecureServ.breakorcont,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_multicheck, NULL, (void *)1 },
 	{"AKILL",		&SecureServ.doakill,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_akill, NULL, (void *)1 },
 	{"AKILLTIME",	&SecureServ.akilltime,	SET_TYPE_INT,		0,	20736000,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_akilltime, NULL, (void *)TS_ONE_HOUR },
-	{"AKILLMSG",	&SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
+	{"AKILLMSG",	SecureServ.akillinfo,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_akillmsg, NULL, (void *)"You have been Akilled from this network. Please get a virus scanner and check your PC" },
 	{"SVSJOIN",		&SecureServ.dosvsjoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_dojoin, NULL, (void *)1 },
 #ifdef TREATCHANMSGASPM
 	{"TREATCHANMSGASPM", &SecureServ.treatchanmsgaspm,SET_TYPE_BOOLEAN,0,0,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_treatchanmsgaspm, NULL, (void *)0 },
@@ -109,7 +109,7 @@ static bot_setting ss_settings[]=
 	{"DOONJOIN",	&SecureServ.DoOnJoin,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_doonjoin, ss_cmd_set_doonjoin_cb, (void *)1 },
 	{"VERBOSE",		&SecureServ.verbose,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_verbose, NULL, (void *)1 },
 	{"BOTECHO",		&SecureServ.BotEcho,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_botecho, NULL, (void *)0 },
-	{"BOTQUITMSG",	&SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
+	{"BOTQUITMSG",	SecureServ.botquitmsg,	SET_TYPE_MSG,		0,	BUFSIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_botquitmsg, NULL, (void *)"Client quit" },
 	{"MONCHANCYCLE",&SecureServ.monchancycle,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycle, ss_cmd_set_monchancycle_cb, (void *)1 },
 	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_INT, 1,	100000,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycletime, ss_cmd_set_monchancycletime_cb, (void *)1800 },
 	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	100000,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_cycletime, ss_cmd_set_cycletime_cb, (void *)TS_ONE_MINUTE },
@@ -118,7 +118,7 @@ static bot_setting ss_settings[]=
 	{"UPDATEPASS",	SecureServ.updatepw,	SET_TYPE_STRING,	0,	MAXNICK,	NS_ULEVEL_ROOT,NULL,	ts_help_set_updatepass, NULL, (void *)0 },
 	{"AUTOUPDATE",	&SecureServ.autoupgrade,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdate, ss_cmd_set_autoupdate_cb, (void *)0 },
 	{"AUTOUPDATETIME",	&SecureServ.autoupgradetime,SET_TYPE_INT,	TS_ONE_HOUR,	172800,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdatetime, ss_cmd_set_autoupdatetime_cb, (void *)7200 },
-	{"ONJOINBOTMODES",&onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
+	{"ONJOINBOTMODES",onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
 	{"EXCLUSIONS",	&SecureServ.exclusions,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_exclusions, ss_set_exclusions_cb, (void *)0 },
 	NS_SETTING_END()
 };

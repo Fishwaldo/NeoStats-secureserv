@@ -32,12 +32,14 @@
 #define NUM_DAT_FILES	2
 
 #define MAXVIRNAME		64
+#define MAXCTCPTYPE		64
 
 typedef struct virientry {
 	char name[MAXVIRNAME];
 	int dettype;
 	int var1;
 	int var2;
+	char ctcptype[MAXCTCPTYPE];
 	char recvmsg[BUFSIZE];
 	pcre *pattern;
 	pcre_extra *patternextra;

@@ -177,14 +177,14 @@ static void datver( void *data, int status, char *ver, int versize )
 				updatestate = UPDATE_STATE_VERSION;
 				DownLoadDat();
 				if( u ) irc_prefmsg( ss_bot, u, "A new Dat file version %d is being downloaded. Please Monitor the Services Channel", myversion );
-			 } else
+			 } else {
 				irc_chanalert( ss_bot, "A new Dat file version %d is available. You should /msg %s update", myversion, ss_bot->name );
 				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
-			 } else {
+			 }
+		} else {
 			irc_chanalert( ss_bot, "SecureServ is operating with the most recent Dat file. No update required." );
 			if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required." );
-			}
-		return;
+		}
 	} else {
 		nlog( LOG_WARNING, "Virus definition check failed. %s", ver );
 		irc_chanalert( ss_bot, "Virus definition check failed: %s", ver );

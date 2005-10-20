@@ -33,7 +33,7 @@ const char *ts_help_login[] = {
 	"Channel",
 	"",
 	"SecureServ will monitor your availability, and if you set",
-	"away, quit, or part the Help Channel, it will"
+	"away, quit, or part the Help Channel, it will",
 	"automatically log you out",
 	"",
 	"The username and password will be provided by the",
@@ -46,7 +46,7 @@ const char *ts_help_logout[] = {
 	"Syntax: \2LOGOUT\2",
 	"",
 	"This command logs you out of SecureServ's Antivirus Helper",
-	"System. You should issue this command if you are logged in"
+	"System. You should issue this command if you are logged in",
 	"and are unable to provide any Antivirus help at this time.",
 	NULL
 };
@@ -83,7 +83,7 @@ const char *ts_help_update[] = {
 	"Syntax: \2UPDATE\2",
 	"",
 	"This option will force SecureServ to check the definitions",
-	"file version and automatically update them to the latest"
+	"file version and automatically update them to the latest",
 	"version if required",
 	"",
 	"A valid username and password have to be set via the SET",

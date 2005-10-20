@@ -418,12 +418,12 @@ int ScanAwayMsg(Client* u, char* buf)
 
 int ScanQuitMsg(Client* u, char* buf) 
 {
-	if (buf) {
+	if( buf )
+	{
 		strip_mirc_codes(buf);
 		return Scan(DET_QUITMSG, u, buf);
-	} else {
-		return NS_SUCCESS;
 	}
+	return NS_SUCCESS;
 }
 
 int ScanTopic(Client* u, char* buf) 

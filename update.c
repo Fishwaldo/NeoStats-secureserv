@@ -120,7 +120,7 @@ static void datdownload( void *unuseddata, int status, char *data, int datasize 
  *  @return none
  */
 
-static int DownLoadDat( void )
+static void DownLoadDat( void )
 {
 	SET_SEGV_LOCATION();
 	/* dont keep trying to download !*/
@@ -135,7 +135,6 @@ static int DownLoadDat( void )
 			irc_chanalert( ss_bot, "Definition download failed. Check log files" );
 		}	
 	} 
-	return 0;
 }
 
 /** @brief datdownload

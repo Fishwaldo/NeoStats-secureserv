@@ -130,7 +130,7 @@ char onjoinbot_modes[MODESIZE] = "+";
 static Bot *monbotptr;
 static Bot *ojbotptr;
 
-static int SaveMonChans( void ) 
+static void SaveMonChans( void ) 
 {
 	char *chan;
 	lnode_t *node;
@@ -142,7 +142,6 @@ static int SaveMonChans( void )
 		DBAStoreStr ("monchans", chan, chan, MAXCHANLEN);
 		node = list_next(monchans, node);
 	}
-	return 1;
 }
 
 void OnJoinBotStatus (const CmdParams *cmdparams)
@@ -536,7 +535,7 @@ int MonJoin(const Channel *c)
 	return 1;
 }	
 
-static int MonChan(Client *u, char *requestchan) 
+static void MonChan(Client *u, char *requestchan) 
 {
 	Channel *c;
 	lnode_t *mn;
@@ -547,35 +546,35 @@ static int MonChan(Client *u, char *requestchan)
 	if (list_isfull(monchans)) {
 		if (u) irc_prefmsg (ss_bot, u, "Can not monitor any additional channels");
 		nlog (LOG_WARNING, "MonChan List is full. Not Monitoring %s", requestchan);
-		return -1;
+		return;
 	}
 
 	mn = list_first(monchans);
 	while (mn != NULL) {
 		if (!ircstrcasecmp(requestchan, lnode_get(mn))) {
 			if (u) irc_prefmsg (ss_bot, u, "Already Monitoring Channel %s", requestchan);
-			return 1;
+			return;
 		}
 		mn = list_next(monchans, mn);
 	}
 	c = FindChannel(requestchan);
 	if (!c) {
 		if (u) irc_prefmsg (ss_bot, u, "Can not find Channel %s, It has to have Some Users!", requestchan);
-		return -1;
+		return;
 	}			
 	/* dont allow excepted channels */
 	if (ModIsChannelExcluded(c) == NS_TRUE || ( SecureServ.exclusions == NS_TRUE && IsExcluded(c))) {
 		if (u) irc_prefmsg (ss_bot, u, "Can not monitor a channel listed as a Exclude Channel");
-		return -1;
+		return;
 	}
 	if (SecureServ.monbot[0] == 0) {
 		if (u) irc_prefmsg (ss_bot, u, "Warning, No Monitor Bot set. /msg %s help set", ss_bot->name);
-		return -1;
+		return;
 	}
 	if (monbotptr == NULL) {
 		/* the monbot isn't online. Initilze it */
 		if( InitMonBot() != NS_TRUE) {
-			return 1;
+			return;
 		}
 	}
 	/* append it to the list */
@@ -586,8 +585,7 @@ static int MonChan(Client *u, char *requestchan)
 	irc_join (monbotptr, c->name, 0);
 	if (SecureServ.verbose) irc_chanalert (ss_bot, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->name : ss_bot->name);
 	if (u) irc_prefmsg (ss_bot, u, "Monitoring %s with %s", c->name, SecureServ.monbot);
-	
-	return 1;
+	return;
 }
 
 int ss_cmd_monchan_add( const CmdParams *cmdparams )

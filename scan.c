@@ -26,7 +26,7 @@
 #include <crypt.h>
 #endif
 
-#define MAX_VIRI -1
+#define MAX_VIRI LISTCOUNT_T_MAX
 
 typedef struct virustype {
 	int trigcount;
@@ -432,9 +432,9 @@ int ScanTopic(Client* u, char* buf)
 	return Scan(DET_TOPIC, u, buf);
 }
 
+#ifdef HAVE_CRYPT_H
 static void report_positive (Client *u, virientry *ve)
 {
-#ifdef HAVE_CRYPT_H
 	char buf[1400];
 	char buf2[3];
 
@@ -444,8 +444,8 @@ static void report_positive (Client *u, virientry *ve)
 		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostip, MODULE_VERSION, SecureServ.datfileversion);
 		sendtoMQ(UPDATE_SSREPORT, buf, strlen(buf));
 	}	
-#endif
 }
+#endif
 
 void gotpositive(Client *u, virientry *ve, int type) 
 {
@@ -518,6 +518,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 					break;
 				}
 			}
+			/* fallthrough */
 		case ACT_AKILL:
 			if (SecureServ.doakill > 0) {
 				irc_prefmsg (ss_bot, u, SecureServ.akillinfo);
@@ -530,6 +531,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 				nlog (LOG_NOTICE, "Akilling %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 				break;
 			}
+			/* fallthrough */
 		case ACT_KILL:
 			irc_prefmsg (ss_bot, u, SecureServ.akillinfo);
 			irc_chanalert (ss_bot, "Killing %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
@@ -563,5 +565,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 		default:
 			break;
 	}
+#ifdef HAVE_CRYPT_H
 	report_positive (u, ve);
+#endif
 }

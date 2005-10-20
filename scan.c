@@ -560,6 +560,8 @@ void gotpositive(Client *u, virientry *ve, int type)
 			if (SecureServ.verbose) irc_chanalert (ss_bot, "Warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
 			nlog (LOG_NOTICE, "Warned %s about %s Bot/Trojan/Virus", u->name, ve->name);
 			break;
+		default:
+			break;
 	}
 	report_positive (u, ve);
 }

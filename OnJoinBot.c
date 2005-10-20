@@ -818,13 +818,12 @@ int ss_cmd_bots_del(const CmdParams *cmdparams)
 int ss_cmd_bots(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
-		return ss_cmd_bots_list(cmdparams);
-	} else if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "ADD"))
 		return ss_cmd_bots_add(cmdparams);
-	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "DEL"))
 		return ss_cmd_bots_del(cmdparams);
-	}
+	if (!ircstrcasecmp(cmdparams->av[0], "LIST"))
+		return ss_cmd_bots_list(cmdparams);
 	return NS_ERR_SYNTAX_ERROR;
 }
 
@@ -838,13 +837,12 @@ int ss_cmd_checkchan(const CmdParams *cmdparams)
 int ss_cmd_monchan(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
-	if (!ircstrcasecmp(cmdparams->av[0], "ADD")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "ADD"))
 		return ss_cmd_monchan_add( cmdparams );
-	} else if (!ircstrcasecmp(cmdparams->av[0], "DEL")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "DEL"))
 		return ss_cmd_monchan_del( cmdparams );
-	} else if (!ircstrcasecmp(cmdparams->av[0], "LIST")) {
+	if (!ircstrcasecmp(cmdparams->av[0], "LIST"))
 		return ss_cmd_monchan_list( cmdparams );
-	}
 	return NS_ERR_SYNTAX_ERROR;
 }
 

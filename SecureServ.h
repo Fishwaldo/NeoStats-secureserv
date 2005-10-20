@@ -32,14 +32,12 @@
 #define NUM_DAT_FILES	2
 
 #define MAXVIRNAME		64
-#define MAXCTCPTYPE		64
 
 typedef struct virientry {
 	char name[MAXVIRNAME];
 	int dettype;
 	int var1;
 	int var2;
-	char ctcptype[MAXCTCPTYPE];
 	char recvmsg[BUFSIZE];
 	pcre *pattern;
 	pcre_extra *patternextra;
@@ -111,20 +109,19 @@ typedef struct SecureServcfg {
 	int BotEcho;
 	int helpers;
 	int defcount;
-	char updateurl[SS_BUF_SIZE];
 	char updateuname[MAXNICK];
 	char updatepw[MAXNICK];
 	char monbot[MAXNICK];
 	char botquitmsg[BUFSIZE];
 	int doprivchan;
-	struct sockaddr_in sendtohost;
-	int sendtosock;
 	int signoutaway;
 	int report;
 	int joinhelpchan;
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
+#ifdef TREATCHANMSGASPM
 	int treatchanmsgaspm;
+#endif /* TREATCHANMSGASPM */ 
 	int exclusions;
 } SecureServcfg;
 

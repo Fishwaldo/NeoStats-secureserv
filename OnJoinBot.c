@@ -124,12 +124,26 @@ BotInfo defaultbots[]=
 };
 
 static list_t *monchans;
-static int SaveMonChans();
 /* this is the list of random nicknames */
 static list_t *nicks;
 char onjoinbot_modes[MODESIZE] = "+";
 static Bot *monbotptr;
 static Bot *ojbotptr;
+
+static int SaveMonChans( void ) 
+{
+	char *chan;
+	lnode_t *node;
+
+	SET_SEGV_LOCATION();
+	node = list_first(monchans);
+	while (node != NULL) {
+		chan = (char *)lnode_get(node);
+		DBAStoreStr ("monchans", chan, chan, MAXCHANLEN);
+		node = list_next(monchans, node);
+	}
+	return 1;
+}
 
 void OnJoinBotStatus (const CmdParams *cmdparams)
 {
@@ -188,7 +202,8 @@ static BotInfo *GetNewBot(int resetflag)
 {
 	BotInfo *nickname = NULL;
 	lnode_t *rnn;
-	int randno, curno, i, stublen;
+	int i;
+	unsigned int randno, curno, stublen;
 
 	if(list_count(nicks) == 0) {
 		/* No bots available */
@@ -493,7 +508,7 @@ int InitMonBot()
 	return NS_TRUE;
 }
 
-int MonJoin(Channel *c) 
+int MonJoin(const Channel *c) 
 {
 	lnode_t *mn;
 
@@ -514,7 +529,7 @@ int MonJoin(Channel *c)
 				/* join the monitor bot to the new channel */
 				irc_join (monbotptr, c->name, 0);
 			}	
-		return 1;
+			return 1;
 		}
 		mn = list_next(monchans, mn);
 	}
@@ -635,21 +650,6 @@ int LoadMonChans()
 	SET_SEGV_LOCATION();
 	monchans = list_create(20);
 	DBAFetchRows ("monchans", LoadMonChan);
-	return 1;
-}
-
-int SaveMonChans() 
-{
-	char *chan;
-	lnode_t *node;
-
-	SET_SEGV_LOCATION();
-	node = list_first(monchans);
-	while (node != NULL) {
-		chan = (char *)lnode_get(node);
-		DBAStoreStr ("monchans", chan, chan, MAXCHANLEN);
-		node = list_next(monchans, node);
-	}
 	return 1;
 }
 

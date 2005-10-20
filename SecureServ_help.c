@@ -264,11 +264,13 @@ const char *ts_help_set_joinhelpchan[] = {
 	"Whether SecureServ joins the help channel when there is at least one helper logged in",
 	NULL
 };
+#ifdef HAVE_CRYPT_H
 const char *ts_help_set_report[] = {
 	"\2REPORT <ON|OFF>\2",
 	"Enable Reporting to Secure.irc-chat.net of infected users.",
 	NULL
 };
+#endif /* HAVE_CRYPT_H */
 const char *ts_help_set_doprivchan[] = {
 	"\2DOPRIVCHAN <ON|OFF>\2",
 	"Whether onjoin bots scan private channels",
@@ -320,6 +322,7 @@ const char *ts_help_set_monchancycle[] = {
 	"Should the monitor bot cycle the channels occasionally",
 	NULL
 };
+#ifdef TREATCHANMSGASPM
 const char *ts_help_set_treatchanmsgaspm[] = {
 	"\2TREATCHANMSGASPM <ON|OFF>\2",
 	"Make SecureServ check all channel messages against the virus signatures listed only for PM",
@@ -327,6 +330,7 @@ const char *ts_help_set_treatchanmsgaspm[] = {
 	"circumstances as the virus database has a seperate list of signatures for channels",
 	NULL
 };
+#endif /* TREATCHANMSGASPM */ 
 const char *ts_help_set_monchancycletime[] = {
 	"\2MONCHANCYCLETIME <seconds>\2 ",
 	"How often the monitor bot cycles a single channel",

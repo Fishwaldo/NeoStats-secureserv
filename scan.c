@@ -373,7 +373,7 @@ int ScanIdent(Client *u)
 int ScanRealname(Client *u)
 {
 	char *buf;
-	int len;
+	unsigned int len;
 	int i = 0;
 		
 	len = strlen( u->info );
@@ -470,6 +470,8 @@ void gotpositive(Client *u, virientry *ve, int type)
 			break;
 		case ACT_NOTHING:
 			irc_prefmsg (ss_bot, u, "%s has detected that your client is a vulnerable script or client called %s", ss_bot->name, ve->name);
+			break;
+		default:
 			break;
 	} 		
 	irc_prefmsg (ss_bot, u, ve->sendmsg);

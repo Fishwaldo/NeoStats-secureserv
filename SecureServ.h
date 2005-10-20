@@ -155,7 +155,7 @@ int ss_cmd_cycle(const CmdParams *cmdparams);
 int ss_cmd_set_monbot (const CmdParams *cmdparams, SET_REASON reason);
 int ss_event_kickbot(const CmdParams *cmdparams);
 int ss_event_emptychan(const CmdParams *cmdparams);
-int MonJoin(Channel *c);
+int MonJoin(const Channel *c);
 int CheckMonBotKill(const CmdParams *cmdparams);
 int MonBotCycle(void *);
 
@@ -210,7 +210,9 @@ extern const char *ts_help_set_nohelpmsg[];
 extern const char *ts_help_set_helpchan[];
 extern const char *ts_help_set_autosignout[];
 extern const char *ts_help_set_joinhelpchan[];
+#ifdef HAVE_CRYPT_H
 extern const char *ts_help_set_report[];
+#endif /* HAVE_CRYPT_H */
 extern const char *ts_help_set_doprivchan[];
 extern const char *ts_help_set_checkfizzer[];
 extern const char *ts_help_set_multicheck[];

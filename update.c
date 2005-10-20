@@ -51,17 +51,14 @@ const char *downloaderror( int errcode )
 	{
 		case -1:
 			return "Invalid username or password.";
-			break;
 		case -2:
 			return "Account disabled. Please contact admin@lists.neostats.net";
-			break;
 		case -3:
 			return "Your copy of SecureServ is too old. Please upgrade";
-			break;
 		default:
-			return "Unknown reason.";
 			break;
 	}
+	return "Unknown reason.";
 }
 
 /** @brief datdownload
@@ -182,8 +179,8 @@ static void datver( void *data, int status, char *ver, int versize )
 				/* no need to send a prefmsg to a nick here as in most cases, this is probabably triggered by a timer */
 			 }
 		} else {
-			irc_chanalert( ss_bot, "SecureServ is operating with the most recent Dat file. No update required." );
-			if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required." );
+				irc_chanalert( ss_bot, "SecureServ is operating with the most recent Dat file. No update required." );
+				if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required." );
 		}
 	} else {
 		nlog( LOG_WARNING, "Virus definition check failed. %s", ver );

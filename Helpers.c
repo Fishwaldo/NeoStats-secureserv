@@ -45,11 +45,11 @@ static int ss_cmd_chpass( const CmdParams *cmdparams );
 /** helper command list */
 static bot_cmd helper_commands[]=
 {
-	{"LOGIN",	ss_cmd_login,	2,	0,				ts_help_login},
- 	{"LOGOUT",	ss_cmd_logout,	0,	30,				ts_help_logout},
-	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass},
-	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist},
-	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_ADMIN,ts_help_helpers},
+	{"LOGIN",	ss_cmd_login,	2,	0,				ts_help_login, 0, NULL, NULL},
+ 	{"LOGOUT",	ss_cmd_logout,	0,	30,				ts_help_logout, 0, NULL, NULL},
+	{"CHPASS",	ss_cmd_chpass,	1,	30,				ts_help_chpass, 0, NULL, NULL},
+	{"ASSIST",	ss_cmd_assist,	2,	30,				ts_help_assist, 0, NULL, NULL},
+	{"HELPERS",	ss_cmd_helpers,	1,	NS_ULEVEL_ADMIN,ts_help_helpers, 0, NULL, NULL},
 	NS_CMD_END()
 };
 

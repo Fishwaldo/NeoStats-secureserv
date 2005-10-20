@@ -42,6 +42,7 @@ void (*old_free) (void *);
 #endif
 
 Bot *ss_bot;
+SecureServcfg SecureServ;
 
 /** about info */
 const char *ss_about[] = {
@@ -70,19 +71,20 @@ ModuleInfo module_info = {
 	__TIME__,
 	MODULE_FLAG_CTCP_VERSION | MODULE_FLAG_LOCAL_EXCLUDES,
 	0,
+	0,
 };
 
 static bot_cmd ss_commands[]=
 {
-	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list},
-	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan},
-	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle},
-	{"UPDATE",	ss_cmd_update,		0,	NS_ULEVEL_ADMIN,ts_help_update},
-	{"STATUS",	ss_cmd_status,		0,	NS_ULEVEL_OPER, ts_help_status},
-	{"BOTS",	ss_cmd_bots,		1,	100,			ts_help_bots},
-	{"MONCHAN",	ss_cmd_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan},
-	{"RELOAD",	ss_cmd_reload,		0,	NS_ULEVEL_OPER, ts_help_reload},
-	{"VERSION",	ss_cmd_viriversion,	0,	0,				NULL},
+	{"LIST",	ss_cmd_list,		0,	NS_ULEVEL_OPER, ts_help_list, 0, NULL, NULL},
+	{"CHECKCHAN",ss_cmd_checkchan,	1,	NS_ULEVEL_OPER, ts_help_checkchan, 0, NULL, NULL},
+	{"CYCLE",	ss_cmd_cycle,		0,	NS_ULEVEL_OPER, ts_help_cycle, 0, NULL, NULL},
+	{"UPDATE",	ss_cmd_update,		0,	NS_ULEVEL_ADMIN,ts_help_update, 0, NULL, NULL},
+	{"STATUS",	ss_cmd_status,		0,	NS_ULEVEL_OPER, ts_help_status, 0, NULL, NULL},
+	{"BOTS",	ss_cmd_bots,		1,	100,			ts_help_bots, 0, NULL, NULL},
+	{"MONCHAN",	ss_cmd_monchan,		1,	NS_ULEVEL_OPER, ts_help_monchan, 0, NULL, NULL},
+	{"RELOAD",	ss_cmd_reload,		0,	NS_ULEVEL_OPER, ts_help_reload, 0, NULL, NULL},
+	{"VERSION",	ss_cmd_viriversion,	0,	0,				NULL, 0, NULL, NULL},
 	NS_CMD_END()
 };
 
@@ -288,24 +290,24 @@ static int ss_event_botkill(const CmdParams *cmdparams)
 }
 
 ModuleEvent module_events[] = {
-	{ EVENT_SIGNON, 		ss_event_signon},
+	{ EVENT_SIGNON, 		ss_event_signon, 0},
 	{ EVENT_QUIT, 			ss_event_quit,		EVENT_FLAG_EXCLUDE_ME},
-	{ EVENT_KILL, 			ss_event_quit},
+	{ EVENT_KILL, 			ss_event_quit, 0},
 	{ EVENT_JOIN, 			ss_event_joinchan,	EVENT_FLAG_EXCLUDE_MODME},
-	{ EVENT_DELCHAN,		ss_event_delchan},
-	{ EVENT_NICK,			ss_event_nick},
-	{ EVENT_EMPTYCHAN,		ss_event_emptychan},	
-	{ EVENT_KICKBOT,		ss_event_kickbot},
-	{ EVENT_AWAY, 			ss_event_away},
-	{ EVENT_TOPIC, 			ss_event_topic},
-	{ EVENT_NEWCHAN,		ss_event_newchan},
-	{ EVENT_PRIVATE, 		ss_event_message},
-	{ EVENT_NOTICE, 		ss_event_message},
-	{ EVENT_CPRIVATE, 		ss_event_channelmessage},
-	{ EVENT_CNOTICE, 		ss_event_channelmessage},
-	{ EVENT_BOTKILL, 		ss_event_botkill},
-	{ EVENT_CTCPVERSIONRPLBC, ss_event_versionreply},	
-	{ EVENT_CTCPVERSIONREQ, ss_event_versionrequest},	
+	{ EVENT_DELCHAN,		ss_event_delchan, 0},
+	{ EVENT_NICK,			ss_event_nick, 0},
+	{ EVENT_EMPTYCHAN,		ss_event_emptychan, 0},	
+	{ EVENT_KICKBOT,		ss_event_kickbot, 0},
+	{ EVENT_AWAY, 			ss_event_away, 0},
+	{ EVENT_TOPIC, 			ss_event_topic, 0},
+	{ EVENT_NEWCHAN,		ss_event_newchan, 0},
+	{ EVENT_PRIVATE, 		ss_event_message, 0},
+	{ EVENT_NOTICE, 		ss_event_message, 0},
+	{ EVENT_CPRIVATE, 		ss_event_channelmessage, 0},
+	{ EVENT_CNOTICE, 		ss_event_channelmessage, 0},
+	{ EVENT_BOTKILL, 		ss_event_botkill, 0},
+	{ EVENT_CTCPVERSIONRPLBC, ss_event_versionreply, 0},	
+	{ EVENT_CTCPVERSIONREQ, ss_event_versionrequest, 0},	
 	NS_EVENT_END()
 };
 

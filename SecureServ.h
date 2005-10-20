@@ -90,7 +90,7 @@ typedef struct UserDetail {
 #define SS_BUF_SIZE 255
 #define MAX_PATTERN_TYPES	20
 
-struct SecureServ {
+typedef struct SecureServcfg {
 	int version;
 	int datfileversion;
 	char akillinfo[BUFSIZE];
@@ -126,7 +126,9 @@ struct SecureServ {
 	int monchancycle;
 	int treatchanmsgaspm;
 	int exclusions;
-} SecureServ;
+} SecureServcfg;
+
+extern SecureServcfg SecureServ;
 
 /* SecureServ.c */
 

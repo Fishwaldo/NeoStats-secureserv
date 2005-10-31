@@ -117,7 +117,9 @@ typedef struct SecureServcfg {
 	char botquitmsg[BUFSIZE];
 	int doprivchan;
 	int signoutaway;
+#ifdef HAVE_CRYPT_H
 	int report;
+#endif /* HAVE_CRYPT_H */
 	int joinhelpchan;
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;

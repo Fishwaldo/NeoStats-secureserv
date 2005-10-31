@@ -21,7 +21,7 @@
 ** $Id$
 */
 
-#include "neostats.h"
+#include "SecureServ.h"
 
 const char *ts_help_login[] = {
 	"Login as a helper",

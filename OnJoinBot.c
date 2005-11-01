@@ -762,7 +762,7 @@ int ss_cmd_bots_add(const CmdParams *cmdparams)
 	strlcpy(bots->nick, cmdparams->av[1], MAXNICK);
 	strlcpy(bots->user, cmdparams->av[2], MAXUSER);
 	strlcpy(bots->host, cmdparams->av[3], MAXHOST);
-	buf2 = joinbuf(cmdparams->av, cmdparams->ac, 3);
+	buf2 = joinbuf(cmdparams->av, cmdparams->ac, 4);
 	strlcpy(bots->realname, buf2, MAXREALNAME);
 	ns_free (buf2);
 	lnode_create_append(nicks, bots);

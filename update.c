@@ -179,7 +179,7 @@ static void datver( void *data, int status, char *ver, int versize )
 			 }
 		} else {
 				irc_chanalert( ss_bot, "SecureServ is operating with the most recent Dat file. No update required." );
-				if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No need required." );
+				if( u ) irc_prefmsg( ss_bot, u, "SecureServ is operating with the most recent Dat file. No update required." );
 		}
 	} else {
 		nlog( LOG_WARNING, "Virus definition check failed. %s", ver );

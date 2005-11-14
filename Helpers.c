@@ -235,7 +235,8 @@ static int ss_cmd_login( const CmdParams *cmdparams )
 	}
 	helper = ( Helper * )hnode_find( helperhash, cmdparams->av[0] );
 	if( helper ) {
-		if( !ircstrcasecmp( helper->pass, cmdparams->av[1] ) ) {
+		if( ircstrcasecmp( helper->pass, cmdparams->av[1] ) == 0 )
+		{
 			Channel* c;
 
 			c = FindChannel( SecureServ.HelpChan );
@@ -257,7 +258,7 @@ static int ss_cmd_login( const CmdParams *cmdparams )
 			return NS_SUCCESS;
 		}
 		irc_prefmsg( ss_bot, cmdparams->source, "Login Failed" );
-		irc_chanalert( ss_bot, "%s tried to login with %s, but got the pass wrong( %s )", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
+		irc_chanalert( ss_bot, "%s tried to login with %s, but got the pass wrong (%s)", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	} 
 	irc_prefmsg( ss_bot, cmdparams->source, "Login Failed" );
@@ -288,31 +289,87 @@ static int ss_cmd_logout( const CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
+/** @brief ss_cmd_assist_release
+ *
+ *  ASSIST RELEASE command handler
+ *
+ *  @param cmdparam struct
+ *  @param tu pointer to target client struct
+ *  @param td pointer to target client details struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_assist_release( const CmdParams *cmdparams, Client *tu, UserDetail *td )
+{
+	ClearUserModValue( tu );
+	td->data = NULL;
+	ns_free( td );
+	irc_prefmsg( ss_bot, cmdparams->source,  "Hold on %s is released", tu->name );
+	irc_chanalert( ss_bot, "%s released %s", cmdparams->source->name, tu->name );
+	return NS_SUCCESS;
+}
+
+/** @brief ss_cmd_assist_kill
+ *
+ *  ASSIST KILL command handler
+ *
+ *  @param cmdparam struct
+ *  @param tu pointer to target client struct
+ *  @param td pointer to target client details struct
+ *
+ *  @return NS_SUCCESS if suceeds else result of command
+ */
+
+static int ss_cmd_assist_kill( const CmdParams *cmdparams, Client *tu, UserDetail *td )
+{
+	virientry *ve;
+
+	ve = ( virientry * )td->data;
+	irc_prefmsg( ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name );	
+	irc_chanalert( ss_bot, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
+	nlog( LOG_NORMAL, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
+	if( ve->iscustom )
+	{
+		irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )", tu->name, ve->name, cmdparams->source->name );
+		irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s.( HelperAssist by %s )", ve->name, cmdparams->source->name );
+	}
+	else
+	{
+		irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )( http://secure.irc-chat.net/info.php?viri=%s )", tu->name, ve->name, cmdparams->source->name, ve->name );
+		irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s( HelperAssist by %s )", ve->name, cmdparams->source->name );
+	}
+	return NS_SUCCESS;
+}
+
 /** @brief ss_cmd_assist
  *
  *  ASSIST command handler
  *
  *  @param cmdparam struct
+ *    cmdparams->av[0] = subcommand (RELEASE, KILL)
+ *    cmdparams->av[1] = target user nick
  *
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int ss_cmd_assist( const CmdParams *cmdparams ) 
+static int ss_cmd_assist( const CmdParams *cmdparams )
 {
 	UserDetail *ud, *td;
 	Client *tu;
-	virientry *ve;
 
 	SET_SEGV_LOCATION();
+	/* Check source user authority */
 	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
-	if( !ud || ud->type != USER_HELPER ) {
+	if( !ud || ud->type != USER_HELPER )
+	{
 		irc_prefmsg( ss_bot, cmdparams->source, "Access Denied" );
 		irc_chanalert( ss_bot, "%s tried to use assist %s on %s, but is not logged in", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	}
-	/* if we get here, they are ok, so check the target user*/
+	/* Check target user */
 	tu = FindUser( cmdparams->av[1] );
-	if( !tu ) /* User not found */
+	if( !tu )
 		return NS_SUCCESS;
 	td = GetUserModValue( tu );
 	if( !td || td->type != USER_INFECTED ) {
@@ -320,31 +377,11 @@ static int ss_cmd_assist( const CmdParams *cmdparams )
 		irc_chanalert( ss_bot, "%s tried to use assist %s on %s, but the target is not requiring assistance", cmdparams->source->name, cmdparams->av[0], cmdparams->av[1] );
 		return NS_SUCCESS;
 	}
-	/* ok, so far so good, lets see what the helper wants to do with the target user */
-	if( !ircstrcasecmp( cmdparams->av[0], "RELEASE" ) ) {
-		ClearUserModValue( tu );
-		td->data = NULL;
-		ns_free( td );
-		irc_prefmsg( ss_bot, cmdparams->source,  "Hold on %s is released", tu->name );
-		irc_chanalert( ss_bot, "%s released %s", cmdparams->source->name, tu->name );
-		return NS_SUCCESS;
-	} else if( !ircstrcasecmp( cmdparams->av[0], "KILL" ) ) {
-		ve = ( virientry * )td->data;
-		irc_prefmsg( ss_bot, cmdparams->source, "Akilling %s as they are infected with %s", tu->name, ve->name );	
-		irc_chanalert( ss_bot, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
-		nlog( LOG_NORMAL, "%s used assist kill on %s!%s@%s( infected with %s )", cmdparams->source->name, tu->name, tu->user->username, tu->user->hostname, ve->name );
-		if( ve->iscustom )
-		{
-			irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )", tu->name, ve->name, cmdparams->source->name );
-			irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan %s.( HelperAssist by %s )", ve->name, cmdparams->source->name );
-		}
-		else
-		{
-			irc_globops( ss_bot, "Akilling %s for Virus %s( Helper %s performed Assist Kill )( http://secure.irc-chat.net/info.php?viri=%s )", tu->name, ve->name, cmdparams->source->name, ve->name );
-			irc_akill( ss_bot, tu->user->hostname, tu->user->username, SecureServ.akilltime, "Infected with Virus/Trojan. Visit http://secure.irc-chat.net/info.php?viri=%s( HelperAssist by %s )", ve->name, cmdparams->source->name );
-		}
-		return NS_SUCCESS;
-	}
+	/* call sub command handler */
+	if( ircstrcasecmp( cmdparams->av[0], "RELEASE" ) == 0 )
+		return ss_cmd_assist_release( cmdparams, tu, td );
+	if( ircstrcasecmp( cmdparams->av[0], "KILL" ) == 0 )
+		return ss_cmd_assist_kill( cmdparams, tu, td );
 	return NS_ERR_SYNTAX_ERROR;
 }	
 
@@ -456,11 +493,11 @@ static int ss_cmd_helpers_list( const CmdParams *cmdparams )
 static int ss_cmd_helpers( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
-	if( !ircstrcasecmp( cmdparams->av[0], "ADD" ) )
+	if( ircstrcasecmp( cmdparams->av[0], "ADD" ) == 0 )
 		return ss_cmd_helpers_add( cmdparams );
-	if( !ircstrcasecmp( cmdparams->av[0], "DEL" ) )
+	if( ircstrcasecmp( cmdparams->av[0], "DEL" ) == 0 )
 		return ss_cmd_helpers_del( cmdparams );
-	if( !ircstrcasecmp( cmdparams->av[0], "LIST" ) )
+	if( ircstrcasecmp( cmdparams->av[0], "LIST" ) == 0 )
 		return ss_cmd_helpers_list( cmdparams );
 	return NS_ERR_SYNTAX_ERROR;
 }

@@ -37,20 +37,20 @@ static int ss_cmd_set_cycletime_cb( const CmdParams *cmdparams, SET_REASON reaso
 static int ss_set_exclusions_cb( const CmdParams *cmdparams, SET_REASON reason );
 
 #ifdef WIN32
-void *(*old_malloc)(size_t);
-void (*old_free) (void *);
+static void *(*old_malloc)(size_t);
+static void (*old_free) (void *);
 #endif
 
 Bot *ss_bot;
 SecureServcfg SecureServ;
 
 /** about info */
-const char *ss_about[] = {
+static const char *ss_about[] = {
 	"A Trojan Scanning Bot",
 	NULL
 };
 
-const char *ss_copyright[] = {
+static const char *ss_copyright[] = {
 	"Copyright (c) 1999-2005, NeoStats",
 	"http://www.neostats.net/",
 	NULL
@@ -123,7 +123,7 @@ static bot_setting ss_settings[]=
 	NS_SETTING_END()
 };
 
-BotInfo ss_botinfo =
+static BotInfo ss_botinfo =
 {
 	"SecureServ",
 	"SecureServ1",
@@ -209,7 +209,7 @@ static int ss_cmd_status(const CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_newchan( const CmdParams *cmdparams )
+static int ss_event_newchan( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	SetChannelModValue(cmdparams->channel, (void *) 0 );
@@ -218,11 +218,11 @@ int ss_event_newchan( const CmdParams *cmdparams )
 	return NS_SUCCESS;
 }
 
-int ss_event_joinchan(const CmdParams *cmdparams)
+static int ss_event_joinchan(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* is channel exempt? */
-	if( ModIsChannelExcluded( cmdparams->channel ) > 0 )
+	if( SS_IS_CHANNEL_EXCLUDED( cmdparams->channel ) )
 		return NS_SUCCESS;
 	/* is user exempt */
 	if( ModIsUserExcluded( cmdparams->source ) == NS_TRUE )
@@ -236,14 +236,14 @@ int ss_event_joinchan(const CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_delchan(const CmdParams *cmdparams) 
+static int ss_event_delchan(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
 	ClearChannelModValue (cmdparams->channel);
 	return NS_SUCCESS;
 }
 
-int ss_event_away(const CmdParams *cmdparams)
+static int ss_event_away(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	HelpersAway(cmdparams);
@@ -251,7 +251,7 @@ int ss_event_away(const CmdParams *cmdparams)
 	return NS_SUCCESS;
 }
 
-int ss_event_topic(const CmdParams *cmdparams)
+static int ss_event_topic(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	ScanTopic(cmdparams->source, cmdparams->channel->topic);
@@ -282,7 +282,7 @@ static int ss_event_botkill(const CmdParams *cmdparams)
 {
 	SET_SEGV_LOCATION();
 	/* Check the mon bot first */
-	if(CheckMonBotKill(cmdparams)!=0) {
+	if(CheckMonBotKill(cmdparams)==NS_TRUE) {
 		return NS_SUCCESS;
 	}
 	/* What else should we check? */
@@ -401,7 +401,7 @@ int ModInit( void )
 	return NS_SUCCESS;
 }
 
-int ScanMember( Channel *c, ChannelMember *m, void *v )
+static int ScanMember( Channel *c, ChannelMember *m, void *v )
 {
 	if( ModIsUserExcluded( m->u ) == NS_FALSE ) {
 		if( ScanChannelName( m->u, c ) == 0 ) {
@@ -413,7 +413,7 @@ int ScanMember( Channel *c, ChannelMember *m, void *v )
 	return NS_FALSE;
 }
 
-int ScanChannel (Channel *c, void *v)
+static int ScanChannel (Channel *c, void *v)
 {
 	ProcessChannelMembers( c, ScanMember, NULL );
 	return NS_FALSE;
@@ -434,7 +434,8 @@ int ModSynch( void )
 	ss_bot = AddBot( &ss_botinfo );
 	if( !ss_bot )
 		return NS_FAILURE;
-	InitHelpers();
+	if( InitHelpers() == NS_FAILURE )
+		return NS_FAILURE;
 	if( SecureServ.verbose )
 		irc_chanalert( ss_bot, "%d definitions loaded", SecureServ.defcount );
 	srand( NSGetChannelCount() );

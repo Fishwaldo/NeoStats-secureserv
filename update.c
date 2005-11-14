@@ -45,7 +45,7 @@ static char ss_buf[SS_BUF_SIZE];
  *  @return error string
  */
 
-const char *downloaderror( int errcode )
+static const char *downloaderror( int errcode )
 {
 	switch( errcode )
 	{

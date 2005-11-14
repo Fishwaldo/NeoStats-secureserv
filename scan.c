@@ -34,7 +34,7 @@ typedef struct virustype {
 	int defcount;
 } virustype;
 
-virustype virustypes[MAX_PATTERN_TYPES];
+static virustype virustypes[MAX_PATTERN_TYPES];
 
 static const char* dettypes[] =
 {
@@ -78,7 +78,7 @@ static virientry builtin_fizzer =
 
 /* List of local dat files that we will load and process
 */
-const char* DatFiles[NUM_DAT_FILES]=
+static const char* DatFiles[NUM_DAT_FILES]=
 {
 	VIRI_DAT_NAME,
 	CUSTOM_DAT_NAME,
@@ -317,7 +317,7 @@ int ScanFizzer(Client *u)
 		if (node) {
 			do {
 				viridetails = lnode_get(node);
-				if (!ircstrcasecmp(viridetails->name, "FizzerBot")) {
+				if (ircstrcasecmp(viridetails->name, "FizzerBot")== 0 ) {
 					gotpositive(u, viridetails, DET_BUILTIN);
 					return 1;
 				}

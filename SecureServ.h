@@ -129,13 +129,14 @@ typedef struct SecureServcfg {
 	int exclusions;
 } SecureServcfg;
 
+#define SS_IS_CHANNEL_EXCLUDED( c ) ( ModIsChannelExcluded( c ) || ( SecureServ.exclusions && IsExcluded( c ) ) )
+
 extern SecureServcfg SecureServ;
 
 /* SecureServ.c */
 
 /* update.c */
 int ss_cmd_update(const CmdParams *cmdparams);
-int ss_cmd_set_updateinfo(const CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdate_cb (const CmdParams *cmdparams, SET_REASON reason);
 int ss_cmd_set_autoupdatetime_cb (const CmdParams *cmdparams, SET_REASON reason);
 int AutoUpdate(void *);
@@ -146,7 +147,6 @@ void OnJoinBotStatus (const CmdParams *cmdparams);
 int ss_event_message (const CmdParams *cmdparams);
 int ss_event_versionrequest (const CmdParams *cmdparams);
 int LoadMonChans();
-int ViriCount(void);
 int InitOnJoinBots(void);
 void FiniOnJoinBots(void);
 int ss_cmd_bots(const CmdParams *cmdparams);
@@ -224,7 +224,9 @@ extern const char *ts_help_set_doonjoin[];
 extern const char *ts_help_set_botecho[];
 extern const char *ts_help_set_verbose[];
 extern const char *ts_help_set_monchancycle[];
+#ifdef TREATCHANMSGASPM
 extern const char *ts_help_set_treatchanmsgaspm[];
+#endif /* TREATCHANMSGASPM */ 
 extern const char *ts_help_set_monchancycletime[];
 extern const char *ts_help_set_cycletime[];
 extern const char *ts_help_set_monbot[];

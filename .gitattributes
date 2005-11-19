@@ -3,6 +3,7 @@
 /COPYING -text
 /ChangeLog -text
 /Helpers.c eol=lf
+/INSTALL -text
 /LICENSE -text
 /Makefile.am -text
 /Makefile.in -text

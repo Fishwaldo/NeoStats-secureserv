@@ -25,7 +25,6 @@
 /depcomp -text
 /html.css -text
 /install-sh -text
-/libtool -text
 /missing -text
 /mkinstalldirs -text
 /modconfig.h.in -text

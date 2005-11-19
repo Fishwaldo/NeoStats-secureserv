@@ -21,6 +21,7 @@ CFLAGS="$CFLAGS -O2 -fno-strict-aliasing"
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL 
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 AC_MSG_CHECKING(Location of NeoStats...)

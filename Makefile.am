@@ -1,3 +1,7 @@
+AUTOMAKE_OPTIONS        = foreign
+ACLOCAL_AMFLAGS         = -I autotools
+AM_MAKEFLAGS            = -s
+
 pkglib_LTLIBRARIES	= secureserv.la
 secureserv_la_SOURCES	= Helpers.c SecureServ.c scan.c OnJoinBot.c SecureServ_help.c update.c
 noinst_HEADERS		= SecureServ.h 

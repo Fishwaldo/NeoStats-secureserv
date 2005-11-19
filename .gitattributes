@@ -1,9 +1,14 @@
 * text=auto !eol
+/AUTHORS -text
+/COPYING -text
 /ChangeLog -text
 /Helpers.c eol=lf
 /LICENSE -text
+/Makefile.am -text
 /Makefile.in -text
+/NEWS -text
 /OnJoinBot.c eol=lf
+/README -text
 /README.SecureServ -text
 /README.SecureServ.html -text
 /RELNOTES -text
@@ -11,10 +16,17 @@
 /SecureServ.h eol=lf
 /SecureServ.xml -text
 /SecureServ_help.c eol=lf
+/aclocal.m4 -text
+/config.guess -text
+/config.sub -text
 /configure -text
 /configure.in -text
+/depcomp -text
 /html.css -text
 /install-sh -text
+/libtool -text
+/missing -text
+/mkinstalldirs -text
 /modconfig.h.in -text
 /modconfigwin32.h -text
 /scan.c -text

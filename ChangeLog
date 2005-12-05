@@ -2,6 +2,8 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.a3-dev - Mark (M)
+ - SecureServ now uses the NeoNet infra to send reports back to
+   secure.irc-chat.net (F)
  - Use new core ctcp request/reply system. (M)
  - if Core version checking is disabled, but secureserv versionscan is
    enabled, then ctcp requests come from SecureServ (F)

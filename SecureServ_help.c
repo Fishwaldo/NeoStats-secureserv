@@ -264,13 +264,11 @@ const char *ts_help_set_joinhelpchan[] = {
 	"Whether SecureServ joins the help channel when there is at least one helper logged in",
 	NULL
 };
-#ifdef HAVE_CRYPT_H
 const char *ts_help_set_report[] = {
 	"\2REPORT <ON|OFF>\2",
 	"Enable Reporting to Secure.irc-chat.net of infected users.",
 	NULL
 };
-#endif /* HAVE_CRYPT_H */
 const char *ts_help_set_doprivchan[] = {
 	"\2DOPRIVCHAN <ON|OFF>\2",
 	"Whether onjoin bots scan private channels",

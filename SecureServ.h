@@ -117,9 +117,7 @@ typedef struct SecureServcfg {
 	char botquitmsg[BUFSIZE];
 	int doprivchan;
 	int signoutaway;
-#ifdef HAVE_CRYPT_H
 	int report;
-#endif /* HAVE_CRYPT_H */
 	int joinhelpchan;
 	char sampleversion[SS_BUF_SIZE];
 	int monchancycle;
@@ -211,9 +209,7 @@ extern const char *ts_help_set_nohelpmsg[];
 extern const char *ts_help_set_helpchan[];
 extern const char *ts_help_set_autosignout[];
 extern const char *ts_help_set_joinhelpchan[];
-#ifdef HAVE_CRYPT_H
 extern const char *ts_help_set_report[];
-#endif /* HAVE_CRYPT_H */
 extern const char *ts_help_set_doprivchan[];
 extern const char *ts_help_set_checkfizzer[];
 extern const char *ts_help_set_multicheck[];

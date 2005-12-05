@@ -22,9 +22,7 @@
 */
 
 #include "SecureServ.h"
-#ifdef HAVE_CRYPT_H
-#include <crypt.h>
-#endif
+#include "updates.h"
 
 #define MAX_VIRI LISTCOUNT_T_MAX
 
@@ -432,20 +430,35 @@ int ScanTopic(Client* u, char* buf)
 	return Scan(DET_TOPIC, u, buf);
 }
 
-#ifdef HAVE_CRYPT_H
 static void report_positive (Client *u, virientry *ve)
 {
-	char buf[1400];
-	char buf2[3];
-
-	/* send an update to secure.irc-chat.net */
+	MMessage *msg;
+	int32 *msgver;
+	MByteBuffer **host;
+	MByteBuffer **viri;
+	int32 *datver;
+	MByteBuffer **NeoVer;
+	
 	if (SecureServ.report == 1) {
-		ircsnprintf(buf2, 3, "%c%c", SecureServ.updateuname[0], SecureServ.updateuname[1]);
-		ircsnprintf(buf, 1400, "%s\n%s\n%s\n%s\n%s\n%d\n", SecureServ.updateuname, crypt(SecureServ.updatepw, buf2), ve->name, u->hostip, MODULE_VERSION, SecureServ.datfileversion);
-		sendtoMQ(UPDATE_SSREPORT, buf, strlen(buf));
+		/* get our template message */
+		msg = MQCreateMessage("SecureServ", "securebot", 0, NULL, 1);
+		if (msg) {
+			msgver = MMPutInt32Field(msg, false, "msgver", 1);
+			host = MMPutStringField(msg, false, "Host", 1);
+			viri = MMPutStringField(msg, false, "Viri", 1);
+			NeoVer = MMPutStringField(msg, false, "NeoVer", 1);
+			datver = MMPutInt32Field(msg, false, "Dat", 1);
+			host[0] = MBStrdupByteBuffer(u->hostip);
+			viri[0] = MBStrdupByteBuffer(ve->name);
+			NeoVer[0] = MBStrdupByteBuffer(MODULE_VERSION);
+			datver[0] = SecureServ.datfileversion;
+			msgver[0] = 1;
+			MQSendMessage(msg, 1);
+		} else {
+			nlog(LOG_WARNING, "Couldn't create Report Message");
+		}
 	}	
 }
-#endif
 
 void gotpositive(Client *u, virientry *ve, int type) 
 {
@@ -565,7 +578,5 @@ void gotpositive(Client *u, virientry *ve, int type)
 		default:
 			break;
 	}
-#ifdef HAVE_CRYPT_H
 	report_positive (u, ve);
-#endif
 }

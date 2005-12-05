@@ -93,9 +93,7 @@ static bot_setting ss_settings[]=
 	{"HELPERS",		&SecureServ.helpers,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpers, ss_cmd_set_helpers_cb, (void *)1 },
 	{"VERSION",		&SecureServ.version,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_version, NULL, (void *)1 },
 	{"HELPCHAN",	SecureServ.HelpChan,	SET_TYPE_CHANNEL,	0,	MAXCHANLEN,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_helpchan, NULL, (void *)"#nohack" },
-#ifdef HAVE_CRYPT_H
 	{"REPORT",		&SecureServ.report,		SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_report, NULL, (void *)1 },
-#endif /* HAVE_CRYPT_H */
 	{"DOPRIVCHAN",	&SecureServ.doprivchan,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_doprivchan, NULL, (void *)1 },
 	{"CHECKFIZZER",	&SecureServ.dofizzer,	SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_checkfizzer, NULL, (void *)1 },
 	{"MULTICHECK",	&SecureServ.breakorcont,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_multicheck, NULL, (void *)1 },

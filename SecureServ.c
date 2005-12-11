@@ -22,6 +22,7 @@
 */
 
 #include "SecureServ.h"
+#include "updates.h"
 
 static int ss_event_signon( const CmdParams *cmdparams );
 static int ss_event_versionreply( const CmdParams *cmdparams );
@@ -112,8 +113,6 @@ static bot_setting ss_settings[]=
 	{"MONCHANCYCLETIME", &SecureServ.monchancycletime,SET_TYPE_INT, 1,	100000,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_monchancycletime, ss_cmd_set_monchancycletime_cb, (void *)1800 },
 	{"CYCLETIME",	&SecureServ.stayinchantime,SET_TYPE_INT,	1,	100000,		NS_ULEVEL_ADMIN,NULL,	ts_help_set_cycletime, ss_cmd_set_cycletime_cb, (void *)TS_ONE_MINUTE },
 	{"MONBOT",		NULL,					SET_TYPE_CUSTOM,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_monbot, ss_cmd_set_monbot, (void *)0 },
-	{"UPDATEUSER",	SecureServ.updateuname,	SET_TYPE_STRING,	0,	MAXNICK,	NS_ULEVEL_ROOT,NULL,	ts_help_set_updateuser, NULL, (void *)0 },
-	{"UPDATEPASS",	SecureServ.updatepw,	SET_TYPE_STRING,	0,	MAXNICK,	NS_ULEVEL_ROOT,NULL,	ts_help_set_updatepass, NULL, (void *)0 },
 	{"AUTOUPDATE",	&SecureServ.autoupgrade,SET_TYPE_BOOLEAN,	0,	0,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdate, ss_cmd_set_autoupdate_cb, (void *)0 },
 	{"AUTOUPDATETIME",	&SecureServ.autoupgradetime,SET_TYPE_INT,	TS_ONE_HOUR,	172800,			NS_ULEVEL_ADMIN,NULL,	ts_help_set_autoupdatetime, ss_cmd_set_autoupdatetime_cb, (void *)7200 },
 	{"ONJOINBOTMODES",onjoinbot_modes,		SET_TYPE_STRING,	0,	MODESIZE,	NS_ULEVEL_ADMIN,NULL,	ts_help_set_onjoinbotmodes, NULL, (void *)"+" },
@@ -443,11 +442,11 @@ int ModSynch( void )
 	if( SecureServ.monchancycle )
 		AddTimer( TIMER_TYPE_INTERVAL, MonBotCycle, "MonBotCycle", SecureServ.monchancycletime, NULL );
 
-	if ((SecureServ.updateuname[0] != 0) && (SecureServ.updatepw[0] != 0)) {
+	if (MQCredOk() == NS_SUCCESS) {
 		AutoUpdate( NULL );
 		AddTimer( TIMER_TYPE_INTERVAL, AutoUpdate, "AutoUpdate", SecureServ.autoupgradetime, NULL );
 	} else if (SecureServ.autoupgrade == 1) {
-		irc_chanalert (ss_bot, "No valid Username/Password configured for SecureServ Dat File Update");
+		irc_chanalert (ss_bot, "No valid NeoNet Account configured for SecureServ Dat File Update");
 	}
 	LoadMonChans();
 	ProcessChannelList( ScanChannel, NULL );

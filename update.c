@@ -22,6 +22,7 @@
 */
 
 #include "SecureServ.h"
+#include "updates.h"
 
 /* update state type */
 typedef enum UPDATE_STATE
@@ -128,7 +129,7 @@ static void DownLoadDat( void )
 	{
 		updatestate = UPDATE_STATE_DATA;
 		os_memset( ss_buf, 0, SS_BUF_SIZE );
-		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", MQUsername(), MQPassword());
 		if( new_transfer( "http://secure.irc-chat.net/defs.php", ss_buf, NS_MEMORY, "", NULL, datdownload ) != NS_SUCCESS )
 		{
 			nlog( LOG_WARNING, "Definition download failed." );
@@ -201,9 +202,9 @@ static void datver( void *data, int status, char *ver, int versize )
 int AutoUpdate( void *userptr )
 {
 	SET_SEGV_LOCATION();
-	if( ( SecureServ.autoupgrade > 0 ) && SecureServ.updateuname[0] != 0 && SecureServ.updatepw[0] != 0 ) {
+	if( ( SecureServ.autoupgrade > 0 ) && (MQCredOk() == NS_SUCCESS)) {
 		os_memset( ss_buf, 0, SS_BUF_SIZE );
-		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+		ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", MQUsername(), MQPassword());
 		if( new_transfer( "http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", NULL, datver ) != NS_SUCCESS ) {
 			nlog( LOG_WARNING, "Definition version check failed." );
 			irc_chanalert( ss_bot, "Definition version check failed. Check log files" );
@@ -225,7 +226,11 @@ int ss_cmd_update( const CmdParams *cmdparams )
 {
 	SET_SEGV_LOCATION();
 	os_memset( ss_buf, 0, SS_BUF_SIZE );
-	ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", SecureServ.updateuname, SecureServ.updatepw );
+	if (MQCredOk() != NS_SUCCESS) {
+		irc_prefmsg( ss_bot, cmdparams->source, "A NeoNet Username/Password has not been set. Update Failed");
+		return NS_FAILURE;
+	}
+	ircsnprintf( ss_buf, SS_BUF_SIZE, "u=%s&p=%s", MQUsername(), MQPassword());
 	if( new_transfer( "http://secure.irc-chat.net/vers.php", ss_buf, NS_MEMORY, "", cmdparams->source, datver ) != NS_SUCCESS ) {
 		irc_prefmsg( ss_bot, cmdparams->source, "Definition Download Failed. Check Log Files" );
 		nlog( LOG_WARNING, "Definition Download failed." );
@@ -253,14 +258,8 @@ int ss_cmd_set_autoupdate_cb( const CmdParams *cmdparams, SET_REASON reason )
 	switch( reason )
 	{
 		case SET_VALIDATE:
-			if( !SecureServ.updateuname[0] )
-			{
-				irc_prefmsg( ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update user name" );
-				return NS_FAILURE;
-			}
-			if( !SecureServ.updatepw[0] )
-			{
-				irc_prefmsg( ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the update password" );
+			if (MQCredOk() != NS_SUCCESS) {
+				irc_prefmsg( ss_bot, cmdparams->source, "You can not enable AutoUpdate without setting the NeoNet Username/Password Combination" );
 				return NS_FAILURE;
 			}
 			break;
@@ -295,7 +294,7 @@ int ss_cmd_set_autoupdatetime_cb( const CmdParams *cmdparams, SET_REASON reason 
 {
 	if( reason == SET_CHANGE )
 	{
-		if( ( SecureServ.autoupgrade == 1 ) &&( SecureServ.updateuname[0] ) &&( SecureServ.updatepw[0] ) )
+		if( ( SecureServ.autoupgrade == 1 ) &&( MQCredOk() == NS_SUCCESS ) ) 
 			SetTimerInterval( "AutoUpdate", SecureServ.autoupgradetime );
 	}
 	return NS_SUCCESS;

@@ -111,8 +111,6 @@ typedef struct SecureServcfg {
 	int BotEcho;
 	int helpers;
 	int defcount;
-	char updateuname[MAXNICK];
-	char updatepw[MAXNICK];
 	char monbot[MAXNICK];
 	char botquitmsg[BUFSIZE];
 	int doprivchan;

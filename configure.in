@@ -34,7 +34,7 @@ AC_CHECK_FILE($DIRINST/include/neostats.h,
 [INCLUDEDIR="$DIRINST/include/"], 
 [AC_MSG_ERROR(Can't find existing NeoStats Installation please supply with --with-neostats option)])
 
-dnl CPPFLAGS="$CPPFLAGS -I$INCLUDEDIR"
+CPPFLAGS="$CPPFLAGS -I$INCLUDEDIR"
 dnl Check we are running the latest supported version of NeoStats
 AC_MSG_CHECKING(Version of NeoStats...)
 AC_TRY_RUN(

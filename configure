@@ -19689,10 +19689,13 @@ unset wi_resolved_path wi_path
 	wi_cv_path_ccdv="$CCDV"
 	CC="$CCDV $CC"	# trailing space needed
 	USECCDV="#"
+	echo "$as_me:$LINENO: result: $ccdv" >&5
+echo "${ECHO_T}$ccdv" >&6
 else
 	wi_cv_path_ccdv=""
 	USECCDV=""
-
+	echo "$as_me:$LINENO: result: \"Not Found\"" >&5
+echo "${ECHO_T}\"Not Found\"" >&6
 fi
 
 fi

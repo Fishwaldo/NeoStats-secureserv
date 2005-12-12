@@ -7,8 +7,11 @@ secureserv_la_SOURCES	= Helpers.c SecureServ.c scan.c OnJoinBot.c SecureServ_hel
 noinst_HEADERS		= SecureServ.h 
 
 secureserv_la_LDFLAGS	= -module -avoid-version
-#AM_CFLAGS		= @PCRE_CFLAGS@ @CURL_CFLAGS@ 
 
+EXTRA_DIST		= autotools/ccdv.c autotools/shtool RELNOTES
+
+dist_doc_DATA		= README.SecureServ README.SecureServ.html
 dist_data_DATA		= viri.dat
+
 
 include $(top_srcdir)/autotools/rules.mk

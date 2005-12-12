@@ -452,6 +452,7 @@ static void report_positive (Client *u, virientry *ve)
 			viri[0] = MBStrdupByteBuffer(ve->name);
 			NeoVer[0] = MBStrdupByteBuffer(MODULE_VERSION);
 			datver[0] = SecureServ.datfileversion;
+			/* msgver 1 = SecureServ, msgver 2 = OPSB */
 			msgver[0] = 1;
 			MQSendMessage(msg, 1);
 		} else {

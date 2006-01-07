@@ -624,6 +624,7 @@ static int ss_cmd_monchan_del( const CmdParams *cmdparams )
 		return NS_FAILURE;
 	}
 	chan = lnode_get( node );
+	DBADelete( "monchans", chan );
 	irc_prefmsg( ss_bot, cmdparams->source, "Deleted %s out of monitored channel list.",( char* )lnode_get( node ) );
 	irc_part( monbotptr, cmdparams->av[1], NULL );
 	lnode_destroy( list_delete( monchans, node ) );

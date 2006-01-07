@@ -130,21 +130,6 @@ char onjoinbot_modes[MODESIZE] = "+";
 static Bot *monbotptr;
 static Bot *ojbotptr;
 
-static void SaveMonChans( void )
-{
-	char *chan;
-	lnode_t *node;
-
-	SET_SEGV_LOCATION();
-	node = list_first( monchans );
-	while( node != NULL )
-	{
-		chan =( char * )lnode_get( node );
-		DBAStoreStr( "monchans", chan, chan, MAXCHANLEN );
-		node = list_next( monchans, node );
-	}
-}
-
 void OnJoinBotStatus( const CmdParams *cmdparams )
 {
 	if( lastchan[0] )
@@ -528,7 +513,7 @@ int MonJoin( const Channel *c )
 	return 1;
 }	
 
-static void MonChan( Client *u, char *requestchan )
+static Channel *MonChan( Client *u, char *requestchan )
 {
 	Channel *c;
 	lnode_t *mn;
@@ -541,7 +526,7 @@ static void MonChan( Client *u, char *requestchan )
 		if( u )
 			irc_prefmsg( ss_bot, u, "Unable to monitor any additional channels" );
 		nlog( LOG_WARNING, "MonChan List is full. Not Monitoring %s", requestchan );
-		return;
+		return NULL;
 	}
 
 	mn = list_first( monchans );
@@ -550,7 +535,7 @@ static void MonChan( Client *u, char *requestchan )
 		if( ircstrcasecmp( requestchan, lnode_get( mn ) )== 0 )
 		{
 			if( u ) irc_prefmsg( ss_bot, u, "Already Monitoring Channel %s", requestchan );
-			return;
+			return NULL;
 		}
 		mn = list_next( monchans, mn );
 	}
@@ -559,27 +544,27 @@ static void MonChan( Client *u, char *requestchan )
 	{
 		if( u )
 			irc_prefmsg( ss_bot, u, "Unable to find channel %s.", requestchan );
-		return;
+		return NULL;
 	}			
 	/* dont allow excepted channels */
 	if( SS_IS_CHANNEL_EXCLUDED( c ) )
 	{
 		if( u )
 			irc_prefmsg( ss_bot, u, "Can't monitor a channel listed as a Exclude Channel" );
-		return;
+		return NULL;
 	}
 	if( SecureServ.monbot[0] == 0 )
 	{
 		if( u )
 			irc_prefmsg( ss_bot, u, "Warning, No Monitor Bot set. /msg %s help set", ss_bot->name );
-		return;
+		return NULL;
 	}
 	if( monbotptr == NULL )
 	{
 		/* the monbot isn't online. Initilze it */
 		if( InitMonBot() != NS_TRUE )
 		{
-			return;
+			return NULL;
 		}
 	}
 	/* append it to the list */
@@ -592,18 +577,21 @@ static void MonChan( Client *u, char *requestchan )
 		irc_chanalert( ss_bot, "Monitoring %s with %s for Viruses by request of %s", c->name, SecureServ.monbot, u ? u->name : ss_bot->name );
 	if( u )
 		irc_prefmsg( ss_bot, u, "Monitoring %s with %s", c->name, SecureServ.monbot );
-	return;
+	return c;
 }
 
 static int ss_cmd_monchan_add( const CmdParams *cmdparams )
 {
+	Channel *c;
+
 	if( cmdparams->ac < 2 )
 	{
 		return NS_ERR_NEED_MORE_PARAMS;
 	}
-	MonChan( cmdparams->source, cmdparams->av[1] );
+	c = MonChan( cmdparams->source, cmdparams->av[1] );
 	/* dont save in MonChan, as thats also called by LoadChan */
-	SaveMonChans();
+	if( c != NULL )
+		DBAStoreStr( "monchans", c->name, c->name, MAXCHANLEN );
 	return NS_SUCCESS;
 }
 
@@ -629,7 +617,6 @@ static int ss_cmd_monchan_del( const CmdParams *cmdparams )
 	irc_part( monbotptr, cmdparams->av[1], NULL );
 	lnode_destroy( list_delete( monchans, node ) );
 	ns_free( chan );
-	SaveMonChans();
 	return NS_SUCCESS;
 }		
 
@@ -651,7 +638,9 @@ static int ss_cmd_monchan_list( const CmdParams *cmdparams )
 
 static int LoadMonChan( void *data, int size )
 {
-	MonChan( NULL,( char * )data );
+	Channel *c;
+	
+	c = MonChan( NULL,( char * )data );
 	return NS_FALSE;
 }
 

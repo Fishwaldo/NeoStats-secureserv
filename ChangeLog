@@ -19,6 +19,7 @@ Fish (F), Mark (M), DeadNotBuried (D)
    channel is on global exclude list (D)
  - TREATCHANMSGASPM is now a configuration option to avoid the run time 
    overhead of warnings for use of the option. (M)
+ - Fix make install when NeoStats is installed in a non-default location (F)
 
 3.0.a2 - Mark (M)
  - Add option to use NeoStats global excludes with SecureServ. Based on an 

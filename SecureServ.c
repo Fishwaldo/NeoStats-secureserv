@@ -28,6 +28,7 @@ static int ss_event_signon( const CmdParams *cmdparams );
 static int ss_event_versionreply( const CmdParams *cmdparams );
 static int ss_event_nick( const CmdParams *cmdparams );
 static int ss_event_quit( const CmdParams *cmdparams );
+static int ss_event_kill( const CmdParams *cmdparams );
 static int ss_cmd_status( const CmdParams *cmdparams );
 static int ss_cmd_viriversion( const CmdParams *cmdparams );
 
@@ -311,8 +312,16 @@ ModuleEvent module_events[] = {
 static int ss_event_quit(const CmdParams *cmdparams) 
 {
 	SET_SEGV_LOCATION();
-	HelpersSignoff(cmdparams);
+	HelpersSignoff(cmdparams->source);
 	ScanQuitMsg(cmdparams->source, cmdparams->param); 
+	return NS_SUCCESS;
+}
+
+static int ss_event_kill(const CmdParams *cmdparams) 
+{
+	SET_SEGV_LOCATION();
+	HelpersSignoff(cmdparams->target);
+	ScanQuitMsg(cmdparams->target, cmdparams->param); 
 	return NS_SUCCESS;
 }
 

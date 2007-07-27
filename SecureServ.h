@@ -178,7 +178,7 @@ void load_dat(void);
 /* Helpers.c */
 int InitHelpers(void);
 void FiniHelpers(void);
-int HelpersSignoff(const CmdParams *cmdparams);
+int HelpersSignoff(Client *c);
 int HelpersAway(const CmdParams *cmdparams);
 void HelpersStatus (const CmdParams *cmdparams);
 int ss_cmd_set_helpers_cb(const CmdParams *cmdparams, SET_REASON reason);

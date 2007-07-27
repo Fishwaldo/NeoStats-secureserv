@@ -164,18 +164,18 @@ void FiniHelpers( void )
  *  @return NS_SUCCESS if suceeds else result of command
  */
 
-static int HelperLogout( const CmdParams *cmdparams )
+static int HelperLogout( Client *c )
 {
 	UserDetail *ud;
 	Helper *helper;
 	
 	SET_SEGV_LOCATION();
-	ud = ( UserDetail * )GetUserModValue( cmdparams->source );
+	ud = ( UserDetail * )GetUserModValue( c );
 	if( ud && ud->type == USER_HELPER ) {
 		helper = ( Helper * )ud->data;
 		helper->u = NULL;
 		ns_free( ud );
-		ClearUserModValue( cmdparams->source );
+		ClearUserModValue( c );
 		if( SecureServ.helpcount > 0 )
 			SecureServ.helpcount--;
 		if( ( SecureServ.helpcount == 0 ) &&( IsChannelMember( FindChannel( SecureServ.HelpChan ), ss_bot->u ) == 1 ) )
@@ -277,7 +277,7 @@ static int ss_cmd_login( const CmdParams *cmdparams )
 
 static int ss_cmd_logout( const CmdParams *cmdparams )
 {
-	if( HelperLogout( cmdparams ) == NS_SUCCESS )
+	if( HelperLogout( cmdparams->source ) == NS_SUCCESS )
 	{
 		irc_chanalert( ss_bot, "%s logged out from helper system", cmdparams->source->name );
 		irc_prefmsg( ss_bot, cmdparams->source, "You are now logged out" );
@@ -512,13 +512,13 @@ static int ss_cmd_helpers( const CmdParams *cmdparams )
  *  @return NS_SUCCESS if suceeds else NS_FAILURE
  */
 
-int HelpersSignoff( const CmdParams *cmdparams ) 
+int HelpersSignoff( Client *c ) 
 {
 	if( SecureServ.helpers != 1 )
 		return NS_SUCCESS;
-	if( HelperLogout( cmdparams ) == NS_SUCCESS )
+	if( HelperLogout( c ) == NS_SUCCESS )
 	{
-		irc_chanalert( ss_bot, "%s logged out for quit", cmdparams->source->name );
+		irc_chanalert( ss_bot, "%s logged out for quit", c->name );
 	}
 	return NS_SUCCESS;
 }
@@ -540,7 +540,7 @@ int HelpersAway( const CmdParams *cmdparams )
 		return NS_SUCCESS;
 	if( SecureServ.signoutaway != 1 )
 		return NS_SUCCESS;
-	if( HelperLogout( cmdparams ) == NS_SUCCESS )
+	if( HelperLogout( cmdparams->source ) == NS_SUCCESS )
 	{
 		irc_chanalert( ss_bot, "%s logged out after set away", cmdparams->source->name );
 		irc_prefmsg( ss_bot, cmdparams->source, "You have been logged out of SecureServ" );

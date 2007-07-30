@@ -154,6 +154,7 @@ int ss_event_kickbot(const CmdParams *cmdparams);
 int ss_event_emptychan(const CmdParams *cmdparams);
 int MonJoin(const Channel *c);
 int CheckMonBotKill(const CmdParams *cmdparams);
+int CheckOnJoinBotKill(const CmdParams *cmdparams);
 int MonBotCycle(void *);
 
 /* scan.c */

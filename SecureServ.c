@@ -284,6 +284,10 @@ static int ss_event_botkill(const CmdParams *cmdparams)
 		return NS_SUCCESS;
 	}
 	/* What else should we check? */
+	/* Check the on join bot as well */
+	if(CheckOnJoinBotKill(cmdparams)==NS_TRUE) {
+		return NS_SUCCESS;
+	}
 	return NS_SUCCESS;
 }
 

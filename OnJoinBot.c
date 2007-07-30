@@ -1010,6 +1010,16 @@ int CheckMonBotKill( const CmdParams *cmdparams )
 	return NS_TRUE;
 }
 
+int CheckOnJoinBotKill( const CmdParams *cmdparams )
+{
+	if (!ircstrcasecmp(cmdparams->target->name, lastnick))
+	{
+		lastnick[0] = '\0';
+		return NS_TRUE;
+	}
+	return NS_FALSE;
+}
+
 int ss_event_emptychan( const CmdParams *cmdparams )
 {
 	if( monbotptr && cmdparams->bot == monbotptr )

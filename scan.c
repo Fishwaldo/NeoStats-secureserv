@@ -494,6 +494,18 @@ void gotpositive(Client *u, virientry *ve, int type)
 		irc_prefmsg (ss_bot, u, "For More Information Please Visit http://secure.irc-chat.net/info.php?viri=%s", ve->name);
 	ve->numfound++;
 	virustypes[type].actcount++;
+	/* by default, dont do any action to opers, but report it */
+	
+	if (isOper(u)) {
+		if(ve->iscustom) {
+			irc_globops (ss_bot, "Warning, Operator %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);
+		} else {
+			irc_globops (ss_bot, "Warning, Operator %s is Infected with %s Trojan/Virus. No Action Taken (See http://secure.irc-chat.net/info.php?viri=%s for more info)", u->name, ve->name, ve->name);
+		}
+		nlog (LOG_NOTICE, "Operator %s!%s@%s has Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
+		report_positive (u, ve);
+		return;
+	}	
 	switch (ve->action) {
 		case ACT_SVSJOIN:
 			if (SecureServ.dosvsjoin > 0) {
@@ -519,7 +531,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 					}
 					break;
 				} else {
-					irc_prefmsg (ss_bot, u, SecureServ.nohelp);
+					irc_prefmsg (ss_bot, u, "%s", SecureServ.nohelp);
 					irc_chanalert (ss_bot, "Akilling %s!%s@%s for Virus %s (No Helpers Logged in)", u->name, u->user->username, u->user->hostname, ve->name);
 					if(ve->iscustom) {
 						irc_globops (ss_bot, "Akilling %s for Virus %s (No Helpers Logged in)", u->name, ve->name);
@@ -547,7 +559,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 			}
 			/* fallthrough */
 		case ACT_KILL:
-			irc_prefmsg (ss_bot, u, SecureServ.akillinfo);
+			irc_prefmsg (ss_bot, u, "%s", SecureServ.akillinfo);
 			irc_chanalert (ss_bot, "Killing %s!%s@%s for Virus %s", u->name, u->user->username, u->user->hostname, ve->name);
 			if(ve->iscustom) {
 				irc_kill (ss_bot, u->name, "Infected with: %s ", ve->name);

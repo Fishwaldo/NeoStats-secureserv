@@ -2,6 +2,7 @@ SecureServ Module for NeoStats Changelog.
 Fish (F), Mark (M), DeadNotBuried (D)
 ==============================================================================
 3.0.b1-dev
+ - Don't kill Operators that are detected with a virus (F)
  - add new monchan to db only instead of resaving entire list (D)
  - remove monchans from db on delete (D)
 3.0.a3-dev - Mark (M)

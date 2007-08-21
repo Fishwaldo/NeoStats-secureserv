@@ -496,7 +496,7 @@ void gotpositive(Client *u, virientry *ve, int type)
 	virustypes[type].actcount++;
 	/* by default, dont do any action to opers, but report it */
 	
-	if (isOper(u)) {
+	if (IsOper(u)) {
 		if(ve->iscustom) {
 			irc_globops (ss_bot, "Warning, Operator %s is Infected with %s Trojan/Virus. No Action Taken ", u->name, ve->name);
 		} else {

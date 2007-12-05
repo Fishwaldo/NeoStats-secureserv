@@ -29,6 +29,7 @@
 /mkinstalldirs -text
 /modconfig.h.in -text
 /modconfigwin32.h -text
+/pulse.xml -text
 /scan.c -text
 /secureserv.vcproj -text
 /update.c -text
